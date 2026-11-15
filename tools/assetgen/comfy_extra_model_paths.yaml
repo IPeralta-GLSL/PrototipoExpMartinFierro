@@ -1,0 +1,24 @@
+# Extra model search paths for the headless ComfyUI used by tools/assetgen
+# (Studio ComfyUI 0.22.0 launched with --base-directory tools/assetgen/comfy_runtime).
+#
+# The model files live in Krita's ComfyUI models folder and are only READ from there.
+# is_default is false on purpose: the first (default) path of every folder type stays
+# inside comfy_runtime/models, so a model-saving node can never write into E:\KRITA.
+#
+# Files used by the Z-Image-Turbo workflow:
+#   diffusion_models/z_image_turbo_fp8_e4m3fn.safetensors  (UNETLoader)
+#   text_encoders/Qwen3-4B-Q4_K_M.gguf                     (CLIPLoaderGGUF, type lumina2)
+#   vae/flux_vae.safetensors                               (VAELoader)
+krita_models:
+  base_path: E:/KRITA/ComfyUI/models
+  is_default: false
+  checkpoints: checkpoints
+  diffusion_models: diffusion_models
+  text_encoders: text_encoders
+  vae: vae
+  loras: loras
+  upscale_models: upscale_models
+  clip_vision: clip_vision
+  controlnet: controlnet
+  model_patches: model_patches
+  style_models: style_models

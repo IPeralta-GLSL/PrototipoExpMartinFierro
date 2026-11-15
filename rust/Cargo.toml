@@ -1,0 +1,27 @@
+[package]
+name = "martin_fierro"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.94"
+description = "Extensión GDExtension (godot-rust) del prototipo VR 'Martín Fierro'"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# API 4.7 = la versión del editor (4.7.2-stable).
+godot = { version = "0.5.5", features = ["api-4-7"] }
+
+[profile.dev]
+# Las rutinas de terreno/audio son pesadas: optimizar un poco incluso en debug.
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+strip = "debuginfo"

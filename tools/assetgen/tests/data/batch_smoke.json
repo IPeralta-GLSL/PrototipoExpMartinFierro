@@ -1,0 +1,7 @@
+{
+  "defaults": {"faces": 8000, "texture": false},
+  "jobs": [
+    {"image": "red_mug.png", "name": "mug_batch", "seed": 7},
+    {"image": "mate_rgba.png", "name": "mate_batch", "height": 0.12, "prompt": "mate de calabaza (clave ignorada)"}
+  ]
+}

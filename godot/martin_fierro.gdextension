@@ -1,0 +1,13 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.7
+reloadable = true
+
+[libraries]
+; PC (editor y pruebas con Quest Link). tools/build_rust.ps1 las copia acá.
+windows.debug.x86_64 = "res://bin/martin_fierro.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://bin/martin_fierro.windows.release.x86_64.dll"
+; Meta Quest 3 (Android arm64). Se usa la build optimizada en ambos casos:
+; la generación del terreno y el audio procedural necesitan rendimiento.
+android.debug.arm64 = "res://bin/libmartin_fierro.android.arm64.so"
+android.release.arm64 = "res://bin/libmartin_fierro.android.arm64.so"

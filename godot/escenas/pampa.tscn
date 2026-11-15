@@ -1,0 +1,841 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/terreno.gdshader" id="sh_terreno"]
+[ext_resource type="Shader" path="res://shaders/pasto.gdshader" id="sh_pasto"]
+[ext_resource type="Shader" path="res://shaders/fuego.gdshader" id="sh_fuego"]
+[ext_resource type="Shader" path="res://shaders/cielo.gdshader" id="sh_cielo"]
+
+[sub_resource type="FastNoiseLite" id="ruido_nubes"]
+frequency = 0.006
+fractal_octaves = 5
+fractal_gain = 0.55
+
+[sub_resource type="NoiseTexture2D" id="tex_nubes"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("ruido_nubes")
+
+[sub_resource type="ShaderMaterial" id="cielo_mat"]
+shader = ExtResource("sh_cielo")
+shader_parameter/ruido_nubes = SubResource("tex_nubes")
+
+[sub_resource type="Sky" id="cielo"]
+sky_material = SubResource("cielo_mat")
+
+[sub_resource type="Environment" id="entorno"]
+background_mode = 2
+sky = SubResource("cielo")
+ambient_light_source = 3
+ambient_light_energy = 1.1
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_white = 6.0
+fog_enabled = true
+fog_light_color = Color(0.9, 0.67, 0.5, 1)
+fog_sun_scatter = 0.4
+fog_density = 0.0028
+fog_sky_affect = 0.12
+
+[sub_resource type="FastNoiseLite" id="ruido_detalle"]
+frequency = 0.035
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="tex_detalle"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("ruido_detalle")
+
+[sub_resource type="ShaderMaterial" id="mat_terreno"]
+shader = ExtResource("sh_terreno")
+shader_parameter/detalle = SubResource("tex_detalle")
+shader_parameter/escala_detalle = 0.3
+shader_parameter/fuerza_detalle = 0.45
+shader_parameter/tinte = Color(1.12, 1.12, 1.1, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_pasto"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.1
+shader_parameter/velocidad_viento = 1.4
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.5
+
+[sub_resource type="ShaderMaterial" id="mat_cortadera"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.22
+shader_parameter/velocidad_viento = 1.1
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.6
+
+[sub_resource type="FastNoiseLite" id="ruido_fuego"]
+frequency = 0.045
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="tex_fuego"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("ruido_fuego")
+
+[sub_resource type="ShaderMaterial" id="mat_llamas"]
+shader = ExtResource("sh_fuego")
+shader_parameter/ruido = SubResource("tex_fuego")
+shader_parameter/intensidad = 2.2
+shader_parameter/velocidad = 1.25
+
+[sub_resource type="QuadMesh" id="quad_llama"]
+size = Vector2(0.75, 1.05)
+center_offset = Vector3(0, 0.5, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="proc_brasas"]
+emission_shape = 1
+emission_sphere_radius = 0.25
+direction = Vector3(0, 1, 0)
+spread = 20.0
+initial_velocity_min = 0.35
+initial_velocity_max = 1.1
+gravity = Vector3(0, 0.3, 0)
+damping_min = 0.1
+damping_max = 0.4
+scale_min = 0.6
+scale_max = 1.3
+color = Color(1, 0.55, 0.16, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_brasa"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.7, 0.3, 1)
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_brasa"]
+material = SubResource("mat_brasa")
+size = Vector2(0.022, 0.022)
+
+[sub_resource type="Gradient" id="grad_disco"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="tex_disco"]
+gradient = SubResource("grad_disco")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="mat_humo"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_humo"]
+material = SubResource("mat_humo")
+size = Vector2(0.7, 0.7)
+
+[sub_resource type="Curve" id="curva_humo"]
+max_value = 2.0
+_data = [Vector2(0, 0.45), 0.0, 0.0, 0, 0, Vector2(1, 1.8), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="ct_humo"]
+curve = SubResource("curva_humo")
+
+[sub_resource type="Gradient" id="grad_humo"]
+offsets = PackedFloat32Array(0, 0.15, 1)
+colors = PackedColorArray(0.32, 0.28, 0.26, 0, 0.36, 0.33, 0.31, 0.32, 0.55, 0.52, 0.5, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_humo"]
+gradient = SubResource("grad_humo")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_humo"]
+emission_shape = 1
+emission_sphere_radius = 0.15
+direction = Vector3(0.15, 1, 0.1)
+spread = 12.0
+initial_velocity_min = 0.35
+initial_velocity_max = 0.6
+gravity = Vector3(0.14, 0.05, 0.1)
+scale_min = 0.7
+scale_max = 1.2
+scale_curve = SubResource("ct_humo")
+color_ramp = SubResource("gt_humo")
+
+[sub_resource type="Gradient" id="grad_luciernaga"]
+offsets = PackedFloat32Array(0, 0.2, 0.3, 0.45, 0.6, 0.75, 1)
+colors = PackedColorArray(0.85, 1, 0.45, 0, 0.85, 1, 0.45, 1, 0.85, 1, 0.45, 0.1, 0.85, 1, 0.45, 0.9, 0.85, 1, 0.45, 0, 0.85, 1, 0.45, 0.8, 0.85, 1, 0.45, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_luciernaga"]
+gradient = SubResource("grad_luciernaga")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_luciernagas"]
+emission_shape = 3
+emission_box_extents = Vector3(13, 0.7, 13)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.22
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("gt_luciernaga")
+
+[sub_resource type="StandardMaterial3D" id="mat_luciernaga"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_luciernaga"]
+material = SubResource("mat_luciernaga")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="StandardMaterial3D" id="mat_madera"]
+albedo_color = Color(0.42, 0.3, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="mat_madera_oscura"]
+albedo_color = Color(0.22, 0.15, 0.1, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="mat_tabla"]
+albedo_color = Color(0.7, 0.56, 0.4, 1)
+roughness = 0.95
+emission_enabled = true
+emission = Color(0.22, 0.16, 0.1, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_adobe"]
+albedo_color = Color(0.8, 0.72, 0.6, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="mat_paja"]
+albedo_color = Color(0.74, 0.6, 0.34, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="mat_hojas"]
+albedo_color = Color(0.17, 0.27, 0.12, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="mat_piedra"]
+albedo_color = Color(0.46, 0.44, 0.41, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="mat_cuero"]
+albedo_color = Color(0.36, 0.22, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="m_paredes"]
+material = SubResource("mat_adobe")
+size = Vector3(5.0, 2.2, 3.8)
+
+[sub_resource type="PrismMesh" id="m_techo"]
+material = SubResource("mat_paja")
+size = Vector3(4.6, 1.6, 5.6)
+
+[sub_resource type="CylinderMesh" id="m_tronco_ombu"]
+material = SubResource("mat_madera")
+top_radius = 0.75
+bottom_radius = 1.4
+height = 3.6
+
+[sub_resource type="SphereMesh" id="m_copa_ombu"]
+material = SubResource("mat_hojas")
+radius = 6.0
+height = 6.0
+
+[sub_resource type="TorusMesh" id="m_piedras"]
+material = SubResource("mat_piedra")
+inner_radius = 0.42
+outer_radius = 0.64
+rings = 24
+ring_segments = 8
+
+[sub_resource type="CylinderMesh" id="m_tronco_banco"]
+material = SubResource("mat_madera")
+top_radius = 0.22
+bottom_radius = 0.24
+height = 1.9
+
+[sub_resource type="BoxMesh" id="m_cuerpo_guitarra"]
+material = SubResource("mat_madera")
+size = Vector3(0.38, 0.48, 0.1)
+
+[sub_resource type="BoxMesh" id="m_mango_guitarra"]
+material = SubResource("mat_madera_oscura")
+size = Vector3(0.06, 0.55, 0.04)
+
+[sub_resource type="BoxMesh" id="m_tabla"]
+material = SubResource("mat_tabla")
+size = Vector3(1.6, 1.12, 0.05)
+
+[sub_resource type="BoxMesh" id="m_tabla_chica"]
+material = SubResource("mat_tabla")
+size = Vector3(1.3, 0.9, 0.05)
+
+[sub_resource type="CylinderMesh" id="m_poste_cartel"]
+material = SubResource("mat_madera_oscura")
+top_radius = 0.045
+bottom_radius = 0.05
+height = 1.7
+
+[sub_resource type="SystemFont" id="fuente_serif"]
+font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "serif")
+
+[sub_resource type="BoxMesh" id="m_guante"]
+material = SubResource("mat_cuero")
+size = Vector3(0.08, 0.035, 0.13)
+
+[node name="Pampa" type="Node3D"]
+
+[node name="Entorno" type="WorldEnvironment" parent="."]
+environment = SubResource("entorno")
+
+[node name="Sol" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-9, 142, 0)
+light_color = Color(1, 0.71, 0.46, 1)
+light_energy = 1.35
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 40.0
+
+[node name="Terreno" type="TerrenoPampa" parent="."]
+manchas = PackedVector3Array(0, 0, 3.3, 1.5, -7.9, 3.4, 6.2, -5.0, 3.0, -4.2, -8.9, 2.8, 5.6, -9.4, 1.8, 14, -21, 6.5)
+senderos = PackedVector3Array(0, -1.5, 1.4, 1.5, -7.2, 0, 2.6, -7.6, 1.2, 6.4, -4.6, 0, -1.2, -0.9, 1.1, -7.2, -3.2, 0, 3.4, -9.8, 1.0, 10.8, -18.0, 0)
+material = SubResource("mat_terreno")
+
+[node name="Pasto" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_pasto")
+cantidad = 9000
+radio = 42.0
+semilla = 7
+alto = 0.5
+hojas = 6
+ancho_hoja = 0.028
+
+[node name="Cortaderas" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_cortadera")
+cortadera = true
+cantidad = 160
+radio = 70.0
+radio_interno = 9.0
+tamano_parcela = 20.0
+distancia_visible = 110.0
+semilla = 21
+escala_min = 0.75
+escala_max = 1.25
+color_a = Color(0.92, 0.9, 0.82, 1)
+color_b = Color(1, 0.97, 0.88, 1)
+
+[node name="Ambiente" type="AmbientePampa" parent="."]
+material_pasto = SubResource("mat_pasto")
+material_cortadera = SubResource("mat_cortadera")
+
+[node name="Campamento" type="Node3D" parent="."]
+
+[node name="Fogon" type="Fogon" parent="Campamento" node_paths=PackedStringArray("luz") groups=["apoyar_en_suelo"]]
+luz = NodePath("Luz")
+material_llamas = SubResource("mat_llamas")
+
+[node name="Luz" type="OmniLight3D" parent="Campamento/Fogon"]
+position = Vector3(0, 0.55, 0)
+light_color = Color(1, 0.55, 0.22, 1)
+light_energy = 2.4
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Hogar" type="ModeloIA" parent="Campamento/Fogon"]
+modelo = "fogon"
+sombras = false
+
+[node name="Marcador" type="MeshInstance3D" parent="Campamento/Fogon/Hogar"]
+transform = Transform3D(1, 0, 0, 0, 0.45, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("m_piedras")
+
+[node name="Llamas" type="Node3D" parent="Campamento/Fogon"]
+position = Vector3(0, 0.08, 0)
+
+[node name="Llama1" type="MeshInstance3D" parent="Campamento/Fogon/Llamas"]
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Llama2" type="MeshInstance3D" parent="Campamento/Fogon/Llamas"]
+transform = Transform3D(0.5, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, 0.5, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Llama3" type="MeshInstance3D" parent="Campamento/Fogon/Llamas"]
+transform = Transform3D(-0.5, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.5, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Brasas" type="GPUParticles3D" parent="Campamento/Fogon"]
+position = Vector3(0, 0.25, 0)
+cast_shadow = 0
+amount = 28
+lifetime = 2.6
+visibility_aabb = AABB(-2, -0.5, -2, 4, 5, 4)
+process_material = SubResource("proc_brasas")
+draw_pass_1 = SubResource("quad_brasa")
+
+[node name="Humo" type="GPUParticles3D" parent="Campamento/Fogon"]
+position = Vector3(0, 0.9, 0)
+cast_shadow = 0
+amount = 16
+lifetime = 7.0
+preprocess = 7.0
+visibility_aabb = AABB(-4, -1, -4, 8, 10, 8)
+process_material = SubResource("proc_humo")
+draw_pass_1 = SubResource("quad_humo")
+
+[node name="Asador" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(1.05, 0, -0.55)
+rotation_degrees = Vector3(0, -13, 20)
+modelo = "asador"
+
+[node name="Caldera" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-0.62, 0, 0.4)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "caldera"
+
+[node name="Mate" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.3, 0, 0.95)
+rotation_degrees = Vector3(0, 20, 0)
+modelo = "mate"
+
+[node name="Calavera1" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.3, 0, 0.3)
+rotation_degrees = Vector3(0, 60, 0)
+modelo = "calavera"
+
+[node name="Calavera2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(1.3, 0, 0.95)
+rotation_degrees = Vector3(0, -120, 0)
+modelo = "calavera"
+
+[node name="Tronco" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.95, 0, 1.6)
+rotation_degrees = Vector3(0, 25, 0)
+modelo = "tronco"
+
+[node name="Marcador" type="MeshInstance3D" parent="Campamento/Tronco"]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("m_tronco_banco")
+
+[node name="Sombrero" type="ModeloIA" parent="Campamento"]
+position = Vector3(-2.36, 0.43, 1.79)
+rotation_degrees = Vector3(0, 70, 0)
+modelo = "sombrero"
+
+[node name="Guitarra" type="GuitarraCriolla" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.45, 0, 2.0)
+rotation_degrees = Vector3(-14, 35, 0)
+centro_local = Vector3(0, 0.3, 0)
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Guitarra"]
+modelo = "guitarra"
+
+[node name="Marcador" type="Node3D" parent="Campamento/Guitarra/Modelo"]
+
+[node name="Cuerpo" type="MeshInstance3D" parent="Campamento/Guitarra/Modelo/Marcador"]
+position = Vector3(0, 0.26, 0)
+mesh = SubResource("m_cuerpo_guitarra")
+
+[node name="Mango" type="MeshInstance3D" parent="Campamento/Guitarra/Modelo/Marcador"]
+position = Vector3(0, 0.76, 0)
+mesh = SubResource("m_mango_guitarra")
+
+[node name="Perro" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.05, 0, -1.65)
+rotation_degrees = Vector3(0, 32, 0)
+modelo = "perro"
+respirar = 0.014
+periodo = 2.2
+
+[node name="Recado" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(2.4, 0, 0.05)
+rotation_degrees = Vector3(0, -30, 0)
+modelo = "recado"
+
+[node name="Tranquera" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.6, 0, -1.5)
+rotation_degrees = Vector3(0, 60, 0)
+modelo = "palenque"
+
+[node name="Poncho" type="ModeloIA" parent="Campamento/Tranquera"]
+transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 0, 0.08, 0.1)
+modelo = "poncho"
+
+[node name="Rancho" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(1.5, 0, -10.6)
+modelo = "rancho"
+
+[node name="Marcador" type="Node3D" parent="Campamento/Rancho"]
+
+[node name="Paredes" type="MeshInstance3D" parent="Campamento/Rancho/Marcador"]
+position = Vector3(0, 1.1, 0)
+mesh = SubResource("m_paredes")
+
+[node name="Techo" type="MeshInstance3D" parent="Campamento/Rancho/Marcador"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 3.0, 0)
+mesh = SubResource("m_techo")
+
+[node name="Farol" type="OmniLight3D" parent="Campamento"]
+position = Vector3(1.3, 1.5, -8.2)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 0.8
+omni_range = 4.5
+
+[node name="Enramada" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.3, 0, -9.0)
+rotation_degrees = Vector3(0, 10, 0)
+modelo = "enramada"
+
+[node name="Barril" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.4, 0, -8.2)
+modelo = "barril"
+
+[node name="Cuero" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-7.4, 0, -7.4)
+rotation_degrees = Vector3(0, 40, 0)
+modelo = "cuero"
+
+[node name="Horno" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(5.7, 0, -9.6)
+rotation_degrees = Vector3(0, -25, 0)
+modelo = "horno"
+
+[node name="Palenque" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(6.8, 0, -4.6)
+rotation_degrees = Vector3(0, 50, 0)
+modelo = "palenque"
+
+[node name="CaballoMoro" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(5.45, 0, -4.95)
+rotation_degrees = Vector3(0, -40, 0)
+modelo = "caballo_moro"
+respirar = 0.006
+periodo = 3.8
+
+[node name="CaballoGateado" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(6.3, 0, -5.95)
+rotation_degrees = Vector3(0, -40, 0)
+modelo = "caballo_gateado"
+respirar = 0.006
+periodo = 4.3
+
+[node name="Carreta" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-8.6, 0, -3.4)
+rotation_degrees = Vector3(0, 35, 0)
+modelo = "carreta"
+
+[node name="Ombu" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-13, 0, -17)
+modelo = "ombu"
+
+[node name="Marcador" type="Node3D" parent="Campamento/Ombu"]
+
+[node name="Tronco" type="MeshInstance3D" parent="Campamento/Ombu/Marcador"]
+position = Vector3(0, 1.8, 0)
+mesh = SubResource("m_tronco_ombu")
+
+[node name="Copa" type="MeshInstance3D" parent="Campamento/Ombu/Marcador"]
+transform = Transform3D(1, 0, 0, 0, 0.55, 0, 0, 0, 1, 0, 5.6, 0)
+mesh = SubResource("m_copa_ombu")
+
+[node name="Corral" type="Node3D" parent="Campamento"]
+position = Vector3(14, 0, -21)
+
+[node name="Seccion1" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(1.5, 0, -3.62)
+rotation_degrees = Vector3(0, -22.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion2" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(3.62, 0, -1.5)
+rotation_degrees = Vector3(0, -67.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion3" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(3.62, 0, 1.5)
+rotation_degrees = Vector3(0, -112.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion4" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(1.5, 0, 3.62)
+rotation_degrees = Vector3(0, -157.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion5" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.5, 0, 3.62)
+rotation_degrees = Vector3(0, 157.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion6" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.62, 0, 1.5)
+rotation_degrees = Vector3(0, 112.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Seccion7" type="ModeloIA" parent="Campamento/Corral" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.62, 0, -1.5)
+rotation_degrees = Vector3(0, 67.5, 0)
+modelo = "corral"
+distancia_visible = 90.0
+
+[node name="Chimango" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(9.4, 0, -18.4)
+rotation_degrees = Vector3(0, -40, 0)
+modelo = "chimango"
+
+[node name="Fauna" type="Node3D" parent="."]
+
+[node name="Vacas" type="DispersorModelos" parent="Fauna" node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../../Terreno")
+modelo = "vaca"
+cantidad = 5
+radio_min = 18.0
+radio_max = 40.0
+angulo_min = 22.0
+angulo_max = 62.0
+separacion = 4.0
+semilla = 1873
+distancia_visible = 120.0
+respirar = 0.005
+periodo = 4.5
+
+[node name="Nandues" type="DispersorModelos" parent="Fauna" node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../../Terreno")
+modelo = "nandu"
+cantidad = 3
+radio_min = 24.0
+radio_max = 40.0
+angulo_min = -75.0
+angulo_max = -45.0
+separacion = 3.0
+semilla = 1871
+distancia_visible = 120.0
+respirar = 0.004
+periodo = 2.8
+
+[node name="Teros" type="DispersorModelos" parent="Fauna" node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../../Terreno")
+modelo = "tero"
+cantidad = 4
+radio_min = 7.0
+radio_max = 16.0
+angulo_min = -50.0
+angulo_max = 50.0
+separacion = 3.0
+semilla = 1876
+sombras = false
+distancia_visible = 40.0
+
+[node name="Cardos" type="DispersorModelos" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+modelo = "cardo"
+cantidad = 18
+radio_min = 6.5
+radio_max = 34.0
+escala_min = 0.7
+escala_max = 1.3
+separacion = 2.5
+semilla = 13
+sombras = false
+distancia_visible = 70.0
+
+[node name="Luciernagas" type="GPUParticles3D" parent="."]
+position = Vector3(0, 0.9, -3)
+cast_shadow = 0
+amount = 60
+lifetime = 5.0
+preprocess = 5.0
+visibility_aabb = AABB(-16, -2, -16, 32, 5, 32)
+process_material = SubResource("proc_luciernagas")
+draw_pass_1 = SubResource("quad_luciernaga")
+
+[node name="Versos" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
+position = Vector3(2.7, 0, 1.75)
+rotation_degrees = Vector3(0, -49, 0)
+
+[node name="Poste1" type="MeshInstance3D" parent="Versos"]
+position = Vector3(-0.68, 0.85, -0.04)
+mesh = SubResource("m_poste_cartel")
+
+[node name="Poste2" type="MeshInstance3D" parent="Versos"]
+position = Vector3(0.68, 0.85, -0.04)
+mesh = SubResource("m_poste_cartel")
+
+[node name="Tabla" type="MeshInstance3D" parent="Versos"]
+position = Vector3(0, 1.25, 0)
+mesh = SubResource("m_tabla")
+
+[node name="Texto" type="Label3D" parent="Versos"]
+position = Vector3(0, 1.25, 0.03)
+pixel_size = 0.0021
+modulate = Color(0.12, 0.07, 0.03, 1)
+outline_size = 0
+text = "Aquí me pongo á cantar
+Al compás de la vigüela,
+Que el hombre que lo desvela
+Una pena estrordinaria,
+Como la ave solitaria
+Con el cantar se consuela.
+
+José Hernández
+El Gaucho Martín Fierro (1872)"
+font = SubResource("fuente_serif")
+font_size = 38
+line_spacing = 4.0
+
+[node name="Creditos" type="Label3D" parent="Versos"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.25, -0.03)
+pixel_size = 0.0021
+modulate = Color(0.12, 0.07, 0.03, 1)
+outline_size = 0
+text = "Versos de José Hernández (1834–1886):
+El Gaucho Martín Fierro (1872)
+y La Vuelta de Martín Fierro (1879).
+Dominio público. Texto según
+las primeras ediciones.
+
+Modelos 3D generados en local con
+Z-Image-Turbo y Hunyuan3D-2."
+font = SubResource("fuente_serif")
+font_size = 28
+line_spacing = 4.0
+
+[node name="VersoLibre" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
+position = Vector3(4.3, 0, -0.7)
+rotation_degrees = Vector3(0, -52, 0)
+
+[node name="Poste" type="MeshInstance3D" parent="VersoLibre"]
+position = Vector3(0, 0.85, -0.05)
+mesh = SubResource("m_poste_cartel")
+
+[node name="Tabla" type="MeshInstance3D" parent="VersoLibre"]
+position = Vector3(0, 1.25, 0)
+mesh = SubResource("m_tabla_chica")
+
+[node name="Texto" type="Label3D" parent="VersoLibre"]
+position = Vector3(0, 1.25, 0.03)
+pixel_size = 0.0019
+modulate = Color(0.12, 0.07, 0.03, 1)
+outline_size = 0
+text = "Mi gloria es vivir tan libre
+Como el pájaro del Cielo,
+No hago nido en este suelo
+Ande hay tanto que sufrir;
+Y naides me ha de seguir
+Cuando yo remuento el vuelo."
+font = SubResource("fuente_serif")
+font_size = 36
+line_spacing = 4.0
+
+[node name="VersoHermanos" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
+position = Vector3(3.7, 0, -7.0)
+rotation_degrees = Vector3(0, -17, 0)
+
+[node name="Poste" type="MeshInstance3D" parent="VersoHermanos"]
+position = Vector3(0, 0.85, -0.05)
+mesh = SubResource("m_poste_cartel")
+
+[node name="Tabla" type="MeshInstance3D" parent="VersoHermanos"]
+position = Vector3(0, 1.25, 0)
+mesh = SubResource("m_tabla_chica")
+
+[node name="Texto" type="Label3D" parent="VersoHermanos"]
+position = Vector3(0, 1.25, 0.03)
+pixel_size = 0.0019
+modulate = Color(0.12, 0.07, 0.03, 1)
+outline_size = 0
+text = "Los hermanos sean unidos,
+Porque esa es la ley primera—
+Tengan union verdadera
+En cualquier tiempo que sea—
+Porque si entre ellos pelean
+Los devoran los de ajuera.
+(La Vuelta, 1879)"
+font = SubResource("fuente_serif")
+font_size = 34
+line_spacing = 3.0
+
+[node name="PistaGuitarra" type="Label3D" parent="."]
+position = Vector3(-1.5, 1.3, 2.05)
+rotation_degrees = Vector3(0, 30, 0)
+pixel_size = 0.0025
+modulate = Color(1, 0.88, 0.7, 0.85)
+outline_modulate = Color(0.1, 0.05, 0.02, 0.85)
+outline_size = 6
+text = "Pasá la mano por las cuerdas"
+font = SubResource("fuente_serif")
+font_size = 26
+
+[node name="Titulo" type="Label3D" parent="."]
+position = Vector3(0, 1.8, 0.9)
+pixel_size = 0.004
+modulate = Color(1, 0.93, 0.8, 1)
+outline_modulate = Color(0.12, 0.06, 0.02, 1)
+outline_size = 10
+text = "MARTÍN FIERRO
+Un fogón en la pampa"
+font = SubResource("fuente_serif")
+font_size = 64
+
+[node name="Subtitulo" type="Label3D" parent="Titulo"]
+position = Vector3(0, -0.42, 0)
+pixel_size = 0.004
+modulate = Color(1, 0.9, 0.75, 1)
+outline_modulate = Color(0.12, 0.06, 0.02, 1)
+outline_size = 8
+text = "Pampa bonaerense, hacia 1872
+Acercate al fogón y escuchá."
+font = SubResource("fuente_serif")
+font_size = 30
+
+[node name="Jugador" type="JugadorXR" parent="." node_paths=PackedStringArray("terreno", "titulo")]
+position = Vector3(0, 0, 3.6)
+terreno = NodePath("../Terreno")
+titulo = NodePath("../Titulo")
+
+[node name="Cabeza" type="XRCamera3D" parent="Jugador"]
+position = Vector3(0, 1.65, 0)
+current = true
+near = 0.05
+far = 2500.0
+
+[node name="ManoIzquierda" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(-0.25, 1.1, -0.3)
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoIzquierda"]
+mesh = SubResource("m_guante")
+
+[node name="ManoDerecha" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(0.25, 1.1, -0.3)
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
+mesh = SubResource("m_guante")

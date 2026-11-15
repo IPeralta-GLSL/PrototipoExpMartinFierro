@@ -1,0 +1,174 @@
+{
+  "_comentario": "Assets del prototipo. Z-Image-Turbo (Alibaba/Tongyi) genera la imagen de referencia y Hunyuan3D-2 (Tencent) la convierte en malla texturizada. 'escala' fija el tamaño real en metros (eje 'alto' = Y, 'largo' = mayor dimensión horizontal). 'grupo' define la calidad: grande (octree 384, textura 2K), mediano y chico. 'lote' ordena la generación (A primero). Prompts basados en el relevamiento histórico (pampa bonaerense, ~1872).",
+  "prefijo_prompt": "isolated object on a plain pure white background, ",
+  "sufijo_prompt": ", full view of the whole object with empty white margin around it, centered, three-quarter view from slightly above, soft even diffuse studio lighting, no cast shadow, photorealistic, highly detailed textures, no text, no people",
+  "grupos": {
+    "grande": {"octree": 384, "texture_size": 2048, "render_size": 2048},
+    "mediano": {"octree": 320, "texture_size": 1024, "render_size": 1024},
+    "chico": {"octree": 256, "texture_size": 1024, "render_size": 1024}
+  },
+  "assets": [
+    {
+      "nombre": "rancho", "lote": "A", "grupo": "grande",
+      "prompt": "humble 1870s Argentine pampas rancho: one-room rectangular hut, thick hand-plastered mud-and-straw adobe walls in earthy ochre with cracks, steep two-pitch roof thatched with thick pale-yellow straw and totora reed bundles tied in rows, crooked log ridge beam and rafter ends under short eaves, low doorway covered by a hanging dried cowhide, one small unglazed window hole",
+      "semilla": 1872, "ancho": 1216, "alto": 832, "caras": 32000,
+      "escala": {"eje": "largo", "metros": 5.2}
+    },
+    {
+      "nombre": "guitarra", "lote": "A", "grupo": "chico",
+      "prompt": "19th-century small-bodied Spanish gut-string guitar (guitarra criolla) standing upright, aged spruce top with simple rosette and tie bridge, dark rosewood back and sides, slotted headstock, worn varnish, full-length view of the whole guitar from headstock to bottom",
+      "semilla": 1879, "ancho": 832, "alto": 1216, "caras": 12000,
+      "escala": {"eje": "alto", "metros": 0.96}
+    },
+    {
+      "nombre": "fogon", "lote": "A", "grupo": "mediano",
+      "prompt": "ground-level campfire hearth on a small round patch of bare earth: shallow bed of grey ash and glowing black charcoal, several charred branches crossed in the center, dry thistle stalks, a loose ring of rounded field stones around it, no flames, no smoke",
+      "semilla": 9, "ancho": 1216, "alto": 832, "caras": 14000,
+      "escala": {"eje": "largo", "metros": 1.3}
+    },
+    {
+      "nombre": "asador", "lote": "A", "grupo": "mediano",
+      "prompt": "Argentine asado a la cruz: a forged dark iron cross-shaped roasting spit planted in the ground at a slight angle, holding a large whole rack of beef ribs (costillar) roasted golden-brown and crispy, tied with wire",
+      "semilla": 1834, "ancho": 832, "alto": 1216, "caras": 16000,
+      "escala": {"eje": "alto", "metros": 1.45}
+    },
+    {
+      "nombre": "caballo_moro", "lote": "A", "grupo": "grande",
+      "prompt": "Criollo horse standing square, compact muscular stocky body, short strong legs, deep chest, blue-roan coat (moro) with black head, black mane, black tail and black lower legs, wearing a simple rawhide bridle, calm, all four legs clearly visible, side three-quarter view",
+      "semilla": 33, "ancho": 1216, "alto": 832, "caras": 30000,
+      "escala": {"eje": "largo", "metros": 2.3}
+    },
+    {
+      "nombre": "ombu", "lote": "A", "grupo": "grande",
+      "prompt": "giant solitary ombu tree of the Argentine pampa (Phytolacca dioica): an enormously thick, swollen, bulbous pale-grey trunk base much wider than a man, like a giant elephant foot, with massive snaking buttress roots spreading over the ground, short thick trunk dividing into several heavy twisted branches, broad dense rounded umbrella-shaped crown of glossy dark-green leaves, the whole tree wider than it is tall",
+      "semilla": 1835, "ancho": 1216, "alto": 832, "caras": 40000,
+      "escala": {"eje": "alto", "metros": 12.0}
+    },
+    {
+      "nombre": "carreta", "lote": "A", "grupo": "grande",
+      "prompt": "old 19th-century Argentine ox cart (carreta criolla) of rough weathered wood, two huge spoked wooden wheels taller than a man, arched roof covered with dried leather hides and straw mats, long wooden draft pole resting on the ground in front",
+      "semilla": 1810, "ancho": 1216, "alto": 832, "caras": 30000,
+      "escala": {"eje": "largo", "metros": 5.2}
+    },
+    {
+      "nombre": "mate", "lote": "A", "grupo": "chico",
+      "prompt": "pear-shaped dried calabash gourd mate cup with a worn thin silver rim, heaped with green yerba mate, silver bombilla straw with flattened mouthpiece leaning out",
+      "semilla": 21, "ancho": 1024, "alto": 1024, "caras": 8000,
+      "escala": {"eje": "alto", "metros": 0.18}
+    },
+    {
+      "nombre": "caldera", "lote": "A", "grupo": "chico",
+      "prompt": "19th-century straight-sided copper kettle (caldera) with an arched bail handle and a short spout, hammered aged copper with green patina spots, soot-blackened bottom, small dents",
+      "semilla": 5, "ancho": 1024, "alto": 1024, "caras": 8000,
+      "escala": {"eje": "alto", "metros": 0.26}
+    },
+    {
+      "nombre": "calavera", "lote": "A", "grupo": "chico",
+      "prompt": "sun-bleached horse skull resting on its lower edge, used as a low stool, weathered cracked ivory bone",
+      "semilla": 1826, "ancho": 1216, "alto": 832, "caras": 10000,
+      "escala": {"eje": "largo", "metros": 0.55}
+    },
+    {
+      "nombre": "tronco", "lote": "A", "grupo": "chico",
+      "prompt": "fallen weathered tree log with thick rough grey-brown bark and a few broken branch stubs, lying on the ground, used as a rustic bench",
+      "semilla": 17, "ancho": 1216, "alto": 832, "caras": 10000,
+      "escala": {"eje": "largo", "metros": 1.9}
+    },
+    {
+      "nombre": "recado", "lote": "A", "grupo": "mediano",
+      "prompt": "a low flat stack of riding pads lying on the ground: a folded striped red and black wool blanket at the bottom, two long rolled brown leather pads side by side on top of it, and a thick fluffy cream-white sheepskin draped over everything, a rawhide strap with an iron ring hanging at one side",
+      "semilla": 1880, "ancho": 1024, "alto": 1024, "caras": 16000,
+      "escala": {"eje": "largo", "metros": 0.8}
+    },
+    {
+      "nombre": "perro", "lote": "A", "grupo": "mediano",
+      "prompt": "lean criollo farm dog lying down and resting with head up, short tan and white coat, alert ears, calm and dignified",
+      "semilla": 1866, "ancho": 1216, "alto": 832, "caras": 16000,
+      "escala": {"eje": "largo", "metros": 1.0}
+    },
+    {
+      "nombre": "sombrero", "lote": "A", "grupo": "chico",
+      "prompt": "small old black felt cordobes hat: low cylindrical crown with a perfectly flat top, short flat straight brim, plain black band, worn and dusty",
+      "semilla": 1846, "ancho": 1024, "alto": 1024, "caras": 6000,
+      "escala": {"eje": "largo", "metros": 0.34}
+    },
+    {
+      "nombre": "enramada", "lote": "B", "grupo": "grande",
+      "prompt": "rustic open-sided shade shelter (enramada) of four crooked forked tree-trunk posts, cross poles lashed with rawhide thongs, flat roof of piled dry branches and loose straw, bare earth floor",
+      "semilla": 44, "ancho": 1216, "alto": 832, "caras": 24000,
+      "escala": {"eje": "largo", "metros": 4.0}
+    },
+    {
+      "nombre": "horno", "lote": "B", "grupo": "grande",
+      "prompt": "traditional Argentine dome-shaped mud and straw bread oven (horno de barro) on a low square adobe brick base, small arched opening with a wooden door leaning beside it, weathered earth-colored clay with cracks",
+      "semilla": 1856, "ancho": 1024, "alto": 1024, "caras": 18000,
+      "escala": {"eje": "alto", "metros": 1.8}
+    },
+    {
+      "nombre": "caballo_gateado", "lote": "B", "grupo": "grande",
+      "prompt": "Criollo horse standing calmly, compact muscular body, line-backed dun coat (gateado) with dark dorsal stripe, black mane and tail, wearing a flat Argentine gaucho recado with no saddle horn: a thick fluffy white sheepskin cover lying flat on its back over a striped wool blanket, rawhide girth, rawhide bridle and simple iron stirrups, all four legs clearly visible, side three-quarter view",
+      "semilla": 1869, "ancho": 1216, "alto": 832, "caras": 30000,
+      "escala": {"eje": "largo", "metros": 2.3}
+    },
+    {
+      "nombre": "palenque", "lote": "B", "grupo": "chico",
+      "prompt": "rustic hitching rail (palenque): two thick weathered hardwood posts planted in the ground joined by a long horizontal log beam, a coiled rawhide lasso hanging from the beam",
+      "semilla": 3, "ancho": 1216, "alto": 832, "caras": 8000,
+      "escala": {"eje": "largo", "metros": 2.6}
+    },
+    {
+      "nombre": "poncho", "lote": "B", "grupo": "mediano",
+      "prompt": "handwoven pampa wool poncho draped over a rough wooden fence rail on two posts, natural cream and dark brown with red stepped geometric bands, fringed ends",
+      "semilla": 1874, "ancho": 1216, "alto": 832, "caras": 16000,
+      "escala": {"eje": "largo", "metros": 1.8}
+    },
+    {
+      "nombre": "cuero", "lote": "B", "grupo": "mediano",
+      "prompt": "raw cowhide stretched and tied with rawhide thongs on a rectangular frame of rough wooden poles, standing upright, drying in the sun, brown and white hair side out",
+      "semilla": 1861, "ancho": 1024, "alto": 1024, "caras": 12000,
+      "escala": {"eje": "largo", "metros": 2.0}
+    },
+    {
+      "nombre": "barril", "lote": "B", "grupo": "chico",
+      "prompt": "old wooden water barrel with rusty iron hoops and a wooden lid, a hanging tin ladle, weathered staves",
+      "semilla": 1852, "ancho": 832, "alto": 1216, "caras": 8000,
+      "escala": {"eje": "alto", "metros": 0.95}
+    },
+    {
+      "nombre": "corral", "lote": "B", "grupo": "mediano",
+      "prompt": "three-meter straight section of rustic corral fence made of irregular rough vertical tree-trunk posts set side by side in the ground, grey weathered wood",
+      "semilla": 1825, "ancho": 1216, "alto": 832, "caras": 10000,
+      "escala": {"eje": "largo", "metros": 3.0}
+    },
+    {
+      "nombre": "vaca", "lote": "B", "grupo": "mediano",
+      "prompt": "criollo longhorn cow standing and grazing with head down to the grass, reddish-brown and white spotted coat, curved horns, all four legs visible, side three-quarter view",
+      "semilla": 1873, "ancho": 1216, "alto": 832, "caras": 20000,
+      "escala": {"eje": "largo", "metros": 2.2}
+    },
+    {
+      "nombre": "nandu", "lote": "B", "grupo": "mediano",
+      "prompt": "greater rhea (nandu) standing, shaggy grey-brown plumage, long neck, strong grey legs",
+      "semilla": 1871, "ancho": 832, "alto": 1216, "caras": 12000,
+      "escala": {"eje": "alto", "metros": 1.5}
+    },
+    {
+      "nombre": "cardo", "lote": "B", "grupo": "chico",
+      "prompt": "wild cardoon thistle (cardo de Castilla, Cynara cardunculus): rosette of large deeply lobed spiny silvery-grey-green leaves, tall ribbed stems with spiny violet-blue globular flower heads",
+      "semilla": 13, "ancho": 832, "alto": 1216, "caras": 6000,
+      "escala": {"eje": "alto", "metros": 1.4}
+    },
+    {
+      "nombre": "tero", "lote": "B", "grupo": "chico",
+      "prompt": "southern lapwing (tero) standing on the ground: grey head with thin black crest, black throat stripe joining black breast band, white belly, grey-brown back with bronze-green shoulder sheen, pinkish legs",
+      "semilla": 1876, "ancho": 1024, "alto": 1024, "caras": 6000,
+      "escala": {"eje": "largo", "metros": 0.34}
+    },
+    {
+      "nombre": "chimango", "lote": "B", "grupo": "chico",
+      "prompt": "chimango caracara bird perched on top of a single thick weathered wooden post standing alone, no wire, no fence: mottled brown plumage, paler underparts, small pale-grey bill",
+      "semilla": 1877, "ancho": 832, "alto": 1216, "caras": 8000,
+      "escala": {"eje": "alto", "metros": 1.6}
+    }
+  ]
+}

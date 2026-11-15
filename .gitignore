@@ -1,0 +1,52 @@
+# ---------------------------------------------------------------------------
+# Martín Fierro VR — Godot 4.7 + Rust (gdext)
+# ---------------------------------------------------------------------------
+
+# --- Godot -----------------------------------------------------------------
+# Caché de importación, credenciales de exportación y estado del editor.
+godot/.godot/
+# Plantilla de Gradle de Android (se instala sola al exportar).
+godot/android/
+# Archivo temporal que crea tools/trailer.ps1 durante el render.
+godot/override.cfg
+# Exportaciones sueltas.
+*.apk
+*.aab
+*.idsig
+
+# --- Rust / GDExtension ----------------------------------------------------
+rust/target/
+# Bibliotecas compiladas: se generan con tools/build_rust.ps1.
+godot/bin/*
+!godot/bin/.gitkeep
+
+# --- Salidas del proyecto ----------------------------------------------------
+# APK, teasers en video, logs y cuadros temporales del render.
+build/
+
+# --- Generación de modelos con IA (tools/assetgen) ----------------------------
+# Intermedios regenerables: imágenes de referencia, mallas crudas, vistas previas.
+tools/assetgen/salida/
+tools/assetgen/test_out/
+tools/assetgen/tests/out/
+# Runtime de ComfyUI (logs, salidas y copia de ComfyUI-GGUF de Krita).
+tools/assetgen/comfy_runtime/
+# Pesos descargados (u2net para quitar el fondo, ~170 MB).
+tools/assetgen/models/
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+
+# --- Claves de firma (nunca al repo) ---------------------------------------
+*.keystore
+*.jks
+
+# --- Sistema / editores ----------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+.vs/
+.idea/
+*.tmp
+*.log

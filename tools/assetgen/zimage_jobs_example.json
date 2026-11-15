@@ -1,0 +1,16 @@
+[
+  {
+    "name": "guitarra_test_warm",
+    "prompt": "a rustic Argentine guitarra criolla (19th century gaucho guitar), isolated studio product photo on a plain pure white background, entire object visible and centered, three-quarter view, soft even diffuse lighting, no shadows, highly detailed wood texture",
+    "seed": 43,
+    "width": 1024,
+    "height": 1024
+  },
+  {
+    "name": "guitarra_test_portrait",
+    "prompt": "a rustic Argentine guitarra criolla (19th century gaucho guitar), full-length view of the whole guitar from headstock to bottom with empty white margin around it, isolated studio product photo on a plain pure white background, entire object visible and centered, three-quarter view, soft even diffuse lighting, no shadows, highly detailed wood texture",
+    "seed": 42,
+    "width": 832,
+    "height": 1216
+  }
+]

@@ -1,0 +1,9 @@
+# Linker para compilar la extensión para Meta Quest 3 (Android arm64).
+#
+# No se fija acá para no atar el repo a una máquina: tools/build_rust.ps1
+# busca el NDK más reciente del Android SDK y define
+# CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER antes de llamar a cargo.
+#
+# Para compilar a mano, definí esa variable, por ejemplo:
+#   $env:CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER = "$env:LOCALAPPDATA\Android\Sdk\ndk\<versión>\toolchains\llvm\prebuilt\windows-x86_64\bin\aarch64-linux-android29-clang.cmd"
+#   cargo build --release --target aarch64-linux-android
