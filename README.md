@@ -31,14 +31,17 @@ texturizada.
   - **Leña**: tirala al fogón y el fuego se aviva y chisporrotea.
 - **Acariciar**: pasá la mano por la cabeza de los caballos (cabecean y resoplan) o del perro
   (se pone contento y gime). Hay un perro que pasea por el campamento.
-- **Stick izquierdo** (o **WASD / flechas** en el teclado de la PC): caminar hacia donde mirás.
-  El stick derecho hacia adelante/atrás también camina.
-- **Stick derecho**: girar de a 30°.
+- **Stick derecho** (o **WASD / flechas** en el teclado de la PC): caminar hacia donde mirás.
+- **Manos y controles a la vez**: con un control en una mano, la otra se ve y se usa como mano real
+  (extensión de Meta *simultaneous hands and controllers*).
+- **Stick izquierdo**: girar de a 30°.
 - **Botón X** (o tecla **Z**): modo sentado, sube la vista 45 cm para jugar desde una silla.
 - **Doble toque del botón A** (o **R R**): fundido a negro y la experiencia vuelve a empezar.
 - **Guitarra**: pasá la mano rápido por las cuerdas (o apretá el gatillo cerca) para rasguear una
   milonga (Mi menor / Si séptima), con vibración en el control.
-- Mantener apretado el **botón Meta** recentra la vista.
+- La escena respeta el **espacio de juego del visor** (Stage): el Guardian y los mapas de sala
+  (por ejemplo, de un sistema que ubica el visor escaneando marcas) quedan como están; la app no
+  recentra.
 
 ## Estructura
 

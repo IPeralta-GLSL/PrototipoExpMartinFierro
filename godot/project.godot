@@ -36,6 +36,7 @@ anti_aliasing/quality/msaa_3d=1
 [xr]
 
 openxr/enabled=true
+openxr/reference_space=1
 openxr/foveation_level=3
 openxr/foveation_dynamic=true
 openxr/foveation_eye_tracked=false
@@ -45,3 +46,4 @@ openxr/extensions/hand_tracking_unobstructed_data_source=true
 openxr/extensions/hand_tracking_controller_data_source=true
 shaders/enabled=true
 openxr/extensions/meta/hand_tracking_mesh=true
+openxr/extensions/meta/simultaneous_hands_and_controllers=true

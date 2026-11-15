@@ -5,8 +5,9 @@
 //! hacia la palma), que es como Godot entrega las articulaciones de OpenXR. El
 //! espacio del esqueleto es el de la palma (la pose "default" del tracker).
 //!
-//! El modificador mueve la muñeca y los dedos con el hand tracking (solo
-//! rotaciones: las proporciones son las del modelo). La manga cuelga de un hueso
+//! El modificador mueve la muñeca y los dedos con el hand tracking (posición y
+//! rotación de cada articulación: los dedos quedan donde están los del jugador,
+//! con el tamaño de su mano). La manga cuelga de un hueso
 //! extra, hijo de la muñeca, que `Antebrazo` apunta hacia el codo estimado: así
 //! la manga nace siempre pegada a la mano.
 
@@ -59,10 +60,10 @@ struct Dedo {
 fn dedos() -> [Dedo; 4] {
     let d = |x: f32| Vector3::new(x, -0.02, -1.0).normalized();
     [
-        Dedo { metacarpo: Vector3::new(0.012, 0.002, 0.036), nudillo: Vector3::new(0.024, 0.004, -0.042), dir: d(0.08), largos: [0.039, 0.024, 0.022], radio: 0.0090 },
-        Dedo { metacarpo: Vector3::new(0.002, 0.003, 0.038), nudillo: Vector3::new(0.004, 0.005, -0.046), dir: d(0.0), largos: [0.044, 0.027, 0.023], radio: 0.0094 },
-        Dedo { metacarpo: Vector3::new(-0.008, 0.002, 0.036), nudillo: Vector3::new(-0.014, 0.004, -0.043), dir: d(-0.07), largos: [0.041, 0.026, 0.022], radio: 0.0088 },
-        Dedo { metacarpo: Vector3::new(-0.018, 0.0, 0.033), nudillo: Vector3::new(-0.030, 0.001, -0.036), dir: d(-0.15), largos: [0.032, 0.020, 0.019], radio: 0.0076 },
+        Dedo { metacarpo: Vector3::new(0.013, 0.002, 0.036), nudillo: Vector3::new(0.027, 0.004, -0.042), dir: d(0.10), largos: [0.039, 0.024, 0.022], radio: 0.0082 },
+        Dedo { metacarpo: Vector3::new(0.002, 0.003, 0.038), nudillo: Vector3::new(0.005, 0.005, -0.046), dir: d(0.01), largos: [0.044, 0.027, 0.023], radio: 0.0086 },
+        Dedo { metacarpo: Vector3::new(-0.009, 0.002, 0.036), nudillo: Vector3::new(-0.016, 0.004, -0.043), dir: d(-0.08), largos: [0.041, 0.026, 0.022], radio: 0.0080 },
+        Dedo { metacarpo: Vector3::new(-0.019, 0.0, 0.033), nudillo: Vector3::new(-0.034, 0.001, -0.036), dir: d(-0.17), largos: [0.032, 0.020, 0.019], radio: 0.0068 },
     ]
 }
 
@@ -262,7 +263,7 @@ fn formas() -> (Malla, Malla) {
         let dist = inter + d.dir * l2;
         let punta = dist + d.dir * l3;
         let r = d.radio;
-        let s = |c: Vector3, k: f32, p: &[(usize, f32)]| sec(c, r * k * 1.08, r * k * 0.9, p);
+        let s = |c: Vector3, k: f32, p: &[(usize, f32)]| sec(c, r * k * 0.88, r * k * 0.82, p);
         piel.tubo(
             &[
                 s(d.nudillo - d.dir * 0.012, 1.05, &[(b, 1.0)]),
@@ -357,12 +358,12 @@ pub fn crear_mano(izquierda: bool, piel: &Gd<Material>, camisa: &Gd<Material>) -
     sk
 }
 
-/// Agrega a `sk` el modificador del hand tracking (solo rotaciones) y el que
-/// orienta la manga.
+/// Agrega a `sk` el modificador del hand tracking (posición y rotación de cada
+/// articulación) y el que orienta la manga.
 pub fn conectar(sk: &mut Gd<Skeleton3D>, tracker: &StringName, izquierda: bool, camara: Option<Gd<XrCamera3D>>) {
     let mut modif = XrHandModifier3D::new_alloc();
     modif.set_hand_tracker(tracker);
-    modif.set_bone_update(BoneUpdate::ROTATION_ONLY);
+    modif.set_bone_update(BoneUpdate::FULL);
     sk.add_child(&modif);
     let mut ante = Antebrazo::new_alloc();
     {
@@ -415,13 +416,23 @@ pub struct Antebrazo {
     camara: Option<Gd<XrCamera3D>>,
     frente: Vector3,
     indices: Option<(i32, i32)>,
+    /// Proximales del índice y del meñique (se abren un poco para que no se peguen).
+    dedos: Option<(i32, i32)>,
     base: Base<SkeletonModifier3D>,
 }
 
 #[godot_api]
 impl ISkeletonModifier3D for Antebrazo {
     fn init(base: Base<SkeletonModifier3D>) -> Self {
-        Self { prefijo: String::new(), lado: 1.0, camara: None, frente: Vector3::FORWARD, indices: None, base }
+        Self {
+            prefijo: String::new(),
+            lado: 1.0,
+            camara: None,
+            frente: Vector3::FORWARD,
+            indices: None,
+            dedos: None,
+            base,
+        }
     }
 
     fn process_modification_with_delta(&mut self, delta: f64) {
@@ -435,6 +446,25 @@ impl ISkeletonModifier3D for Antebrazo {
             self.indices = Some((m, a));
         }
         let Some((i_mano, i_ante)) = self.indices else { return };
+        // El índice se abre 5° hacia el pulgar y el meñique 3° hacia afuera (en el
+        // plano de la palma, sobre el Z local), para que no queden pegados.
+        if self.dedos.is_none() {
+            self.dedos = Some((
+                sk.find_bone(&format!("{}IndexProximal", self.prefijo)),
+                sk.find_bone(&format!("{}LittleProximal", self.prefijo)),
+            ));
+        }
+        if let Some((indice, menique)) = self.dedos {
+            // Izquierda: el pulgar está hacia -X del hueso; derecha, hacia +X.
+            let hacia_pulgar = if self.lado < 0.0 { 1.0 } else { -1.0 };
+            for (b, grados) in [(indice, 5.0f32 * hacia_pulgar), (menique, -3.0 * hacia_pulgar)] {
+                if b >= 0 {
+                    let q = sk.get_bone_pose_rotation(b);
+                    let abrir = Quaternion::from_axis_angle(Vector3::BACK, grados.to_radians());
+                    sk.set_bone_pose_rotation(b, q * abrir);
+                }
+            }
+        }
         let sxf = sk.get_global_transform();
         let mano_s = sk.get_bone_global_pose(i_mano);
         let mano_g = sxf * mano_s;

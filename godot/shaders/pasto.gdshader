@@ -30,7 +30,9 @@ void vertex() {
 
 void fragment() {
 	vec3 c = a_lineal(COLOR.rgb) * tinte;
-	ALBEDO = c * mix(oscuridad_base, 1.0, UV.y);
+	// Cel: la sombra de la mata en tres bandas planas en vez de un degradé.
+	float banda = floor(UV.y * 3.0 + 0.35) / 3.0;
+	ALBEDO = c * mix(oscuridad_base, 1.0, clamp(banda, 0.0, 1.0));
 	NORMAL = normalize((VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
 	ROUGHNESS = 1.0;
 }

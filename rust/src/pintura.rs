@@ -55,7 +55,14 @@ fn convertir(mat: &Gd<Material>) -> Option<Gd<Material>> {
     if let Ok(p) = try_load::<Texture2D>("res://materiales/pincel.tres") {
         m.set_shader_parameter("pincel", &p.to_variant());
     }
-    // La línea de tinta (personas y animales) sigue como segunda pasada.
+    // Ajustes por material (metadatos del original), p. ej. pinceladas más finas
+    // en las manos del jugador.
+    for param in ["escala_pincel", "fuerza_pincel", "borde_pincel", "tintas"] {
+        if b.has_meta(param) {
+            m.set_shader_parameter(param, &b.get_meta(param));
+        }
+    }
+    // La línea de tinta sigue como segunda pasada.
     if let Some(sig) = b.get_next_pass() {
         m.set_next_pass(&sig);
     }

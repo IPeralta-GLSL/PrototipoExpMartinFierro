@@ -8,9 +8,9 @@ use godot::classes::{
     display_server::VSyncMode,
     geometry_instance_3d::ShadowCastingSetting,
     viewport::VrsMode,
-    xr_server::RotationMode,
+
     file_access::ModeFlags,
-    DisplayServer, Engine, FileAccess, IXrOrigin3D, ProjectSettings, Input, InputEvent, InputEventMouseMotion, Label3D,
+    DisplayServer, Engine, FileAccess, IXrOrigin3D, Time, ProjectSettings, Input, InputEvent, InputEventMouseMotion, Label3D,
     MeshInstance3D, OpenXrInterface, RenderingServer, SphereMesh, StandardMaterial3D, XrCamera3D,
     XrController3D, XrInterface, XrOrigin3D, XrPositionalTracker, XrServer,
 };
@@ -65,7 +65,9 @@ pub struct JugadorXR {
     /// Diagnóstico de los controles (se escribe en el log al cambiar).
     diag_t: f32,
     diag_previo: String,
-    diag_lineas: Vec<String>,
+    /// Cuadros por segundo promedio (se anota cada 10 s en el diagnóstico).
+    fps_t: f32,
+    fps_cuadros: u32,
     yaw: f32,
     pitch: f32,
     tiempo: f32,
@@ -106,7 +108,8 @@ impl IXrOrigin3D for JugadorXR {
             reinicio: None,
             diag_t: 0.0,
             diag_previo: String::new(),
-            diag_lineas: Vec::new(),
+            fps_t: 0.0,
+            fps_cuadros: 0,
             yaw: 0.0,
             pitch: 0.0,
             tiempo: 0.0,
@@ -167,11 +170,13 @@ impl IXrOrigin3D for JugadorXR {
         if self.modo_xr {
             self.ajustar_frecuencia();
             if !self.centrado && self.tiempo > 1.0 {
-                // Mirar hacia el fogón al empezar, sin importar hacia dónde
-                // estaba orientado el casco al abrir la app.
-                XrServer::singleton().center_on_hmd(RotationMode::RESET_BUT_KEEP_TILT, true);
+                // No se recentra: la escena queda atada al espacio de juego del
+                // sistema (Stage), que puede venir de un mapa de la sala
+                // (ubicación por marcas, Guardian). Recentrar lo descartaría.
                 self.centrado = true;
+                activar_manos_y_controles();
             }
+            self.anotar_fps(dt);
             self.locomocion_xr(dt);
         } else {
             self.control_escritorio(dt);
@@ -216,11 +221,6 @@ impl JugadorXR {
         self.aplicar_velo(color);
     }
 
-    /// Señal `pose_recentered` de OpenXR (botón Meta mantenido).
-    #[func]
-    fn al_recentrar(&mut self) {
-        XrServer::singleton().center_on_hmd(RotationMode::RESET_BUT_KEEP_TILT, true);
-    }
 }
 
 impl JugadorXR {
@@ -286,12 +286,6 @@ impl JugadorXR {
         }
         // En XR el ritmo lo marca el casco, no el monitor.
         DisplayServer::singleton().window_set_vsync_mode(VSyncMode::DISABLED);
-        // Mantener apretado el botón Meta recentra la vista: la escena acompaña.
-        let yo = self.to_gd();
-        iface.connect(
-            "pose_recentered",
-            &Callable::from_object_method(&yo, "al_recentrar"),
-        );
         self.interfaz = Some(iface);
         true
     }
@@ -365,6 +359,19 @@ impl JugadorXR {
         true
     }
 
+    /// Anota cada 10 s los cuadros por segundo reales (para ver si el casco
+    /// llega a su frecuencia con el cel shading y la tinta).
+    fn anotar_fps(&mut self, dt: f32) {
+        self.fps_t += dt;
+        self.fps_cuadros += 1;
+        if self.fps_t >= 10.0 {
+            let fps = self.fps_cuadros as f32 / self.fps_t;
+            anotar_diagnostico(&format!("{:7.1} s  FPS {fps:.1}", self.tiempo));
+            self.fps_t = 0.0;
+            self.fps_cuadros = 0;
+        }
+    }
+
     /// Escribe en el log (logcat) el estado de los controles cuando cambia: si
     /// tienen seguimiento, qué perfil de interacción usa el runtime y los sticks.
     fn diagnosticar_controles(&mut self, dt: f32, izq: &Gd<XrController3D>, der: &Gd<XrController3D>) {
@@ -397,16 +404,19 @@ impl JugadorXR {
         let estado = format!("izq: {} | der: {}", control(izq, "left_hand"), control(der, "right_hand"));
         if estado != self.diag_previo {
             godot_print!("Controles: {estado}");
-            // También a un archivo de la app (el log del Quest se llena enseguida):
+            // También a un archivo de la app, que se va agregando entre escenas (el
+            // log del Quest se llena enseguida):
             // adb shell run-as com.prototipojuego.martinfierro cat files/diagnostico.txt
-            self.diag_lineas.push(format!("{:7.1} s  {estado}", self.tiempo));
-            if self.diag_lineas.len() > 400 {
-                self.diag_lineas.remove(0);
+            if self.diag_previo.is_empty() {
+                let escena = self
+                    .base()
+                    .get_tree()
+                    .get_current_scene()
+                    .map(|e| e.get_scene_file_path().to_string())
+                    .unwrap_or_default();
+                anotar_diagnostico(&format!("=== {} {escena}", Time::singleton().get_datetime_string_from_system()));
             }
-            if let Some(mut f) = FileAccess::open("user://diagnostico.txt", ModeFlags::WRITE) {
-                f.store_string(&self.diag_lineas.join("
-"));
-            }
+            anotar_diagnostico(&format!("{:7.1} s  {estado}", self.tiempo));
             self.diag_previo = estado;
         }
     }
@@ -418,15 +428,10 @@ impl JugadorXR {
             return;
         };
 
-        // Caminar con el stick izquierdo (o WASD / flechas), en la dirección de la mirada.
-        let mut stick = izq.get_vector2("primary");
+        // Caminar con el stick derecho (o WASD / flechas), en la dirección de la mirada.
+        let mut stick = der.get_vector2("primary");
         if stick.length() < 0.18 {
             stick = Vector2::ZERO;
-        }
-        // Respaldo: el stick derecho hacia adelante/atrás también camina (el lateral gira).
-        let stick_der = der.get_vector2("primary");
-        if stick == Vector2::ZERO && stick_der.y.abs() > 0.45 && stick_der.y.abs() > stick_der.x.abs() {
-            stick = Vector2::new(0.0, stick_der.y);
         }
         self.diagnosticar_controles(dt, &izq, &der);
         let tecla = Input::singleton();
@@ -478,8 +483,8 @@ impl JugadorXR {
             }
         }
 
-        // Giro por pasos con el stick derecho, pivotando sobre la cabeza.
-        let sx = der.get_vector2("primary").x;
+        // Giro por pasos con el stick izquierdo, pivotando sobre la cabeza.
+        let sx = izq.get_vector2("primary").x;
         if sx.abs() > 0.7 && self.giro_listo {
             let ang = -sx.signum() * self.giro_grados.to_radians();
             let pivote = cabeza.get_global_position();
@@ -654,4 +659,41 @@ impl JugadorXR {
         }
         self.base().get_tree().quit();
     }
+}
+
+/// Agrega una línea a user://diagnostico.txt (se lee con
+/// `adb shell run-as com.prototipojuego.martinfierro cat files/diagnostico.txt`).
+pub(crate) fn anotar_diagnostico(linea: &str) {
+    let ruta = "user://diagnostico.txt";
+    let archivo = FileAccess::open(ruta, ModeFlags::READ_WRITE)
+        .filter(|f| f.get_length() < 400_000)
+        .or_else(|| FileAccess::open(ruta, ModeFlags::WRITE));
+    if let Some(mut f) = archivo {
+        f.seek_end();
+        f.store_line(linea);
+    }
+}
+
+/// Manos y controles a la vez (Meta, XR_META_simultaneous_hands_and_controllers):
+/// con un control en una mano, la otra se sigue como mano real.
+fn activar_manos_y_controles() {
+    let motor = Engine::singleton();
+    let nombre = StringName::from("OpenXRMetaSimultaneousHandsAndControllersExtension");
+    let texto = match motor.get_singleton(&nombre) {
+        None => "la extensión no está disponible".to_string(),
+        Some(mut ext) => {
+            let soportado = ext
+                .call("is_simultaneous_hands_and_controllers_supported", &[])
+                .try_to::<bool>()
+                .unwrap_or(false);
+            if soportado {
+                let r = ext.call("resume_simultaneous_hands_and_controllers_tracking", &[]);
+                format!("activadas ({r})")
+            } else {
+                "el visor no lo soporta".to_string()
+            }
+        }
+    };
+    godot_print!("Manos y controles a la vez: {texto}");
+    anotar_diagnostico(&format!("Manos y controles a la vez: {texto}"));
 }

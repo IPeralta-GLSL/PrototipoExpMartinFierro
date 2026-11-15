@@ -588,13 +588,15 @@ pub struct ManosXR {
     cabeza: Option<Gd<XrCamera3D>>,
     /// Prueba en la PC (-- --manos): trackers de mano falsos delante de la cámara.
     prueba: Option<[Gd<XrHandTracker>; 2]>,
+    /// Ya se anotó en el diagnóstico cómo llegan los datos de cada mano.
+    anotada: [bool; 2],
     base: Base<Node3D>,
 }
 
 #[godot_api]
 impl INode3D for ManosXR {
     fn init(base: Base<Node3D>) -> Self {
-        Self { manos: Vec::new(), cabeza: None, prueba: None, base }
+        Self { manos: Vec::new(), cabeza: None, prueba: None, anotada: [false; 2], base }
     }
 
     fn ready(&mut self) {
@@ -613,6 +615,12 @@ impl INode3D for ManosXR {
         let mut camisa = StandardMaterial3D::new_gd();
         camisa.set_albedo(Color::from_rgb(0.86, 0.82, 0.72));
         camisa.set_roughness(1.0);
+        // Pinceladas finas y suaves: en algo tan chico, las de la escena parecen rayas.
+        for m in [&mut piel, &mut camisa] {
+            m.set_meta("escala_pincel", &18.0f32.to_variant());
+            m.set_meta("fuerza_pincel", &0.05f32.to_variant());
+            m.set_meta("borde_pincel", &0.2f32.to_variant());
+        }
         let (piel, camisa) = (piel.upcast::<Material>(), camisa.upcast::<Material>());
         for (i, lado, control) in [(0, "left", "ManoIzquierda"), (1, "right", "ManoDerecha")] {
             let tracker = StringName::from(&format!("/user/hand_tracker/{lado}"));
@@ -643,6 +651,7 @@ impl INode3D for ManosXR {
     }
 
     fn process(&mut self, _delta: f64) {
+        self.anotar_manos();
         // Prueba en la PC: manos falsas delante de la cámara (la izquierda casi
         // abierta, la derecha a medio cerrar) para ver la malla y cómo dobla.
         let (Some(mut trackers), Some(cam)) = (self.prueba.clone(), self.cabeza.clone()) else {
@@ -773,6 +782,34 @@ impl INode3D for ManosXR {
 
 
 impl ManosXR {
+    /// Una vez por mano y escena: de dónde vienen los datos (manos reales o
+    /// control) y la separación real entre los nudillos del índice y del medio.
+    fn anotar_manos(&mut self) {
+        let xr = XrServer::singleton();
+        for i in 0..self.manos.len().min(2) {
+            if self.anotada[i] {
+                continue;
+            }
+            let Some(t) = xr.get_tracker(&self.manos[i].tracker).and_then(|t| t.try_cast::<XrHandTracker>().ok()) else {
+                continue;
+            };
+            if !t.get_has_tracking_data() {
+                continue;
+            }
+            self.anotada[i] = true;
+            let p = |j| t.get_hand_joint_transform(j).origin;
+            let d_im = p(HandJoint::INDEX_FINGER_PHALANX_PROXIMAL).distance_to(p(HandJoint::MIDDLE_FINGER_PHALANX_PROXIMAL));
+            let d_mr = p(HandJoint::MIDDLE_FINGER_PHALANX_PROXIMAL).distance_to(p(HandJoint::RING_FINGER_PHALANX_PROXIMAL));
+            crate::jugador::anotar_diagnostico(&format!(
+                "Mano {}: fuente={:?} nudillos índice-medio={:.0} mm, medio-anular={:.0} mm",
+                if i == 0 { "izquierda" } else { "derecha" },
+                t.get_hand_tracking_source(),
+                d_im * 1000.0,
+                d_mr * 1000.0
+            ));
+        }
+    }
+
     /// Contorno amarillo: suave si estás cerca, fuerte si la mano lo alcanza.
     fn resaltar_interactivos(&mut self, cabeza: Option<Vector3>, oxf: Transform3D) {
         if cabeza.is_none() {

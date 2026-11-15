@@ -14,6 +14,7 @@ uniform float escala_pincel = 4.0;   // trazos por metro
 uniform float fuerza_pincel = 0.16;  // cuánto cambian el color
 uniform float borde_pincel = 0.45;   // cuánto ondula el borde de la sombra
 uniform float suavidad = 0.05;       // ancho del corte entre luz y sombra
+uniform float tintas = 5.0;          // niveles de valor del color (cel: tintas planas)
 
 varying vec3 pos_obj;
 varying vec3 normal_obj;
@@ -42,7 +43,14 @@ void fragment() {
 		base *= COLOR;
 	}
 	trazo = pinceladas(pos_obj, normalize(normal_obj));
-	ALBEDO = base.rgb * (1.0 + (trazo - 0.5) * 2.0 * fuerza_pincel);
+	// Tintas planas: el valor del color se cuantiza en pocos niveles con el borde
+	// movido por las pinceladas (cel shading que no depende de la luz).
+	vec3 c = base.rgb;
+	float valor = max(max(c.r, c.g), c.b);
+	float plano = (floor(valor * tintas + (trazo - 0.5) * 0.9) + 0.5) / tintas;
+	c *= clamp(plano, 0.0, 1.2) / max(valor, 1e-3);
+	c = mix(base.rgb, c, 0.75);
+	ALBEDO = c * (1.0 + (trazo - 0.5) * 2.0 * fuerza_pincel);
 	ROUGHNESS = 1.0;
 	METALLIC = 0.0;
 	SPECULAR = 0.0;

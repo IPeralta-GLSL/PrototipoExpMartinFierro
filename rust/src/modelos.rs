@@ -220,10 +220,9 @@ impl ModeloIA {
             return false;
         };
         configurar_geometria(&n.clone().upcast::<Node>(), self.sombras, self.distancia_visible);
-        // Personas y animales (los modelos animados) llevan la línea de tinta del cel.
-        if ruta_modelo(&nombre).is_some_and(|r| r.contains("/animados/")) {
-            aplicar_tinta(&n.clone().upcast::<Node>());
-        }
+        // Todos los modelos llevan la línea de tinta del cel (los sembrados por
+        // DispersorModelos no, para no duplicar el costo de cientos de copias).
+        aplicar_tinta(&n.clone().upcast::<Node>());
         crate::pintura::pintar(&n.clone().upcast::<Node>());
         n.set_name("ModeloGenerado");
         if let Some(m) = self.base().get_node_or_null("Marcador") {
