@@ -9,10 +9,14 @@
 //! hijos internos que no se guardan en la escena.
 
 use std::f32::consts::TAU;
+use std::sync::OnceLock;
 
 use godot::classes::{
-    animation::LoopMode, geometry_instance_3d::ShadowCastingSetting, AnimationPlayer, Engine,
-    GeometryInstance3D, Node, PackedScene, ResourceLoader, Skeleton3D,
+    animation::LoopMode,
+    base_material_3d::{DiffuseMode, SpecularMode},
+    geometry_instance_3d::ShadowCastingSetting,
+    AnimationPlayer, BaseMaterial3D, Engine, GeometryInstance3D, MeshInstance3D, Node, PackedScene,
+    ResourceLoader, Skeleton3D,
 };
 use godot::prelude::*;
 
@@ -78,7 +82,36 @@ fn reproducir_en(animador: &mut Gd<AnimationPlayer>, candidatos: &str) -> bool {
 }
 
 /// Sombras y distancia de corte para todas las geometrías de un modelo.
+/// Cel shading suave (luz en bandas) en los modelos de IA; se apaga con -- --sin-cel
+fn cel_activo() -> bool {
+    static CEL: OnceLock<bool> = OnceLock::new();
+    *CEL.get_or_init(|| {
+        !Engine::singleton().is_editor_hint() && crate::conversion::argumento_usuario("sin-cel").is_none()
+    })
+}
+
+/// Pasa los materiales de la malla a difuso "toon" (corte de luz suavizado por
+/// la rugosidad) y brillo toon. Los materiales se comparten entre copias.
+fn aplicar_cel(n: &Gd<Node>) {
+    let Ok(mi) = n.clone().try_cast::<MeshInstance3D>() else { return };
+    let Some(malla) = mi.get_mesh() else { return };
+    for i in 0..malla.get_surface_count() {
+        let Some(mat) = mi.get_active_material(i) else { continue };
+        let Ok(mut m) = mat.try_cast::<BaseMaterial3D>() else { continue };
+        if m.get_diffuse_mode() == DiffuseMode::TOON {
+            continue;
+        }
+        m.set_diffuse_mode(DiffuseMode::TOON);
+        m.set_specular_mode(SpecularMode::TOON);
+        let rugosidad = m.get_roughness().max(0.85);
+        m.set_roughness(rugosidad);
+    }
+}
+
 fn configurar_geometria(n: &Gd<Node>, sombras: bool, distancia: f32) {
+    if cel_activo() {
+        aplicar_cel(n);
+    }
     if let Ok(mut g) = n.clone().try_cast::<GeometryInstance3D>() {
         g.set_cast_shadows_setting(if sombras {
             ShadowCastingSetting::ON
@@ -395,6 +428,14 @@ impl DispersorModelos {
             return;
         };
 
+        // Lo que ya hay en la escena (carretas, ranchos, corrales...): no se siembra encima.
+        let obstaculos = if Engine::singleton().is_editor_hint() || !self.base().is_inside_tree() {
+            Vec::new()
+        } else {
+            crate::personajes::obstaculos_estaticos(&self.base().clone())
+        };
+        let xf_disp = if self.base().is_inside_tree() { self.base().get_global_transform() } else { Transform3D::IDENTITY };
+
         // 1) Elegir lugares (sin tocar el árbol de escena todavía).
         let mut az = Azar::new(self.semilla as u64);
         let mut lugares: Vec<(Vector3, f32, f32)> = Vec::new();
@@ -418,6 +459,10 @@ impl DispersorModelos {
                 {
                     continue;
                 }
+                let g = xf_disp * Vector3::new(x, 0.0, z);
+                if obstaculos.iter().any(|c| c.distancia(Vector2::new(g.x, g.z)) < 0.9) {
+                    continue;
+                }
                 let y = t.altura(x, z);
                 let giro = az.rango(0.0, TAU);
                 let escala = az.rango(self.escala_min, self.escala_max.max(self.escala_min));
@@ -425,7 +470,15 @@ impl DispersorModelos {
             }
         }
 
-        // 2) Instanciar.
+        // 2) Instanciar. Cada uno elige entre las animaciones candidatas que tenga
+        // y arranca en otro punto del ciclo (que el rebaño no se mueva al unísono).
+        let candidatos: Vec<String> = self
+            .animacion
+            .to_string()
+            .split('|')
+            .map(|c| c.trim().to_string())
+            .filter(|c| !c.is_empty())
+            .collect();
         for (pos, giro, escala) in lugares {
             let Some(mut n) = instanciar_modelo(&nombre) else {
                 break;
@@ -438,9 +491,16 @@ impl DispersorModelos {
             n.set_scale(Vector3::splat(escala));
             self.base_mut().add_child(&n);
             if let Some(mut a) = buscar_animador(&n.clone().upcast::<Node>()) {
-                let anim = self.animacion.to_string();
+                // Rota la lista de candidatos para que el primero sea uno al azar.
+                let n_cand = candidatos.len().max(1);
+                let k = ((az.f32() * n_cand as f32) as usize % n_cand).min(candidatos.len());
+                let anim = [&candidatos[k..], &candidatos[..k]].concat().join("|");
                 if reproducir_en(&mut a, &anim) {
                     self.animados = true;
+                    let largo = a.get_current_animation_length();
+                    if largo > 0.0 {
+                        a.seek_ex(az.f32() as f64 * largo).update(true).done();
+                    }
                 }
             }
             self.instancias.push(n);

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Exporta el APK para Meta Quest 3 y (opcionalmente) lo instala y lo abre en el casco.
 
@@ -6,12 +6,19 @@
   .\tools\exportar_quest.ps1 -Instalar -Ejecutar        # todo: Rust + APK + instalar + abrir
   .\tools\exportar_quest.ps1 -SinRust -Instalar         # sin recompilar Rust
   .\tools\exportar_quest.ps1 -Logcat                    # ver el log de Godot del casco
+  .\tools\exportar_quest.ps1 -Wifi                      # ADB por Wi-Fi (una vez, con el USB puesto)
+
+  ADB por Wi-Fi: con el casco enchufado por USB, -Wifi lo pasa a modo TCP (puerto 5555), se
+  conecta a su IP y la guarda en build\quest_wifi.txt. Después ya no hace falta el cable: el
+  script se reconecta solo a esa IP. Si el casco se reinicia, el modo TCP se pierde: enchufalo
+  una vez y volvé a correr -Wifi.
 #>
 param(
     [switch]$SinRust,
     [switch]$Instalar,
     [switch]$Ejecutar,
-    [switch]$Logcat
+    [switch]$Logcat,
+    [switch]$Wifi
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,6 +38,46 @@ $env:GODOT_ANDROID_KEYSTORE_DEBUG_PATH = Join-Path $env:USERPROFILE '.android\de
 $env:GODOT_ANDROID_KEYSTORE_DEBUG_USER = 'androiddebugkey'
 $env:GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD = 'android'
 
+$ipGuardada = Join-Path $salida 'quest_wifi.txt'
+
+function Dispositivos {
+    & $adb devices 2>$null | Select-Object -Skip 1 | Where-Object { $_ -match '\sdevice$' } |
+        ForEach-Object { ($_ -split '\s+')[0] }
+}
+
+# ADB por Wi-Fi: modo TCP desde el USB, conectar y guardar la IP.
+function Configurar-Wifi {
+    $usb = @(Dispositivos | Where-Object { $_ -notmatch ':' })
+    if ($usb.Count -eq 0) { throw "Enchufá el casco por USB (y aceptá la depuración) para activar ADB por Wi-Fi." }
+    $serie = $usb[0]
+    $linea = & $adb -s $serie shell ip -f inet addr show wlan0 2>$null | Select-String 'inet (\d+\.\d+\.\d+\.\d+)'
+    if (-not $linea) { throw "El casco no tiene Wi-Fi conectado." }
+    $ip = $linea.Matches[0].Groups[1].Value
+    & $adb -s $serie tcpip 5555 | Out-Host
+    Start-Sleep 3
+    & $adb connect "${ip}:5555" | Out-Host
+    Set-Content -Path $ipGuardada -Value "${ip}:5555" -Encoding ascii
+    Write-Host "ADB por Wi-Fi listo: ${ip}:5555 (ya podés desenchufar el cable)." -ForegroundColor Green
+}
+
+# Elige el casco: por USB si está enchufado (más rápido), si no por Wi-Fi; si no
+# aparece ninguno, intenta reconectar a la IP guardada.
+function Elegir-Casco {
+    $lista = @(Dispositivos)
+    if ($lista.Count -eq 0 -and (Test-Path $ipGuardada)) {
+        $destino = (Get-Content $ipGuardada -Raw).Trim()
+        Write-Host ">> adb connect $destino" -ForegroundColor Cyan
+        & $adb connect $destino | Out-Host
+        Start-Sleep 1
+        $lista = @(Dispositivos)
+    }
+    if ($lista.Count -eq 0) { throw "No hay ningún casco conectado (ni por USB ni por Wi-Fi). Probá con -Wifi enchufado por USB." }
+    $usb = @($lista | Where-Object { $_ -notmatch ':' })
+    $elegido = if ($usb.Count -gt 0) { $usb[0] } else { $lista[0] }
+    Write-Host "Casco: $elegido" -ForegroundColor Green
+    return $elegido
+}
+
 function Ejecutar([string]$exe, [string[]]$argumentos, [switch]$PermitirFallo) {
     Write-Host ">> $(Split-Path -Leaf $exe) $($argumentos -join ' ')" -ForegroundColor Cyan
     $previo = $ErrorActionPreference
@@ -41,7 +88,13 @@ function Ejecutar([string]$exe, [string[]]$argumentos, [switch]$PermitirFallo) {
     if ($codigo -ne 0 -and -not $PermitirFallo) { throw "Falló ($codigo): $exe" }
 }
 
-if (-not ($Logcat -and -not $Instalar -and -not $Ejecutar)) {
+if ($Wifi) {
+    Configurar-Wifi
+    if (-not ($Instalar -or $Ejecutar -or $Logcat)) { return }
+}
+
+$soloAdb = ($Wifi -or $Logcat) -and -not $Instalar -and -not $Ejecutar
+if (-not $soloAdb) {
     if (-not $SinRust) { & (Join-Path $PSScriptRoot 'build_rust.ps1') }
 
     Ejecutar $godot @('--headless', '--path', $proyecto, '--import') -PermitirFallo
@@ -75,15 +128,16 @@ if (-not ($Logcat -and -not $Instalar -and -not $Ejecutar)) {
     Write-Host "APK: $apk ($mb MB)" -ForegroundColor Green
 }
 
+if ($Instalar -or $Ejecutar -or $Logcat) { $casco = Elegir-Casco }
 if ($Instalar) {
-    Ejecutar $adb @('install', '-r', $apk)
+    Ejecutar $adb @('-s', $casco, 'install', '-r', $apk)
 }
 if ($Ejecutar) {
-    Ejecutar $adb @('shell', 'am', 'force-stop', $paquete) -PermitirFallo
-    Ejecutar $adb @('logcat', '-c') -PermitirFallo
-    Ejecutar $adb @('shell', 'am', 'start', '-n', "$paquete/com.godot.game.GodotAppLauncher")
+    Ejecutar $adb @('-s', $casco, 'shell', 'am', 'force-stop', $paquete) -PermitirFallo
+    Ejecutar $adb @('-s', $casco, 'logcat', '-c') -PermitirFallo
+    Ejecutar $adb @('-s', $casco, 'shell', 'am', 'start', '-n', "$paquete/com.godot.game.GodotAppLauncher")
     Write-Host "Ponete el casco: la app se abrió en el Quest." -ForegroundColor Green
 }
 if ($Logcat) {
-    Ejecutar $adb @('logcat', '-d', '-s', 'godot:V') -PermitirFallo
+    Ejecutar $adb @('-s', $casco, 'logcat', '-d', '-s', 'godot:V') -PermitirFallo
 }

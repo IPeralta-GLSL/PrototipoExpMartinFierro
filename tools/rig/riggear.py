@@ -795,6 +795,36 @@ def renderizar_previas(arm, acciones, carpeta):
     sc.display.shading.background_color = (0.75, 0.75, 0.72)
     sc.render.resolution_x, sc.render.resolution_y = 300, 400
     sc.render.film_transparent = False
+    if "cuello1" in arm.pose.bones:
+        # Cuadrúpedo: vista lateral ortográfica (y una desde arriba para ver el cuello).
+        mn = Vector((min(vv.co.x for vv in vs), min(vv.co.y for vv in vs), 0.0))
+        mx = Vector((max(vv.co.x for vv in vs), max(vv.co.y for vv in vs), H))
+        c = (mn + mx) / 2
+        largo_x = (mx.x - mn.x) >= (mx.y - mn.y)
+        L = max(mx.x - mn.x, mx.y - mn.y)
+        cam.data.type = "ORTHO"
+        cam.data.ortho_scale = 1.35 * max(L, H)
+        sc.render.resolution_x, sc.render.resolution_y = 400, 300
+        if largo_x:
+            cam.location = (c.x, c.y - 4 * L, 0.5 * H)
+        else:
+            cam.location = (c.x + 4 * L, c.y, 0.5 * H)
+        direccion = Vector((c.x, c.y, 0.5 * H)) - cam.location
+        cam.rotation_euler = direccion.to_track_quat("-Z", "Y").to_euler()
+        lateral = (cam.location.copy(), cam.rotation_euler.copy())
+        for nombre, (cuadros, claves) in acciones.items():
+            arm.animation_data.action = bpy.data.actions[nombre]
+            for f in sorted({claves[len(claves) // 4][0], claves[len(claves) // 2][0], claves[(3 * len(claves)) // 4][0]}):
+                sc.frame_set(f)
+                for vista in ("lado", "arriba"):
+                    if vista == "lado":
+                        cam.location, cam.rotation_euler = lateral
+                    else:
+                        cam.location = (c.x, c.y, H + 4 * L)
+                        cam.rotation_euler = (0.0, 0.0, 0.0 if largo_x else math.pi / 2)
+                    sc.render.filepath = os.path.join(carpeta, f"{nombre}_{f:03d}_{vista}.png")
+                    bpy.ops.render.render(write_still=True)
+        return
     for nombre, (cuadros, claves) in acciones.items():
         arm.animation_data.action = bpy.data.actions[nombre]
         for f in sorted({claves[len(claves) // 4][0], claves[len(claves) // 2][0], claves[(3 * len(claves)) // 4][0]}):

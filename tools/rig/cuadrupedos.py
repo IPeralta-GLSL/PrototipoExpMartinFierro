@@ -1,7 +1,7 @@
 """
-Riggeo y animaciones de cuadrúpedos (caballos y perros) para riggear.py.
+Riggeo y animaciones de cuadrúpedos (caballos, perros y ovejas) para riggear.py.
 
-  blender -b -P riggear.py -- entrada.glb salida.glb --cuadrupedo caballo|perro|perro_echado
+  blender -b -P riggear.py -- entrada.glb salida.glb --cuadrupedo caballo|perro|perro_echado|oveja
 
 Estima el esqueleto a partir de la malla (parada de perfil): el extremo con la
 cabeza (más alto), las cuatro patas (vértices junto al suelo, separados en
@@ -13,6 +13,7 @@ Animaciones:
   caballo: idle (cola, cabeza, respira), pastar, cabecear
   perro (parado): idle, caminar, olfatear, contento
   perro_echado: idle, dormir, contento
+  oveja: idle, pastar, cabecear (cuello corto: la cabeza hace casi todo)
 """
 
 
@@ -56,7 +57,7 @@ def estimar(malla, tipo):
         return float(f[:, 2].max()), float(f[:, 2].min())
 
     J = {"H": H, "L": L, "F": F, "izq": izq, "tipo": tipo, "patas": {}}
-    if tipo in ("caballo", "perro"):
+    if tipo in ("caballo", "perro", "oveja"):
         suelo = z < 0.08 * H
         patas = co[suelo]
         up, wp = s * (patas[:, ax] - c0), patas[:, lat]
@@ -213,7 +214,7 @@ def animaciones(J, poser):
         ])
 
         def paso(fase):
-            a = 22.0
+            a = 15.0
             s1, s2 = (-a, a) if fase == 0 else (a, -a)
             return {"del.L": (s1, 10 if s1 < 0 else 0), "tras.R": (s1, -12 if s1 < 0 else 0),
                     "del.R": (s2, 10 if s2 < 0 else 0), "tras.L": (s2, -12 if s2 < 0 else 0)}
@@ -236,6 +237,31 @@ def animaciones(J, poser):
             (24, pose(cuello=-10, cabeza=-6, cola=30, cadera=4)), (30, pose(cuello=-12, cabeza=-4, cola=-30, cadera=-4, ladeo=4)),
             (36, pose(cuello=-10, cabeza=-6, cola=30, cadera=4)), (42, pose(cuello=-12, cabeza=-4, cola=-30, cadera=-4)),
             (48, pose(cuello=-10, cabeza=-6, cola=30, cadera=4)),
+        ])
+    elif tipo == "oveja":
+        A["idle"] = (200, [
+            (0, pose()),
+            (45, pose(giro=6, pecho=0.6, cola=6)),
+            (90, pose(cuello=-2, giro=4, cabeza=-2)),
+            (140, pose(giro=-5, cola=-6, pecho=-0.4)),
+            (200, pose()),
+        ])
+        # Pastar: cuello corto y lanudo; baja el hocico al pasto y mastica.
+        A["pastar"] = (220, [
+            (0, pose()),
+            (40, pose(cuello=34, cabeza=22, pecho=2)),
+            (70, pose(cuello=36, cabeza=25, pecho=2, giro=4)),
+            (100, pose(cuello=35, cabeza=22, pecho=2, giro=-3, cola=5)),
+            (130, pose(cuello=37, cabeza=25, pecho=2, giro=2)),
+            (165, pose(cuello=34, cabeza=22, pecho=2)),
+            (220, pose()),
+        ])
+        A["cabecear"] = (80, [
+            (0, pose()),
+            (14, pose(cuello=-8, cabeza=-6, cola=6)),
+            (30, pose(cuello=4, cabeza=3, giro=7)),
+            (48, pose(cuello=-5, cabeza=-3, giro=-6, cola=-6)),
+            (80, pose()),
         ])
     else:  # perro_echado
         A["idle"] = (180, [

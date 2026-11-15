@@ -28,6 +28,7 @@ ANIMALES (también automático): riggear.py con --cuadrupedo
  godot/modelos/caballo_gateado.glb caballo        idle, pastar, cabecear              caballo_gateado.glb
  godot/modelos/perro.glb           perro_echado   idle, dormir, contento              perro.glb
  godot/modelos/perro_parado.glb    perro          idle, caminar, olfatear, contento   perro_parado.glb
+ godot/modelos/oveja.glb           oveja          idle, pastar, cabecear              oveja.glb
 
 (Mesh2Motion, https://mesh2motion.org, sigue sirviendo para animar a mano otros modelos.)
 

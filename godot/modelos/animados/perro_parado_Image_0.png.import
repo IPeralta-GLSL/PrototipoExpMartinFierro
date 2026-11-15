@@ -3,22 +3,24 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bk3pty0go1t6o"
-path="res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.ctex"
+path.s3tc="res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.s3tc.ctex"
+path.etc2="res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "ff9150f65467cdcba217b8410b5d2ece"
+"md5": "b8673600e024300a7737dd8c41d9b320"
 }
 
 [deps]
 
 source_file="res://modelos/animados/perro_parado_Image_0.png"
-dest_files=["res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.ctex"]
+dest_files=["res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.s3tc.ctex", "res://.godot/imported/perro_parado_Image_0.png-7d1c6256c13a628257b1930ae139c623.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

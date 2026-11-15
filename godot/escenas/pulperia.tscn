@@ -110,19 +110,6 @@ scale_min = 0.6
 scale_max = 1.3
 color = Color(1, 0.55, 0.16, 1)
 
-[sub_resource type="StandardMaterial3D" id="mat_brasa"]
-transparency = 1
-blend_mode = 1
-shading_mode = 0
-vertex_color_use_as_albedo = true
-albedo_color = Color(1, 0.7, 0.3, 1)
-billboard_mode = 3
-billboard_keep_scale = true
-
-[sub_resource type="QuadMesh" id="quad_brasa"]
-material = SubResource("mat_brasa")
-size = Vector2(0.022, 0.022)
-
 [sub_resource type="Gradient" id="grad_disco"]
 offsets = PackedFloat32Array(0, 1)
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
@@ -134,6 +121,20 @@ height = 64
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="mat_brasa"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+albedo_color = Color(1, 0.7, 0.3, 1)
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_brasa"]
+material = SubResource("mat_brasa")
+size = Vector2(0.03, 0.03)
 
 [sub_resource type="StandardMaterial3D" id="mat_humo"]
 transparency = 1
@@ -1619,7 +1620,7 @@ modelo = "ristras"
 sombras = false
 
 [node name="Barril1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-3.05, 0, -4.05)
+position = Vector3(-2.99, 0, -4.05)
 modelo = "barril"
 
 [node name="Barril2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
@@ -1628,7 +1629,7 @@ rotation_degrees = Vector3(0, 30, 0)
 modelo = "barril"
 
 [node name="Barril3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(3.2, 0, -4.05)
+position = Vector3(3.3, 0, -4.0)
 rotation_degrees = Vector3(0, 40, 0)
 modelo = "barril"
 
@@ -1654,12 +1655,12 @@ modelo = "damajuana"
 sombras = false
 
 [node name="Damajuana3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(6.4, 0, 3.9)
+position = Vector3(6.5, 0, 3.85)
 modelo = "damajuana"
 sombras = false
 
 [node name="Damajuana4" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(6.0, 0, 4.15)
+position = Vector3(6.5, 0, 4.27)
 rotation_degrees = Vector3(0, -40, 0)
 modelo = "damajuana"
 sombras = false
@@ -1671,18 +1672,18 @@ modelo = "damajuana"
 sombras = false
 
 [node name="Damajuana6" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-6.1, 0, 0.75)
+position = Vector3(-6.1, 0, 0.92)
 rotation_degrees = Vector3(0, 50, 0)
 modelo = "damajuana"
 sombras = false
 
 [node name="Bolsas1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(5.3, 0, -3.85)
+position = Vector3(5.15, 0, -3.75)
 rotation_degrees = Vector3(0, -10, 0)
 modelo = "bolsas"
 
 [node name="Bolsas2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-5.6, 0, -3.8)
+position = Vector3(-5.85, 0, -3.6)
 rotation_degrees = Vector3(0, 25, 0)
 modelo = "bolsas"
 
@@ -1692,7 +1693,7 @@ rotation_degrees = Vector3(0, 15, 0)
 modelo = "cajones"
 
 [node name="Cajones2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-4.6, 0, -4.0)
+position = Vector3(-4.75, 0, -4.0)
 rotation_degrees = Vector3(0, -20, 0)
 modelo = "cajones"
 
@@ -1702,7 +1703,7 @@ rotation_degrees = Vector3(0, 180, 0)
 modelo = "cuero"
 
 [node name="Recado" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(6.2, 0, 3.0)
+position = Vector3(5.6, 0, 2.65)
 rotation_degrees = Vector3(0, -60, 0)
 modelo = "recado"
 
@@ -1763,7 +1764,7 @@ modelo = "botellas"
 sombras = false
 
 [node name="Sombrero" type="Agarrable" parent="Salon"]
-position = Vector3(4.5, 0.84, 2.0)
+position = Vector3(4.3, 0.84, 1.95)
 rotation_degrees = Vector3(0, 40, 0)
 tipo = "sombrero"
 radio_agarre = 0.25
@@ -1825,17 +1826,17 @@ position = Vector3(-2.75, 0, 4.12)
 modelo = "pila_lena"
 
 [node name="Mesa3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-3.0, 0, 2.6)
+position = Vector3(-3.0, 0, 2.25)
 modelo = "mesa_truco"
 
 [node name="BotellasMesa3" type="ModeloIA" parent="Salon"]
-position = Vector3(-3.0, 0.84, 2.3)
+position = Vector3(-3.0, 0.84, 1.95)
 rotation_degrees = Vector3(0, 45, 0)
 modelo = "botellas"
 sombras = false
 
 [node name="SombreroMesa3" type="ModeloIA" parent="Salon"]
-position = Vector3(-3.1, 0.84, 2.9)
+position = Vector3(-3.1, 0.84, 2.55)
 rotation_degrees = Vector3(0, -20, 0)
 modelo = "sombrero"
 sombras = false
@@ -1846,7 +1847,7 @@ rotation_degrees = Vector3(0, 160, 0)
 modelo = "bolsas"
 
 [node name="Cajones3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(2.6, 0, 4.0)
+position = Vector3(2.45, 0, 4.0)
 rotation_degrees = Vector3(0, 10, 0)
 modelo = "cajones"
 
@@ -1862,7 +1863,7 @@ modelo = "guitarra"
 sombras = false
 
 [node name="Oyente" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
-position = Vector3(-1.5, 0, -1.25)
+position = Vector3(-1.55, 0, -1.0)
 rotation_degrees = Vector3(0, 70, 0)
 modelo = "levado"
 animacion = "mate"
@@ -2006,7 +2007,7 @@ position = Vector3(-5.3, 0, -7.4)
 modelo = "palenque"
 
 [node name="CaballoMoro" type="Animal" parent="Afuera" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
-position = Vector3(-6.1, 0, -8.3)
+position = Vector3(-6.1, 0, -8.75)
 rotation_degrees = Vector3(0, 95, 0)
 modelo = NodePath("Modelo")
 rutina = "idle:6-12,pastar:8-15"
@@ -2020,7 +2021,7 @@ position = Vector3(0, 0, 0)
 modelo = "caballo_moro"
 
 [node name="CaballoGateado" type="Animal" parent="Afuera" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
-position = Vector3(-4.5, 0, -8.6)
+position = Vector3(-4.5, 0, -8.78)
 rotation_degrees = Vector3(0, 75, 0)
 modelo = NodePath("Modelo")
 rutina = "pastar:8-15,idle:6-12"

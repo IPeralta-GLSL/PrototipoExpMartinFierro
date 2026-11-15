@@ -63,6 +63,13 @@ pub struct Capsula {
     r: f32,
 }
 
+impl Capsula {
+    /// Distancia de un punto (en planta) al borde de la cápsula (negativa adentro).
+    pub(crate) fn distancia(&self, p: Vector2) -> f32 {
+        (p - punto_segmento(p, self.a, self.b)).length() - self.r
+    }
+}
+
 fn punto_segmento(p: Vector2, a: Vector2, b: Vector2) -> Vector2 {
     let ab = b - a;
     let t = ((p - a).dot(ab) / ab.length_squared().max(1e-6)).clamp(0.0, 1.0);
@@ -105,7 +112,7 @@ fn huella(n: &Gd<Node>) -> Option<Capsula> {
 
 /// Obstáculos fijos de la escena: todos los modelos, salvo los personajes que
 /// caminan, los objetos que se agarran, los accesorios y uno mismo.
-fn obstaculos_estaticos(yo: &Gd<Node3D>) -> Vec<Capsula> {
+pub(crate) fn obstaculos_estaticos(yo: &Gd<Node3D>) -> Vec<Capsula> {
     fn recorrer(n: &Gd<Node>, yo: &Gd<Node>, out: &mut Vec<Capsula>) {
         if n == yo
             || n.clone().try_cast::<Caminante>().is_ok()

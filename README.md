@@ -17,10 +17,11 @@ texturizada.
 
 ## En el casco
 
-- **Tus manos**: se ven las manos reales (hand tracking de Meta, dedo por dedo), con los controles
-  en la mano o sin ellos.
-- **Lo interactivo tiene un contorno amarillo suave** cuando estás cerca, y más marcado cuando tu
-  mano lo alcanza.
+- **Tus manos y brazos**: se ven las manos reales (hand tracking de Meta, dedo por dedo), con los
+  controles en la mano o sin ellos, y los brazos con la manga de camisa de paisano (el codo se
+  calcula solo a partir de la muñeca y de la cabeza).
+- **Lo interactivo tiene un contorno amarillo que respira** (se enciende y se apaga despacio),
+  siempre visible; se marca más cuando tu mano lo alcanza.
 - **Agarrar**: cerrá la mano (o apretá el grip) cerca de un objeto; al abrirla lo soltás o lo
   tirás. Se pueden agarrar el mate, la pava, el sombrero y la leña.
   - **Mate**: llevátelo a la boca y suena el sorbo.
@@ -28,8 +29,10 @@ texturizada.
   - **Leña**: tirala al fogón y el fuego se aviva y chisporrotea.
 - **Acariciar**: pasá la mano por la cabeza de los caballos (cabecean y resoplan) o del perro
   (se pone contento y gime). Hay un perro que pasea por el campamento.
-- **Stick izquierdo**: caminar hacia donde mirás.
+- **Stick izquierdo** (o **WASD / flechas** en el teclado de la PC): caminar hacia donde mirás.
 - **Stick derecho**: girar de a 30°.
+- **Botón X** (o tecla **Z**): modo sentado, sube la vista 45 cm para jugar desde una silla.
+- **Doble toque del botón A** (o **R R**): fundido a negro y la experiencia vuelve a empezar.
 - **Guitarra**: pasá la mano rápido por las cuerdas (o apretá el gatillo cerca) para rasguear una
   milonga (Mi menor / Si séptima), con vibración en el control.
 - Mantener apretado el **botón Meta** recentra la vista.
@@ -204,9 +207,14 @@ $B = "$env:LOCALAPPDATA\Programs\Blender\blender-4.5.16-windows-x64\blender.exe"
 & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\soldado_rig.glb godot\modelos\animados\soldado.glb --previas build\previas_soldado
 ```
 
-**Animales** (`--cuadrupedo caballo|perro|perro_echado`): el mismo script estima lomo, cuello
-(dos huesos), cabeza, cola y patas, y crea `idle`, `pastar`, `cabecear` (caballo); `idle`,
-`caminar`, `olfatear`, `contento` (perro parado); `idle`, `dormir`, `contento` (perro echado).
+**Animales** (`--cuadrupedo caballo|perro|perro_echado|oveja`): el mismo script estima lomo,
+cuello (dos huesos), cabeza, cola y patas, y crea `idle`, `pastar`, `cabecear` (caballo y oveja);
+`idle`, `caminar`, `olfatear`, `contento` (perro parado); `idle`, `dormir`, `contento` (perro
+echado). La imagen de referencia tiene que estar **de perfil estricto, con la cabeza alineada al
+cuerpo**: si la malla viene con la cabeza girada, el animal queda mirando siempre al costado. Las
+previas de los cuadrúpedos se renderizan de costado y desde arriba (para ver que el cuello quede
+derecho). En el campo, cada oveja elige al azar entre pastar, quedarse quieta o cabecear, y arranca
+en otro punto del ciclo.
 
 ```powershell
 & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\caballo_moro.glb godot\modelos\animados\caballo_moro.glb --cuadrupedo caballo
@@ -218,6 +226,14 @@ sargento). `Animal` alterna la rutina de cada animal (p. ej. `idle:6-12,pastar:8
 las caricias; `Agarrable` (cuerpo rígido) y `ManosXR` (manos del jugador) resuelven la interacción
 en `rust/src/interaccion.rs`; los sonidos (resoplido, gemido, sorbo, chispas) se sintetizan en
 `sintesis.rs`.
+
+**Cel shading suave**: los modelos de la IA usan luz en bandas (difuso "toon" de Godot,
+suavizado por la rugosidad), que disimula las superficies abolladas de las mallas generadas y da
+un aire de ilustración. Se apaga para comparar con `-- --sin-cel`.
+
+**Sin objetos que se atraviesen**: los dispersores (ovejas, cardos, teros…) no siembran copias
+encima de los objetos de la escena, y las posiciones de las tres escenas se revisaron con un
+análisis de huellas (caja orientada de la parte baja de cada modelo, 0 a 1,3 m).
 
 ## Teaser en video
 
@@ -239,7 +255,13 @@ constante `PLANOS` del director.
 .\tools\build_rust.ps1 -Tests     # corre los tests de Rust antes
 .\tools\exportar_quest.ps1 -Instalar -Ejecutar
 .\tools\exportar_quest.ps1 -Logcat   # log de Godot en el casco
+.\tools\exportar_quest.ps1 -Wifi     # ADB por Wi-Fi (una vez, con el casco enchufado por USB)
 ```
+
+**ADB por Wi-Fi**: `-Wifi` pasa el casco a modo TCP (puerto 5555), se conecta a su IP y la guarda
+en `build\quest_wifi.txt`; desde ahí `-Instalar`/`-Ejecutar`/`-Logcat` funcionan sin cable (usan
+el USB si está enchufado, que es más rápido, y si no se reconectan solos por Wi-Fi). Si el casco
+se reinicia, el modo TCP se pierde: enchufalo una vez y volvé a correr `-Wifi`.
 
 Con el editor abierto, la DLL se recarga sola al recompilar (`reloadable = true`).
 

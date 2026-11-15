@@ -68,7 +68,7 @@ pub struct Narrador {
     /// Velocidad al caminar (m/s).
     #[export]
     velocidad: f32,
-    /// Altura del subtítulo sobre el narrador (m).
+    /// Altura del renglón de abajo del subtítulo, con el narrador parado (m).
     #[export]
     altura_subtitulo: f32,
     #[export]
@@ -86,7 +86,13 @@ pub struct Narrador {
     destino: Option<Vector3>,
     evitador: Evitador,
     sentado: bool,
-    subtitulo: Option<Gd<Label3D>>,
+    /// Renglones del subtítulo (una "página" de hasta RENGLONES a la vez).
+    renglones: Vec<Gd<Label3D>>,
+    /// Texto partido en renglones con el segundo en que empieza cada uno.
+    filas: Vec<(String, f32)>,
+    /// Páginas como rangos de `filas`.
+    paginas: Vec<(usize, usize)>,
+    pagina_mostrada: Option<usize>,
     /// Mandíbula del gaucho (se abre con el volumen de la voz).
     boca: Option<Gd<Mandibula>>,
     envolvente: Vec<f32>,
@@ -114,7 +120,7 @@ impl INode3D for Narrador {
             accion_inicial: GString::from("idle"),
             mirar_inicial: GString::new(),
             velocidad: 1.0,
-            altura_subtitulo: 2.2,
+            altura_subtitulo: 2.12,
             volumen_db: 4.0,
             lineas: Vec::new(),
             indice: 0,
@@ -128,7 +134,10 @@ impl INode3D for Narrador {
             destino: None,
             evitador: Evitador::nuevo(),
             sentado: false,
-            subtitulo: None,
+            renglones: Vec::new(),
+            filas: Vec::new(),
+            paginas: Vec::new(),
+            pagina_mostrada: None,
             boca: None,
             envolvente: Vec::new(),
             apertura: 0.0,
@@ -160,18 +169,22 @@ impl INode3D for Narrador {
             GString::from("Noto Serif"),
             GString::from("serif"),
         ]));
-        let mut sub = Label3D::new_alloc();
-        sub.set_name("Subtitulo");
-        sub.set_font(&fuente);
-        sub.set_font_size(48);
-        sub.set_pixel_size(0.003);
-        sub.set_outline_size(12);
-        sub.set_modulate(Color::from_rgba(1.0, 0.94, 0.84, 0.0));
-        sub.set_outline_modulate(Color::from_rgba(0.08, 0.04, 0.02, 0.0));
-        sub.set_billboard_mode(BillboardMode::FIXED_Y);
-        sub.set_position(Vector3::new(0.0, self.altura_subtitulo, 0.0));
-        self.base_mut().add_child(&sub);
-        self.subtitulo = Some(sub);
+        // Un Label3D por renglón: se apilan hacia arriba desde encima del sombrero.
+        for i in 0..RENGLONES {
+            let mut sub = Label3D::new_alloc();
+            sub.set_name(&format!("Subtitulo{i}"));
+            sub.set_font(&fuente);
+            sub.set_font_size(46);
+            sub.set_pixel_size(0.003);
+            sub.set_outline_size(12);
+            sub.set_modulate(Color::from_rgba(1.0, 0.94, 0.84, 0.0));
+            sub.set_outline_modulate(Color::from_rgba(0.08, 0.04, 0.02, 0.0));
+            sub.set_billboard_mode(BillboardMode::FIXED_Y);
+            sub.set_position(Vector3::new(0.0, self.altura_subtitulo, 0.0));
+            sub.set_visible(false);
+            self.base_mut().add_child(&sub);
+            self.renglones.push(sub);
+        }
 
         let mut voz = AudioStreamPlayer3D::new_alloc();
         voz.set_name("Voz");
@@ -243,16 +256,11 @@ impl INode3D for Narrador {
         self.t_linea += dt;
         self.mover_boca(dt);
         let total = self.dur_linea + 0.9;
-        let alfa = (self.t_linea / 0.5).min((total - self.t_linea) / 0.6).clamp(0.0, 1.0);
-        if let Some(s) = self.subtitulo.as_mut() {
-            let mut c = s.get_modulate();
-            c.a = alfa;
-            s.set_modulate(c);
-            let mut o = s.get_outline_modulate();
-            o.a = alfa * 0.9;
-            s.set_outline_modulate(o);
-        }
+        self.animar_subtitulos(total);
         if self.t_linea >= total || saltar {
+            for r in self.renglones.iter_mut() {
+                r.set_visible(false);
+            }
             if saltar {
                 if let Some(v) = self.voz.as_mut() {
                     v.stop();
@@ -297,9 +305,6 @@ impl Narrador {
         }
         self.mirada = if l.mirar.is_empty() { "jugador".to_string() } else { l.mirar.clone() };
 
-        if let Some(s) = self.subtitulo.as_mut() {
-            s.set_text(&texto);
-        }
         let mut duracion = 1.2 + texto.chars().count() as f32 * 0.062;
         if !audio.is_empty() && ResourceLoader::singleton().exists(&audio) {
             if let Ok(stream) = try_load::<AudioStream>(&audio) {
@@ -314,6 +319,7 @@ impl Narrador {
             }
         }
         self.dur_linea = duracion;
+        self.preparar_subtitulos(&texto, duracion);
         self.envolvente = cargar_envolvente(&audio);
         godot_print!(
             "Narrador: línea {} de {} ({:.1} s) acción: {}{}",
@@ -331,6 +337,81 @@ impl Narrador {
             self.animar(&format!("{accion}|hablar|talk|idle"));
         }
         self.disparar(&evento, duracion);
+    }
+
+    /// Parte el texto en renglones (los largos, en dos) y les asigna el segundo en
+    /// que la voz llega a cada uno (proporcional a las letras), agrupados en páginas.
+    fn preparar_subtitulos(&mut self, texto: &str, duracion: f32) {
+        let mut renglones: Vec<String> = Vec::new();
+        for linea in texto.lines().map(str::trim).filter(|l| !l.is_empty()) {
+            renglones.extend(partir_renglon(linea, 38));
+        }
+        let letras: Vec<usize> = renglones.iter().map(|r| r.chars().count().max(1)).collect();
+        let total: usize = letras.iter().sum::<usize>().max(1);
+        // La voz arranca un poco después y termina antes del final del audio.
+        let (inicio, fin) = (0.15_f32, (duracion - 0.3).max(0.5));
+        let mut acumulado = 0usize;
+        self.filas.clear();
+        for (r, n) in renglones.into_iter().zip(letras) {
+            let t = if acumulado == 0 {
+                0.0
+            } else {
+                inicio + (fin - inicio) * acumulado as f32 / total as f32
+            };
+            self.filas.push((r, t));
+            acumulado += n;
+        }
+        // Páginas parejas de hasta RENGLONES (6 versos: 3 + 3; 4: 2 + 2).
+        let n = self.filas.len();
+        let cant = n.div_ceil(RENGLONES).max(1);
+        let por_pagina = n.div_ceil(cant).max(1);
+        self.paginas = (0..n).step_by(por_pagina).map(|a| (a, (a + por_pagina).min(n))).collect();
+        self.pagina_mostrada = None;
+    }
+
+    /// Cada renglón entra con un fundido y sube un poco; al cambiar de página, la
+    /// anterior se desvanece hacia arriba. Encima del sombrero (más bajo si está sentado).
+    fn animar_subtitulos(&mut self, total: f32) {
+        if self.paginas.is_empty() {
+            return;
+        }
+        let t = self.t_linea;
+        let mut p = 0;
+        for (i, &(a, _)) in self.paginas.iter().enumerate() {
+            if self.filas[a].1 <= t {
+                p = i;
+            }
+        }
+        let (a, b) = self.paginas[p];
+        if self.pagina_mostrada != Some(p) {
+            self.pagina_mostrada = Some(p);
+            for (k, r) in self.renglones.iter_mut().enumerate() {
+                if a + k < b {
+                    r.set_text(self.filas[a + k].0.as_str());
+                    r.set_visible(true);
+                } else {
+                    r.set_visible(false);
+                }
+            }
+        }
+        let fin_pagina = match self.paginas.get(p + 1) {
+            Some(&(sig, _)) => self.filas[sig].1,
+            None => total,
+        };
+        let salida = ((fin_pagina - t) / 0.4).clamp(0.0, 1.0);
+        let base = self.altura_subtitulo - if self.sentado { 0.45 } else { 0.0 };
+        let n = b - a;
+        for k in 0..n.min(self.renglones.len()) {
+            let e = ((t - self.filas[a + k].1) / 0.4).clamp(0.0, 1.0);
+            let suave = 1.0 - (1.0 - e).powi(3);
+            let alfa = suave * salida * salida;
+            let y = base + (n - 1 - k) as f32 * INTERLINEADO - 0.07 * (1.0 - suave)
+                + 0.08 * (1.0 - salida);
+            let r = &mut self.renglones[k];
+            r.set_position(Vector3::new(0.0, y, 0.0));
+            r.set_modulate(Color::from_rgba(1.0, 0.94, 0.84, alfa));
+            r.set_outline_modulate(Color::from_rgba(0.08, 0.04, 0.02, alfa * 0.9));
+        }
     }
 
     /// Posición global de un nodo hermano del narrador (o del jugador).
@@ -482,6 +563,29 @@ impl Narrador {
 }
 
 /// Envolvente de volumen de una línea (0..1, 30 por segundo), si existe.
+/// Renglones por página de subtítulo y separación entre renglones (m).
+const RENGLONES: usize = 3;
+const INTERLINEADO: f32 = 0.165;
+
+/// Corta un renglón largo en dos por el espacio más cercano a la mitad.
+fn partir_renglon(linea: &str, max: usize) -> Vec<String> {
+    let letras: Vec<char> = linea.chars().collect();
+    if letras.len() <= max {
+        return vec![linea.to_string()];
+    }
+    let medio = letras.len() / 2;
+    let corte = (0..letras.len())
+        .filter(|&i| letras[i] == ' ')
+        .min_by_key(|&i| i.abs_diff(medio));
+    match corte {
+        Some(i) => vec![
+            letras[..i].iter().collect::<String>().trim().to_string(),
+            letras[i + 1..].iter().collect::<String>().trim().to_string(),
+        ],
+        None => vec![linea.to_string()],
+    }
+}
+
 fn cargar_envolvente(audio: &str) -> Vec<f32> {
     let Some(base) = audio.strip_suffix(".ogg") else {
         return Vec::new();

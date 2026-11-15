@@ -229,7 +229,7 @@ impl CicloDia {
         // --- Sonido: calma el viento, suben los grillos ---
         if let Some(a) = self.ambiente.as_mut() {
             a.bind_mut()
-                .fijar_volumenes(mezclar(0.45, 0.22, noche), mezclar(0.07, 0.16, noche));
+                .fijar_volumenes(mezclar(0.45, 0.22, noche), mezclar(0.03, 0.07, noche));
         }
     }
 }

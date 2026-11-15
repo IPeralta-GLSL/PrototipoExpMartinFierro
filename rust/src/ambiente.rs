@@ -76,7 +76,7 @@ impl INode for AmbientePampa {
     fn init(base: Base<Node>) -> Self {
         Self {
             volumen_viento: 0.45,
-            volumen_grillos: 0.07,
+            volumen_grillos: 0.03,
             material_pasto: None,
             material_cortadera: None,
             viento: None,

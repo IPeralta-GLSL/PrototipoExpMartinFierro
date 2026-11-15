@@ -248,18 +248,18 @@ def contenido(p):
         c += modelo(f"Ristras{i + 1}", "Salon", (x, round(H - 0.22 - 0.82, 3), -3.75), "ristras", 25 * i,
                     "sombras = false\n", suelo=False)
     # --- Barriles, damajuanas, bolsas y cajones contra las paredes.
-    for i, (pos, rot) in enumerate((((-3.05, 0, -4.05), 0), ((-3.75, 0, -4.1), 30), ((3.2, 0, -4.05), 40),
+    for i, (pos, rot) in enumerate((((-2.99, 0, -4.05), 0), ((-3.75, 0, -4.1), 30), ((3.3, 0, -4.0), 40),
                                     ((6.35, 0, -4.0), 10), ((-6.35, 0, 0.3), 70))):
         c += modelo(f"Barril{i + 1}", "Salon", pos, "barril", rot)
-    for i, (pos, rot) in enumerate((((-2.55, 0, -3.45), 0), ((2.45, 0, -3.5), 30), ((6.4, 0, 3.9), 0),
-                                    ((6.0, 0, 4.15), -40), ((-6.4, 0, 4.0), 20), ((-6.1, 0, 0.75), 50))):
+    for i, (pos, rot) in enumerate((((-2.55, 0, -3.45), 0), ((2.45, 0, -3.5), 30), ((6.5, 0, 3.85), 0),
+                                    ((6.5, 0, 4.27), -40), ((-6.4, 0, 4.0), 20), ((-6.1, 0, 0.92), 50))):
         c += modelo(f"Damajuana{i + 1}", "Salon", pos, "damajuana", rot, "sombras = false\n")
-    c += modelo("Bolsas1", "Salon", (5.3, 0, -3.85), "bolsas", -10)
-    c += modelo("Bolsas2", "Salon", (-5.6, 0, -3.8), "bolsas", 25)
+    c += modelo("Bolsas1", "Salon", (5.15, 0, -3.75), "bolsas", -10)
+    c += modelo("Bolsas2", "Salon", (-5.85, 0, -3.6), "bolsas", 25)
     c += modelo("Cajones1", "Salon", (6.35, 0, -3.1), "cajones", 15)
-    c += modelo("Cajones2", "Salon", (-4.6, 0, -4.0), "cajones", -20)
+    c += modelo("Cajones2", "Salon", (-4.75, 0, -4.0), "cajones", -20)
     c += modelo("Cuero", "Salon", (3.6, 0, 4.2), "cuero", 180)
-    c += modelo("Recado", "Salon", (6.2, 0, 3.0), "recado", -60)
+    c += modelo("Recado", "Salon", (5.6, 0, 2.65), "recado", -60)
     # --- Mesa del truco 1: paisano y viejo.
     c += modelo("Mesa", "Salon", (-4.4, 0, -0.6), "mesa_truco")
     c += modelo("Paisano", "Salon", (-5.02, 0, -0.85), "paisano", 90, 'animacion = "truco"\n')
@@ -272,7 +272,7 @@ def contenido(p):
     c += modelo("Sargento", "Salon", (3.98, 0, 1.05), "sargento", 90, 'animacion = "truco"\n')
     c += modelo("Soldado", "Salon", (5.22, 0, 1.05), "soldado", -90, 'animacion = "truco"\n')
     c += modelo("BotellasMesa2", "Salon", (4.6, TABLERO, 1.7), "botellas", 60, "sombras = false\n", suelo=False)
-    c += agarrable("Sombrero", "Salon", (4.5, TABLERO, 2.0), "sombrero", "sombrero", 40, 0.25)
+    c += agarrable("Sombrero", "Salon", (4.3, TABLERO, 1.95), "sombrero", "sombrero", 40, 0.25)
     c += agarrable("MateMostrador", "Salon", (-0.4, MOSTRADOR, -2.4), "mate", "mate", 15)
     c += modelo("FarolMesa2", "Salon", (4.7, TABLERO, 0.75), "farol", extra="sombras = false\n", suelo=False)
     c += luz("Salon/FarolMesa2", (0, 0.22, 0), 0.9, 4.5)
@@ -284,15 +284,15 @@ def contenido(p):
     c += modelo("BarrilPuerta1", "Salon", (-1.35, 0, 4.05), "barril", 15)
     c += modelo("BarrilPuerta2", "Salon", (1.45, 0, 4.1), "barril", -30)
     c += modelo("PilaLena", "Salon", (-2.75, 0, 4.12), "pila_lena", 0)
-    c += modelo("Mesa3", "Salon", (-3.0, 0, 2.6), "mesa_truco")
-    c += modelo("BotellasMesa3", "Salon", (-3.0, TABLERO, 2.3), "botellas", 45, "sombras = false\n", suelo=False)
-    c += modelo("SombreroMesa3", "Salon", (-3.1, TABLERO, 2.9), "sombrero", -20, "sombras = false\n", suelo=False)
+    c += modelo("Mesa3", "Salon", (-3.0, 0, 2.25), "mesa_truco")
+    c += modelo("BotellasMesa3", "Salon", (-3.0, TABLERO, 1.95), "botellas", 45, "sombras = false\n", suelo=False)
+    c += modelo("SombreroMesa3", "Salon", (-3.1, TABLERO, 2.55), "sombrero", -20, "sombras = false\n", suelo=False)
     c += modelo("Bolsas3", "Salon", (5.6, 0, 3.9), "bolsas", 160)
-    c += modelo("Cajones3", "Salon", (2.6, 0, 4.0), "cajones", 10)
+    c += modelo("Cajones3", "Salon", (2.45, 0, 4.0), "cajones", 10)
     c += modelo("Recado2", "Salon", (-5.9, 0, 3.6), "recado", 120)
     c += modelo("GuitarraPared", "Salon", (4.5, 1.25, 4.38), "guitarra", 180, "sombras = false\n", suelo=False)
     # --- De pie: el oyente con mate y un soldado acodado al mostrador.
-    c += modelo("Oyente", "Salon", (-1.5, 0, -1.25), "levado", 70, 'animacion = "mate"\n')
+    c += modelo("Oyente", "Salon", (-1.55, 0, -1.0), "levado", 70, 'animacion = "mate"\n')
     c += accesorio("Mate", "Salon/Oyente", "..", extra='vertical = true\nsolo_durante = "mate"\n')
     c += modelo("Modelo", "Salon/Oyente/Mate", (0, 0, 0), "mate", extra="sombras = false\n", suelo=False)
     c += modelo("Acodado", "Salon", (-0.75, 0, -1.72), "soldado", 165, 'animacion = "escuchar"\n')
@@ -326,9 +326,9 @@ def contenido(p):
     # --- Afuera, a la vista por las ventanas.
     c += '\n[node name="Afuera" type="Node3D" parent="."]\n'
     c += modelo("Palenque", "Afuera", (-5.3, 0, -7.4), "palenque")
-    c += animal("CaballoMoro", "Afuera", (-6.1, 0, -8.3), "caballo_moro", 95, "idle:6-12,pastar:8-15", "cabecear",
+    c += animal("CaballoMoro", "Afuera", (-6.1, 0, -8.75), "caballo_moro", 95, "idle:6-12,pastar:8-15", "cabecear",
                 "resoplido", (0.9, 1.6, 0.1), 0.65)
-    c += animal("CaballoGateado", "Afuera", (-4.5, 0, -8.6), "caballo_gateado", 75, "pastar:8-15,idle:6-12", "cabecear",
+    c += animal("CaballoGateado", "Afuera", (-4.5, 0, -8.78), "caballo_gateado", 75, "pastar:8-15,idle:6-12", "cabecear",
                 "resoplido", (0.9, 1.6, 0.1), 0.65)
     c += modelo("Carreta", "Afuera", (11.0, 0, -1.2), "carreta", 25)
     c += modelo("Ombu", "Afuera", (17.0, 0, -19.0), "ombu", 30)

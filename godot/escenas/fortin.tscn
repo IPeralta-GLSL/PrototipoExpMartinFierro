@@ -110,19 +110,6 @@ scale_min = 0.6
 scale_max = 1.3
 color = Color(1, 0.55, 0.16, 1)
 
-[sub_resource type="StandardMaterial3D" id="mat_brasa"]
-transparency = 1
-blend_mode = 1
-shading_mode = 0
-vertex_color_use_as_albedo = true
-albedo_color = Color(1, 0.7, 0.3, 1)
-billboard_mode = 3
-billboard_keep_scale = true
-
-[sub_resource type="QuadMesh" id="quad_brasa"]
-material = SubResource("mat_brasa")
-size = Vector2(0.022, 0.022)
-
 [sub_resource type="Gradient" id="grad_disco"]
 offsets = PackedFloat32Array(0, 1)
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
@@ -134,6 +121,20 @@ height = 64
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="mat_brasa"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+albedo_color = Color(1, 0.7, 0.3, 1)
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_brasa"]
+material = SubResource("mat_brasa")
+size = Vector2(0.03, 0.03)
 
 [sub_resource type="StandardMaterial3D" id="mat_humo"]
 transparency = 1
@@ -410,11 +411,11 @@ radio_caricia = 0.65
 modelo = "caballo_moro"
 
 [node name="Barril" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(2.9, 0, -4.6)
+position = Vector3(2.78, 0, -4.88)
 modelo = "barril"
 
 [node name="Cuero" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-6.3, 0, -1.0)
+position = Vector3(-6.3, 0, -2.6)
 rotation_degrees = Vector3(0, 80, 0)
 modelo = "cuero"
 
@@ -597,9 +598,9 @@ modelo = "fusil"
 sombras = false
 
 [node name="Ronda" type="Caminante" parent="Fuerte" node_paths=PackedStringArray("modelo", "terreno") groups=["apoyar_en_suelo"]]
-position = Vector3(-1.6, 0, -3.2)
+position = Vector3(-1.2, 0, -3.0)
 modelo = NodePath("Sargento")
-puntos = PackedVector3Array(-1.6, 0, -3.2, 1.9, 0, -3.4)
+puntos = PackedVector3Array(-1.2, 0, -3.0, 1.9, 0, -3.4)
 pausa = 3.5
 terreno = NodePath("../../Terreno")
 
@@ -608,7 +609,7 @@ modelo = "sargento"
 animacion = "idle"
 
 [node name="Levado" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-2.8, 0, -1.2)
+position = Vector3(-2.55, 0, -1.2)
 rotation_degrees = Vector3(0, 60, 0)
 modelo = "levado"
 animacion = "cavar"
@@ -657,8 +658,8 @@ transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
 modelo = "tronco"
 
 [node name="Lena2" type="Agarrable" parent="Fuerte"]
-position = Vector3(0.9, 0.0, 1.65)
-rotation_degrees = Vector3(0, -25, 0)
+position = Vector3(0.81, 0.0, 1.69)
+rotation_degrees = Vector3(0, 36, 0)
 tipo = "lena"
 radio_agarre = 0.26
 
@@ -702,7 +703,7 @@ rotation_degrees = Vector3(0, 10, 0)
 modelo = "pozo"
 
 [node name="PilaLena" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(1.9, 0, 6.3)
+position = Vector3(1.8, 0, 6.05)
 rotation_degrees = Vector3(0, -60, 0)
 modelo = "pila_lena"
 
@@ -717,12 +718,12 @@ rotation_degrees = Vector3(0, -40, 0)
 modelo = "bolsas"
 
 [node name="Barril2" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(4.7, 0, 4.6)
+position = Vector3(4.9, 0, 4.4)
 rotation_degrees = Vector3(0, 20, 0)
 modelo = "barril"
 
 [node name="Cajones" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(5.4, 0, 3.4)
+position = Vector3(5.5, 0, 3.55)
 rotation_degrees = Vector3(0, -70, 0)
 modelo = "cajones"
 
@@ -733,7 +734,7 @@ modelo = "damajuana"
 sombras = false
 
 [node name="Palenque" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-4.3, 0, 4.4)
+position = Vector3(-3.86, 0, 4.55)
 rotation_degrees = Vector3(0, 30, 0)
 modelo = "palenque"
 
@@ -751,18 +752,18 @@ radio_caricia = 0.65
 modelo = "caballo_gateado"
 
 [node name="Banco" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-3.5, 0, 1.3)
+position = Vector3(-2.65, 0, 1.3)
 rotation_degrees = Vector3(0, 96, 0)
 modelo = "banco"
 
 [node name="SoldadoSentado" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-3.5, 0, 1.15)
+position = Vector3(-2.65, 0, 1.15)
 rotation_degrees = Vector3(0, 90, 0)
 modelo = "soldado"
 animacion = "sentado"
 
 [node name="Carreta" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
-position = Vector3(-1.0, 0, -6.4)
+position = Vector3(-0.3, 0, -9.8)
 rotation_degrees = Vector3(0, 85, 0)
 modelo = "carreta"
 
