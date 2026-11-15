@@ -544,13 +544,13 @@ pose = &"grip"
 mesh = SubResource("m_guante")
 
 [node name="Centinela" type="ModeloIA" parent="Fuerte/Mangrullo"]
-position = Vector3(-0.01, 5.95, 0.95)
+position = Vector3(0, 5.88, 0.45)
 rotation_degrees = Vector3(0, -91, 0)
 modelo = "soldado"
 animacion = "mirar"
 
 [node name="Fusil" type="Accesorio" parent="Fuerte/Mangrullo/Centinela" node_paths=PackedStringArray("portador")]
-position = Vector3(0, -0.29, 0.05)
+position = Vector3(0, -0.29, 0)
 rotation_degrees = Vector3(0, 0, 90)
 vertical = true
 portador = NodePath("..")
@@ -578,6 +578,7 @@ animacion = "cavar"
 
 [node name="Pala" type="Accesorio" parent="Fuerte/Levado" node_paths=PackedStringArray("portador")]
 position = Vector3(-0.18, 0, 0)
+rotation_degrees = Vector3(0, 0, 180)
 hacia_hueso = "mano.L"
 portador = NodePath("..")
 
@@ -592,7 +593,7 @@ modelo = "soldado"
 animacion = "mate"
 
 [node name="Mate" type="Accesorio" parent="Fuerte/SoldadoMate" node_paths=PackedStringArray("portador")]
-position = Vector3(0, -0.07, 0.03)
+position = Vector3(0, -0.07, 0)
 vertical = true
 portador = NodePath("..")
 solo_durante = "mate"

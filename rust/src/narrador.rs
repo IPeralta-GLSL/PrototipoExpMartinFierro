@@ -21,7 +21,7 @@ use godot::prelude::*;
 
 use crate::ciclo::CicloDia;
 use crate::modelos::ModeloIA;
-use crate::personajes::{altura_global, girar_hacia};
+use crate::personajes::{altura_global, girar_hacia, Mandibula};
 use crate::portal::PortalFogon;
 use crate::terreno::TerrenoPampa;
 
@@ -79,6 +79,10 @@ pub struct Narrador {
     mirada: String,
     destino: Option<Vector3>,
     subtitulo: Option<Gd<Label3D>>,
+    /// Mandíbula del gaucho (se abre con el volumen de la voz).
+    boca: Option<Gd<Mandibula>>,
+    envolvente: Vec<f32>,
+    apertura: f32,
     voz: Option<Gd<AudioStreamPlayer3D>>,
     base: Base<Node3D>,
 }
@@ -109,6 +113,9 @@ impl INode3D for Narrador {
             mirada: String::new(),
             destino: None,
             subtitulo: None,
+            boca: None,
+            envolvente: Vec::new(),
+            apertura: 0.0,
             voz: None,
             base,
         }
@@ -154,6 +161,17 @@ impl INode3D for Narrador {
         voz.set_position(Vector3::new(0.0, 1.6, 0.0));
         self.base_mut().add_child(&voz);
         self.voz = Some(voz);
+
+        // Boca: si el modelo animado tiene mandíbula, se mueve con la voz.
+        let esqueleto = self.modelo.as_ref().and_then(|m| m.bind().esqueleto());
+        if let Some(mut sk) = esqueleto {
+            if sk.find_bone("mandibula") >= 0 {
+                let mut boca = Mandibula::new_alloc();
+                boca.set_name("Boca");
+                sk.add_child(&boca);
+                self.boca = Some(boca);
+            }
+        }
 
         self.indice = 0;
         self.esperando = self.demora_inicial;
@@ -201,6 +219,7 @@ impl INode3D for Narrador {
         }
 
         self.t_linea += dt;
+        self.mover_boca(dt);
         let total = self.dur_linea + 0.9;
         let alfa = (self.t_linea / 0.5).min((total - self.t_linea) / 0.6).clamp(0.0, 1.0);
         if let Some(s) = self.subtitulo.as_mut() {
@@ -218,6 +237,7 @@ impl INode3D for Narrador {
                 }
             }
             self.hablando = false;
+            self.fijar_boca(0.0);
             self.animar("idle|breath|stand");
             self.indice += 1;
             match self.lineas.get(self.indice) {
@@ -266,6 +286,7 @@ impl Narrador {
             }
         }
         self.dur_linea = duracion;
+        self.envolvente = cargar_envolvente(&audio);
         godot_print!(
             "Narrador: línea {} de {} ({:.1} s) acción: {}{}",
             self.indice + 1,
@@ -361,11 +382,51 @@ impl Narrador {
         }
     }
 
+    /// Abre la boca según el volumen de la voz en este instante (envolvente
+    /// precalculada en res://voz/<línea>.boca.json, 30 valores por segundo).
+    fn mover_boca(&mut self, dt: f32) {
+        let t = self.t_linea;
+        let objetivo = if t >= self.dur_linea {
+            0.0
+        } else if self.envolvente.is_empty() {
+            // Sin envolvente: un movimiento genérico mientras dura la línea.
+            (0.35 + 0.3 * (t * 17.0).sin() * (t * 5.3).sin()).clamp(0.0, 1.0)
+        } else {
+            self.envolvente.get((t * 30.0) as usize).copied().unwrap_or(0.0)
+        };
+        let k = (dt * 22.0).min(1.0);
+        let a = self.apertura + (objetivo - self.apertura) * k;
+        self.fijar_boca(a);
+    }
+
+    fn fijar_boca(&mut self, a: f32) {
+        self.apertura = a;
+        if let Some(b) = self.boca.as_mut() {
+            b.bind_mut().apertura = a;
+        }
+    }
+
     fn animar(&mut self, candidatos: &str) {
         if let Some(m) = self.modelo.as_mut() {
             m.bind_mut().reproducir(GString::from(candidatos));
         }
     }
+}
+
+/// Envolvente de volumen de una línea (0..1, 30 por segundo), si existe.
+fn cargar_envolvente(audio: &str) -> Vec<f32> {
+    let Some(base) = audio.strip_suffix(".ogg") else {
+        return Vec::new();
+    };
+    let ruta = format!("{base}.boca.json");
+    if !FileAccess::file_exists(&ruta) {
+        return Vec::new();
+    }
+    let datos = Json::parse_string(&FileAccess::get_file_as_string(&ruta));
+    datos
+        .try_to::<VarArray>()
+        .map(|a| a.iter_shared().filter_map(|v| v.try_to::<f64>().ok()).map(|v| v as f32).collect())
+        .unwrap_or_default()
 }
 
 fn cargar_guion(ruta: &str) -> Vec<Linea> {

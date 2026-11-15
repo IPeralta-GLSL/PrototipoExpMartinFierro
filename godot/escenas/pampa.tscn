@@ -626,7 +626,7 @@ mirar_inicial = "Asador"
 modelo = "gaucho"
 
 [node name="MateEnMano" type="Accesorio" parent="Campamento/Narrador" node_paths=PackedStringArray("portador")]
-position = Vector3(0, -0.07, 0.03)
+position = Vector3(0, -0.07, 0)
 vertical = true
 portador = NodePath("../Gaucho")
 solo_durante = "mate"

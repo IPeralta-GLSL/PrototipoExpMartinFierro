@@ -154,19 +154,26 @@ Los modelos de la IA son estáticos. Las **personas** se generan en pose A (`*_r
 `assets.json`) y `tools/rig/riggear.py` las riggea solas con **Blender 4.5 LTS** (portable, en
 `%LOCALAPPDATA%\Programs\Blender`, sin instalar nada):
 
-1. estima las articulaciones a partir de la malla (hombros, codos, muñecas, cadera, rodillas…);
-2. arma el esqueleto y lo pesa con los pesos automáticos de Blender;
+1. estima las articulaciones a partir de la malla (hombros, codos, muñecas, cadera, rodillas…)
+   y la orientación de las palmas;
+2. arma el esqueleto (con dedos y mandíbula) y lo pesa con los pesos automáticos de Blender;
 3. crea por código (cinemática directa + IK de brazos) las animaciones `idle`, `hablar`,
-   `saludar`, `mostrar`, `senalar`, `mate`, `caminar`, `asar`, `mirar` y `cavar`;
+   `saludar`, `mostrar`, `senalar`, `mate`, `caminar`, `asar`, `mirar` y `cavar`: en cada pose
+   se orienta la palma (hacia el muslo en reposo, arriba al explicar) y se cierran los dedos
+   sobre lo que sostiene;
 4. exporta `godot/modelos/animados/<nombre>.glb`, que reemplaza al estático solo.
+
+**La boca del narrador se mueve con su voz**: `tools/voz/envolventes.py` calcula el volumen de
+cada línea (`godot/voz/<línea>.boca.json`, 30 valores por segundo; `generar_voz.py` lo hace solo)
+y el `Narrador` abre la mandíbula con el modificador `Mandibula` (después de la animación).
 
 ```powershell
 $B = "$env:LOCALAPPDATA\Programs\Blender\blender-4.5.16-windows-x64\blender.exe"
 & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\soldado_rig.glb godot\modelos\animados\soldado.glb --previas build\previas_soldado
 ```
 
-En Godot: `Accesorio` cuelga un objeto de un hueso (el mate y el fusil derechos en la palma; la
-pala de una mano a la otra) y `Caminante` lleva a un personaje por puntos (la ronda del
+En Godot: `Accesorio` cuelga un objeto de un hueso, en el punto de agarre dentro de la mano
+cerrada (el mate y el fusil derechos; la pala de una mano a la otra, con la hoja hacia el suelo) y `Caminante` lleva a un personaje por puntos (la ronda del
 sargento). Los **animales** todavía se animan a mano con [Mesh2Motion](https://mesh2motion.org):
 la tabla está en `godot/modelos/animados/LEEME.txt`.
 

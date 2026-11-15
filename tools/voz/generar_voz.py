@@ -56,6 +56,8 @@ IDIOMA = "spanish"
 PARAMS = dict(max_new_tokens=2048, top_p=0.8, top_k=20, temperature=0.9, repetition_penalty=1.05)
 
 sys.path.insert(0, NODO_QWEN)
+sys.path.insert(0, AQUI)
+import envolventes  # noqa: E402
 
 
 def log(*a):
@@ -222,6 +224,7 @@ def main():
         wav_path = os.path.join(DIR_TRABAJO, nombre + ".wav")
         sf.write(wav_path, wav, sr)
         a_ogg(wav_path, os.path.join(DIR_VOZ, nombre + ".ogg"))
+        envolventes.escribir(os.path.join(DIR_VOZ, nombre + ".ogg"))  # para mover la boca
         resumen.append((nombre, round(len(wav) / sr, 1), round(p, 2)))
     log("listo:")
     for r in resumen:

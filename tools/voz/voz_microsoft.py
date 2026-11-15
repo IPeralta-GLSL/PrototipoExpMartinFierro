@@ -91,6 +91,7 @@ def main():
         a_wav(mp3, wav)
         os.remove(mp3)
         gv.a_ogg(wav, os.path.join(gv.DIR_VOZ, nombre + ".ogg"))
+        gv.envolventes.escribir(os.path.join(gv.DIR_VOZ, nombre + ".ogg"))
         log(f"{nombre} ({a.estilo}) -> godot/voz/{nombre}.ogg")
 
 

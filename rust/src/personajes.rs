@@ -10,7 +10,7 @@
 
 use std::f32::consts::{PI, TAU};
 
-use godot::classes::{Engine, Skeleton3D};
+use godot::classes::{Engine, ISkeletonModifier3D, Skeleton3D, SkeletonModifier3D};
 use godot::prelude::*;
 
 use crate::modelos::ModeloIA;
@@ -80,9 +80,10 @@ pub struct Accesorio {
     /// hacia `hueso` (una pala tomada con las dos manos).
     #[export]
     hacia_hueso: GString,
-    /// Distancia de la muñeca a la palma, a lo largo del hueso (m).
+    /// Punto de agarre en el espacio del hueso (Y = a lo largo de la mano,
+    /// Z = hacia la palma): ahí queda el objeto, dentro de los dedos cerrados.
     #[export]
-    palma: f32,
+    agarre: Vector3,
 
     esqueleto: Option<Gd<Skeleton3D>>,
     indice: i32,
@@ -100,7 +101,7 @@ impl INode3D for Accesorio {
             solo_durante: GString::new(),
             vertical: false,
             hacia_hueso: GString::new(),
-            palma: 0.07,
+            agarre: Vector3::new(0.0, 0.05, 0.035),
             esqueleto: None,
             indice: -1,
             indice2: -1,
@@ -151,11 +152,11 @@ impl INode3D for Accesorio {
         }
         let gsk = sk.get_global_transform();
         let tb = gsk * sk.get_bone_global_pose(self.indice);
-        let palma = tb * Vector3::new(0.0, self.palma, 0.0);
+        let palma = tb * self.agarre;
         let pose = if self.indice2 >= 0 {
             // De una mano a la otra (la pala): +X del objeto sobre esa línea.
             let t2 = gsk * sk.get_bone_global_pose(self.indice2);
-            let otra = t2 * Vector3::new(0.0, self.palma, 0.0);
+            let otra = t2 * self.agarre;
             let x = (palma - otra).normalized();
             let mut z = x.cross(Vector3::UP);
             if z.length() < 1e-3 {
@@ -172,6 +173,47 @@ impl INode3D for Accesorio {
             tb * self.ajuste
         };
         self.base_mut().set_global_transform(pose);
+    }
+}
+
+// ---------------------------------------------------------------------------
+
+/// Abre la mandíbula (hueso "mandibula" de tools/rig) después de la animación.
+/// El narrador le pasa la `apertura` (0..1) según el volumen de la voz.
+#[derive(GodotClass)]
+#[class(base = SkeletonModifier3D)]
+pub struct Mandibula {
+    /// 0 = cerrada, 1 = abierta del todo.
+    #[var]
+    pub apertura: f32,
+    /// Giro máximo en grados sobre el X local del hueso (negativo = abre).
+    #[export]
+    grados: f32,
+    #[export]
+    hueso: GString,
+    indice: i32,
+    base: Base<SkeletonModifier3D>,
+}
+
+#[godot_api]
+impl ISkeletonModifier3D for Mandibula {
+    fn init(base: Base<SkeletonModifier3D>) -> Self {
+        Self { apertura: 0.0, grados: -12.0, hueso: GString::from("mandibula"), indice: -1, base }
+    }
+
+    fn process_modification_with_delta(&mut self, _delta: f64) {
+        let Some(mut sk) = self.base().get_skeleton() else {
+            return;
+        };
+        if self.indice < 0 {
+            self.indice = sk.find_bone(&self.hueso.to_string());
+            if self.indice < 0 {
+                return;
+            }
+        }
+        let reposo = sk.get_bone_rest(self.indice).basis.get_quaternion();
+        let giro = Quaternion::from_axis_angle(Vector3::RIGHT, (self.grados * self.apertura).to_radians());
+        sk.set_bone_pose_rotation(self.indice, reposo * giro);
     }
 }
 
