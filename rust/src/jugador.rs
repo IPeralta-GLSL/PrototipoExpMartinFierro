@@ -1,6 +1,6 @@
-//! Jugador: origen XR con locomociÃ³n (stick izquierdo = caminar, stick derecho
-//! = giro por pasos), seguimiento del relieve y lÃ­mite del campamento.
-//! Sin casco cae a modo escritorio (WASD + botÃ³n derecho del mouse para mirar)
+//! Jugador: origen XR con locomoción (stick izquierdo = caminar, stick derecho
+//! = giro por pasos), seguimiento del relieve y límite del campamento.
+//! Sin casco cae a modo escritorio (WASD + botón derecho del mouse para mirar)
 //! y puede sacar capturas: `-- --captura=ruta.png --vista=x,alto,z,yaw,pitch`.
 
 use godot::classes::{
@@ -11,7 +11,7 @@ use godot::classes::{
     xr_server::RotationMode,
     DisplayServer, Engine, IXrOrigin3D, ProjectSettings, Input, InputEvent, InputEventMouseMotion, Label3D,
     MeshInstance3D, OpenXrInterface, RenderingServer, SphereMesh, StandardMaterial3D, XrCamera3D,
-    XrController3D, XrInterface, XrOrigin3D, XrServer,
+    XrController3D, XrInterface, XrOrigin3D, XrPositionalTracker, XrServer,
 };
 use godot::global::{Key, MouseButton};
 use godot::prelude::*;
@@ -24,7 +24,7 @@ use crate::terreno::TerrenoPampa;
 pub struct JugadorXR {
     #[export]
     terreno: Option<Gd<TerrenoPampa>>,
-    /// Cartel de tÃ­tulo que se desvanece despuÃ©s de unos segundos.
+    /// Cartel de título que se desvanece después de unos segundos.
     #[export]
     titulo: Option<Gd<Label3D>>,
     /// Velocidad al caminar (m/s).
@@ -32,7 +32,7 @@ pub struct JugadorXR {
     velocidad: f32,
     #[export]
     giro_grados: f32,
-    /// Distancia mÃ¡xima al fogÃ³n (m).
+    /// Distancia máxima al fogón (m).
     #[export]
     radio_limite: f32,
     /// Frecuencia de refresco deseada en el Quest 3 (72, 80, 90 o 120).
@@ -57,10 +57,13 @@ pub struct JugadorXR {
     aviso_stick: bool,
     modo_sentado: bool,
     boton_sentado_previo: bool,
-    /// Reinicio: doble toque del botÃ³n A (o de la tecla R).
+    /// Reinicio: doble toque del botón A (o de la tecla R).
     boton_a_previo: bool,
     t_ultimo_a: f32,
     reinicio: Option<f32>,
+    /// Diagnóstico de los controles (se escribe en el log al cambiar).
+    diag_t: f32,
+    diag_previo: String,
     yaw: f32,
     pitch: f32,
     tiempo: f32,
@@ -99,6 +102,8 @@ impl IXrOrigin3D for JugadorXR {
             boton_a_previo: false,
             t_ultimo_a: -10.0,
             reinicio: None,
+            diag_t: 0.0,
+            diag_previo: String::new(),
             yaw: 0.0,
             pitch: 0.0,
             tiempo: 0.0,
@@ -130,7 +135,7 @@ impl IXrOrigin3D for JugadorXR {
         if !self.modo_xr {
             self.iniciar_escritorio();
         }
-        // Las manos del jugador (malla de hand tracking), los brazos y la interacciÃ³n.
+        // Las manos del jugador (malla de hand tracking), los brazos y la interacción.
         // En la PC solo para probar los brazos (-- --brazos).
         if self.modo_xr || argumento_usuario("brazos").is_some() {
             let mut manos = crate::interaccion::ManosXR::new_alloc();
@@ -138,7 +143,7 @@ impl IXrOrigin3D for JugadorXR {
             self.base_mut().add_child(&manos);
         }
         godot_print!(
-            "MartÃ­n Fierro VR: modo {}",
+            "Martín Fierro VR: modo {}",
             if self.modo_xr { "XR (casco)" } else { "escritorio" }
         );
     }
@@ -157,7 +162,7 @@ impl IXrOrigin3D for JugadorXR {
         if self.modo_xr {
             self.ajustar_frecuencia();
             if !self.centrado && self.tiempo > 1.0 {
-                // Mirar hacia el fogÃ³n al empezar, sin importar hacia dÃ³nde
+                // Mirar hacia el fogón al empezar, sin importar hacia dónde
                 // estaba orientado el casco al abrir la app.
                 XrServer::singleton().center_on_hmd(RotationMode::RESET_BUT_KEEP_TILT, true);
                 self.centrado = true;
@@ -185,20 +190,20 @@ impl IXrOrigin3D for JugadorXR {
 
 #[godot_api]
 impl JugadorXR {
-    /// true si el jugador estÃ¡ usando el casco.
+    /// true si el jugador está usando el casco.
     #[func]
     pub fn en_modo_xr(&self) -> bool {
         self.modo_xr
     }
 
-    /// TiÃ±e la vista (fundidos y transiciones). Alfa 0 = transparente.
+    /// Tiñe la vista (fundidos y transiciones). Alfa 0 = transparente.
     #[func]
     pub fn fijar_velo(&mut self, color: Color) {
         self.velo_externo = true;
         self.aplicar_velo(color);
     }
 
-    /// SeÃ±al `pose_recentered` de OpenXR (botÃ³n Meta mantenido).
+    /// Señal `pose_recentered` de OpenXR (botón Meta mantenido).
     #[func]
     fn al_recentrar(&mut self) {
         XrServer::singleton().center_on_hmd(RotationMode::RESET_BUT_KEEP_TILT, true);
@@ -206,7 +211,7 @@ impl JugadorXR {
 }
 
 impl JugadorXR {
-    /// Esfera pegada a la cÃ¡mara, vista desde adentro, sin prueba de
+    /// Esfera pegada a la cámara, vista desde adentro, sin prueba de
     /// profundidad: tapa toda la vista en el casco y en la PC.
     fn crear_velo(&mut self) {
         let Some(mut cabeza) = self.cabeza.clone() else {
@@ -252,23 +257,23 @@ impl JugadorXR {
     fn iniciar_xr(&mut self) -> bool {
         let xr = XrServer::singleton();
         let Some(mut iface) = xr.find_interface("OpenXR") else {
-            godot_print!("OpenXR no estÃ¡ disponible: modo escritorio.");
+            godot_print!("OpenXR no está disponible: modo escritorio.");
             return false;
         };
         if !iface.is_initialized() && !iface.initialize() {
-            godot_print!("OpenXR no se pudo iniciar (Â¿casco desconectado?): modo escritorio.");
+            godot_print!("OpenXR no se pudo iniciar (¿casco desconectado?): modo escritorio.");
             return false;
         }
         if let Some(mut vp) = self.base().get_viewport() {
             vp.set_use_xr(true);
-            // Con Vulkan (renderer Mobile), la foveaciÃ³n usa VRS en modo XR.
+            // Con Vulkan (renderer Mobile), la foveación usa VRS en modo XR.
             if RenderingServer::singleton().get_rendering_device().is_some() {
                 vp.set_vrs_mode(VrsMode::XR);
             }
         }
         // En XR el ritmo lo marca el casco, no el monitor.
         DisplayServer::singleton().window_set_vsync_mode(VSyncMode::DISABLED);
-        // Mantener apretado el botÃ³n Meta recentra la vista: la escena acompaÃ±a.
+        // Mantener apretado el botón Meta recentra la vista: la escena acompaña.
         let yo = self.to_gd();
         iface.connect(
             "pose_recentered",
@@ -278,7 +283,7 @@ impl JugadorXR {
         true
     }
 
-    /// Las frecuencias disponibles aparecen cuando la sesiÃ³n OpenXR ya corre,
+    /// Las frecuencias disponibles aparecen cuando la sesión OpenXR ya corre,
     /// por eso se reintenta en cada cuadro hasta lograrlo.
     fn ajustar_frecuencia(&mut self) {
         if self.tasa_lista {
@@ -316,7 +321,7 @@ impl JugadorXR {
         self.tasa_lista = true;
     }
 
-    /// Doble toque del botÃ³n A (control derecho) o de la tecla R: fundido a negro
+    /// Doble toque del botón A (control derecho) o de la tecla R: fundido a negro
     /// y la experiencia vuelve a empezar desde la primera escena.
     fn revisar_reinicio(&mut self, dt: f32) -> bool {
         let mut boton = Input::singleton().is_key_pressed(Key::R);
@@ -347,6 +352,39 @@ impl JugadorXR {
         true
     }
 
+    /// Escribe en el log (logcat) el estado de los controles cuando cambia: si
+    /// tienen seguimiento, qué perfil de interacción usa el runtime y los sticks.
+    fn diagnosticar_controles(&mut self, dt: f32, izq: &Gd<XrController3D>, der: &Gd<XrController3D>) {
+        self.diag_t += dt;
+        if self.diag_t < 0.5 {
+            return;
+        }
+        self.diag_t = 0.0;
+        let xr = XrServer::singleton();
+        let perfil = |nombre: &str| {
+            xr.get_tracker(nombre)
+                .and_then(|t| t.try_cast::<XrPositionalTracker>().ok())
+                .map(|t| t.get_tracker_profile().to_string())
+                .unwrap_or_else(|| "-".to_string())
+        };
+        let (si, sd) = (izq.get_vector2("primary"), der.get_vector2("primary"));
+        let estado = format!(
+            "izq: seguimiento={} perfil={} stick=({:.1},{:.1}) | der: seguimiento={} perfil={} stick=({:.1},{:.1})",
+            izq.get_has_tracking_data(),
+            perfil("left_hand"),
+            si.x,
+            si.y,
+            der.get_has_tracking_data(),
+            perfil("right_hand"),
+            sd.x,
+            sd.y
+        );
+        if estado != self.diag_previo {
+            godot_print!("Controles: {estado}");
+            self.diag_previo = estado;
+        }
+    }
+
     fn locomocion_xr(&mut self, dt: f32) {
         let (Some(cabeza), Some(izq), Some(der)) =
             (self.cabeza.clone(), self.mano_izq.clone(), self.mano_der.clone())
@@ -354,11 +392,17 @@ impl JugadorXR {
             return;
         };
 
-        // Caminar con el stick izquierdo (o WASD / flechas), en la direcciÃ³n de la mirada.
+        // Caminar con el stick izquierdo (o WASD / flechas), en la dirección de la mirada.
         let mut stick = izq.get_vector2("primary");
         if stick.length() < 0.18 {
             stick = Vector2::ZERO;
         }
+        // Respaldo: el stick derecho hacia adelante/atrás también camina (el lateral gira).
+        let stick_der = der.get_vector2("primary");
+        if stick == Vector2::ZERO && stick_der.y.abs() > 0.45 && stick_der.y.abs() > stick_der.x.abs() {
+            stick = Vector2::new(0.0, stick_der.y);
+        }
+        self.diagnosticar_controles(dt, &izq, &der);
         let tecla = Input::singleton();
         let mut teclado = Vector2::ZERO;
         if tecla.is_key_pressed(Key::W) || tecla.is_key_pressed(Key::UP) {
@@ -378,9 +422,9 @@ impl JugadorXR {
         }
         if stick != Vector2::ZERO && !self.aviso_stick {
             self.aviso_stick = true;
-            godot_print!("LocomociÃ³n: caminando ({:.2}, {:.2})", stick.x, stick.y);
+            godot_print!("Locomoción: caminando ({:.2}, {:.2})", stick.x, stick.y);
         }
-        // Modo sentado: el botÃ³n X (o la tecla Z) sube la vista 45 cm.
+        // Modo sentado: el botón X (o la tecla Z) sube la vista 45 cm.
         let boton = izq.is_button_pressed("ax_button") || tecla.is_key_pressed(Key::Z);
         if boton && !self.boton_sentado_previo {
             self.modo_sentado = !self.modo_sentado;
@@ -390,7 +434,7 @@ impl JugadorXR {
                 let p = self.base().get_global_position();
                 self.base_mut().set_global_position(p + Vector3::new(0.0, dy, 0.0));
             }
-            godot_print!("Modo sentado: {}", if self.modo_sentado { "sÃ­ (+45 cm)" } else { "no" });
+            godot_print!("Modo sentado: {}", if self.modo_sentado { "sí (+45 cm)" } else { "no" });
         }
         self.boton_sentado_previo = boton;
         if stick != Vector2::ZERO {
@@ -448,7 +492,7 @@ impl JugadorXR {
         if let Some(mut vp) = self.base().get_viewport() {
             vp.set_vrs_mode(VrsMode::DISABLED);
         }
-        // Sin casco no hay controles: los guantes quedarÃ­an flotando.
+        // Sin casco no hay controles: los guantes quedarían flotando.
         for mano in [self.mano_izq.as_mut(), self.mano_der.as_mut()].into_iter().flatten() {
             mano.hide();
         }
@@ -468,7 +512,7 @@ impl JugadorXR {
                 self.pitch = n[4].to_radians();
             }
         } else {
-            // conservar la orientaciÃ³n con que se ubicÃ³ al jugador en la escena
+            // conservar la orientación con que se ubicó al jugador en la escena
             let fwd = -self.base().get_global_transform().basis.col_c();
             self.yaw = (-fwd.x).atan2(-fwd.z);
         }
@@ -537,8 +581,8 @@ impl JugadorXR {
         }
         let alfa = if t < d { 1.0 } else { (1.0 - (t - d) / 2.5).max(0.0) };
         if (titulo.get_modulate().a - alfa).abs() > 1e-3 {
-            // El modulate de Label3D no se hereda: se aplica tambiÃ©n a los
-            // Label3D hijos (subtÃ­tulo).
+            // El modulate de Label3D no se hereda: se aplica también a los
+            // Label3D hijos (subtítulo).
             let mut etiquetas = vec![titulo.clone()];
             for hijo in titulo.get_children().iter_shared() {
                 if let Ok(l) = hijo.try_cast::<Label3D>() {

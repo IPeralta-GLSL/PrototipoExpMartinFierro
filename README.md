@@ -17,9 +17,9 @@ texturizada.
 
 ## En el casco
 
-- **Tus manos y brazos**: se ven las manos reales (hand tracking de Meta, dedo por dedo), con los
-  controles en la mano o sin ellos, y los brazos con la manga de camisa de paisano (el codo se
-  calcula solo a partir de la muñeca y de la cabeza).
+- **Tus manos**: se ven las manos reales (hand tracking de Meta, dedo por dedo), con los controles
+  en la mano o sin ellos. (Los brazos con manga de paisano quedaron como prueba, `-- --brazos` en
+  la PC: no coinciden del todo con la malla de la mano de Meta.)
 - **Lo interactivo tiene un contorno amarillo que respira** (se enciende y se apaga despacio),
   siempre visible; se marca más cuando tu mano lo alcanza.
 - **Agarrar**: cerrá la mano (o apretá el grip) cerca de un objeto; al abrirla lo soltás o lo
@@ -30,6 +30,7 @@ texturizada.
 - **Acariciar**: pasá la mano por la cabeza de los caballos (cabecean y resoplan) o del perro
   (se pone contento y gime). Hay un perro que pasea por el campamento.
 - **Stick izquierdo** (o **WASD / flechas** en el teclado de la PC): caminar hacia donde mirás.
+  El stick derecho hacia adelante/atrás también camina.
 - **Stick derecho**: girar de a 30°.
 - **Botón X** (o tecla **Z**): modo sentado, sube la vista 45 cm para jugar desde una silla.
 - **Doble toque del botón A** (o **R R**): fundido a negro y la experiencia vuelve a empezar.
@@ -227,9 +228,10 @@ las caricias; `Agarrable` (cuerpo rígido) y `ManosXR` (manos del jugador) resue
 en `rust/src/interaccion.rs`; los sonidos (resoplido, gemido, sorbo, chispas) se sintetizan en
 `sintesis.rs`.
 
-**Cel shading suave**: los modelos de la IA usan luz en bandas (difuso "toon" de Godot,
-suavizado por la rugosidad), que disimula las superficies abolladas de las mallas generadas y da
-un aire de ilustración. Se apaga para comparar con `-- --sin-cel`.
+**Cel shading**: los modelos de la IA usan luz en dos bandas (difuso "toon" de Godot, sin brillos
+ni reflejos), y las personas y los animales llevan además una línea de tinta (casco invertido,
+`shaders/tinta.gdshader`, más fina de lejos). Disimula las superficies abolladas de las mallas
+generadas y da un aire de ilustración. Se apaga para comparar con `-- --sin-cel`.
 
 **Sin objetos que se atraviesen**: los dispersores (ovejas, cardos, teros…) no siembran copias
 encima de los objetos de la escena, y las posiciones de las tres escenas se revisaron con un

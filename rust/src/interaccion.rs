@@ -4,8 +4,9 @@
 //! - `ManosXR`: muestra las manos reales del Quest (malla de hand tracking de
 //!   Meta, animada dedo por dedo; con los controles en la mano también) y
 //!   resuelve agarrar/soltar/tirar, el sorbo de mate, ponerse el sombrero y
-//!   acariciar animales. Además dibuja los brazos con manga de camisa de
-//!   paisano (hombro estimado desde la cabeza, codo por IK de dos huesos).
+//!   acariciar animales. Experimental (solo con -- --brazos): brazos con manga de
+//!   camisa de paisano (hombro estimado desde la cabeza, codo por IK); no
+//!   coinciden del todo con la malla de la mano de Meta, por eso no van por defecto.
 //! - `Agarrable`: cuerpo rígido que se puede agarrar (mate, sombrero, leña...).
 //!   La leña que cae en un fogón lo aviva. Si se pierde, vuelve a su lugar.
 //! - `Animal`: alterna animaciones (rutina) y reacciona a las caricias.
@@ -17,7 +18,7 @@ use godot::classes::{
     geometry_instance_3d::ShadowCastingSetting, ClassDb, CollisionShape3D, CylinderMesh, Engine,
     GeometryInstance3D, Material, Mesh, MeshInstance3D, Node, Node3D, RigidBody3D, Shader,
     FastNoiseLite, NoiseTexture2D, ShaderMaterial, SphereMesh, StandardMaterial3D,
-    StaticBody3D, VisualInstance3D, WorldBoundaryShape3D, XrCamera3D, XrController3D,
+    Skeleton3D, StaticBody3D, VisualInstance3D, WorldBoundaryShape3D, XrCamera3D, XrController3D,
     XrHandModifier3D, XrHandTracker, XrNode3D, XrServer, IRigidBody3D,
 };
 use godot::classes::xr_hand_tracker::HandJoint;
@@ -582,6 +583,11 @@ struct Mano {
     caricia: f32,
     sorbo_cd: f32,
     manga: Option<Manga>,
+    /// Esqueleto de la malla de la mano de Meta (lo que se ve) y su hueso de la muñeca.
+    esqueleto: Option<Gd<Skeleton3D>>,
+    hueso_muneca: i32,
+    /// Por dónde se ubicó el brazo en el último cuadro (para el log de diagnóstico).
+    fuente: &'static str,
 }
 
 /// Brazo visible: manga de camisa (brazo y antebrazo), codo, hombro y puño.
@@ -660,11 +666,11 @@ fn tramo(m: &mut Gd<MeshInstance3D>, abajo: Vector3, arriba: Vector3) {
 
 /// Codo por IK de dos huesos (si la mano queda más lejos que el largo del brazo,
 /// el brazo se estira en vez de despegarse de la mano).
-fn codo_ik(hombro: Vector3, muneca: Vector3, polo: Vector3) -> Vector3 {
+fn codo_ik(hombro: Vector3, muneca: Vector3, polo: Vector3, antebrazo: f32) -> Vector3 {
     let v = muneca - hombro;
     let d = v.length().max(1e-3);
     let dir = v / d;
-    let (mut l1, mut l2) = (LARGO_BRAZO, LARGO_ANTEBRAZO);
+    let (mut l1, mut l2) = (LARGO_BRAZO, antebrazo);
     if d > l1 + l2 {
         let k = d / (l1 + l2);
         l1 *= k;
@@ -686,15 +692,29 @@ pub struct ManosXR {
     cabeza: Option<Gd<XrCamera3D>>,
     /// Hacia dónde mira el torso (sigue a la cabeza con retraso).
     frente_cuerpo: Vector3,
-    /// Para probar en la PC (-- --brazos): muñecas simuladas delante de la cámara.
+    /// Brazos con manga (experimental, -- --brazos). En la PC, con muñecas simuladas
+    /// delante de la cámara.
     prueba: bool,
+    /// Cuello, frente y derecha del torso en este cuadro (de la cabeza).
+    cuerpo: Option<(Vector3, Vector3, Vector3)>,
+    diag_t: f32,
+    diag_previo: String,
     base: Base<Node3D>,
 }
 
 #[godot_api]
 impl INode3D for ManosXR {
     fn init(base: Base<Node3D>) -> Self {
-        Self { manos: Vec::new(), cabeza: None, frente_cuerpo: Vector3::FORWARD, prueba: false, base }
+        Self {
+            manos: Vec::new(),
+            cabeza: None,
+            frente_cuerpo: Vector3::FORWARD,
+            prueba: false,
+            cuerpo: None,
+            diag_t: 0.0,
+            diag_previo: String::new(),
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -754,7 +774,7 @@ impl INode3D for ManosXR {
             self.manos.push(Mano {
                 tracker,
                 control: origen.try_get_node_as::<XrController3D>(control),
-                malla,
+                malla: malla.clone(),
                 prev_pos: Vector3::ZERO,
                 vel: Vector3::ZERO,
                 vel_ang: Vector3::ZERO,
@@ -763,7 +783,10 @@ impl INode3D for ManosXR {
                 tomado: None,
                 caricia: 0.0,
                 sorbo_cd: 0.0,
-                manga: Some(Manga {
+                esqueleto: malla.as_ref().and_then(|m| m.clone().try_cast::<Skeleton3D>().ok()),
+                hueso_muneca: -1,
+                fuente: "",
+                manga: self.prueba.then(|| Manga {
                     brazo: pieza(&format!("Brazo_{lado}"), cilindro(0.056, 0.047), &camisa),
                     antebrazo: pieza(&format!("Antebrazo_{lado}"), cilindro(0.054, 0.047), &camisa),
                     antebrazo2: pieza(&format!("Antebrazo2_{lado}"), cilindro(0.038, 0.054), &camisa),
@@ -791,11 +814,24 @@ impl INode3D for ManosXR {
         for p in piezas {
             self.base_mut().add_child(&p);
         }
+        // Cuando el esqueleto de cada mano termina de ponerse en pose (después de
+        // XRHandModifier3D), el brazo se ubica en su muñeca: misma posición, sin atraso.
+        let yo = self.to_gd();
+        let metodos = if self.prueba { vec![(0, "mano_izq_actualizada"), (1, "mano_der_actualizada")] } else { Vec::new() };
+        for (i, metodo) in metodos {
+            if let Some(mut sk) = self.manos.get(i).and_then(|m| m.esqueleto.clone()) {
+                sk.connect("skeleton_updated", &Callable::from_object_method(&yo, metodo));
+            }
+        }
     }
 
     fn process(&mut self, delta: f64) {
-        // Los brazos, cada cuadro (siguen a la malla de la mano sin temblar).
+        if !self.prueba {
+            return;
+        }
+        // El torso y los brazos que no siguen a una malla de mano (controles).
         self.actualizar_brazos(delta as f32);
+        self.diagnostico(delta as f32);
     }
 
     fn physics_process(&mut self, delta: f64) {
@@ -913,33 +949,107 @@ impl INode3D for ManosXR {
     }
 }
 
+#[godot_api]
 impl ManosXR {
-    /// Muñeca (global) y dirección de la mano: del hand tracking o del control.
-    fn muneca(&self, i: usize, oxf: Transform3D) -> Option<(Vector3, Vector3)> {
-        let m = &self.manos[i];
-        let xr = XrServer::singleton();
-        let tracker = xr.get_tracker(&m.tracker).and_then(|t| t.try_cast::<XrHandTracker>().ok());
-        if let Some(t) = tracker.filter(|t| t.get_has_tracking_data()) {
-            let w = (oxf * t.get_hand_joint_transform(HandJoint::WRIST)).origin;
-            let p = (oxf * t.get_hand_joint_transform(HandJoint::MIDDLE_FINGER_METACARPAL)).origin;
-            let dir = if (p - w).length() > 1e-3 { (p - w).normalized() } else { Vector3::FORWARD };
-            return Some((w, dir));
-        }
-        let c = m.control.as_ref().filter(|c| c.get_has_tracking_data())?;
-        // El guante (caja de 13 cm a lo largo de Z): la muñeca, en su borde de atrás.
-        let xf = c.get_global_transform();
-        let dir = -xf.basis.col_c().normalized();
-        Some((xf * Vector3::new(0.0, 0.0, 0.075), dir))
+    #[func]
+    fn mano_izq_actualizada(&mut self) {
+        self.brazo_desde_malla(0);
     }
 
-    /// Hombros estimados desde la cabeza; codo por IK; manga desde el hombro
-    /// hasta la muñeca y un puño que tapa el corte de la malla de la mano.
+    #[func]
+    fn mano_der_actualizada(&mut self) {
+        self.brazo_desde_malla(1);
+    }
+}
+
+/// Distancia (m) del guante: su centro está en el agarre del control y la
+/// muñeca queda en su borde de atrás, sobre la línea del antebrazo.
+const GUANTE_A_MUNECA: f32 = 0.075;
+
+impl ManosXR {
+    fn origen_xf(&self) -> Option<Transform3D> {
+        let origen = self.base().get_parent().and_then(|p| p.try_cast::<Node3D>().ok())?;
+        Some(origen.get_global_transform())
+    }
+
+    /// Muñeca y dirección de la mano según los datos del hand tracking (articulaciones).
+    fn muneca_articulaciones(&self, i: usize, oxf: Transform3D) -> Option<(Vector3, Vector3)> {
+        let m = &self.manos[i];
+        let xr = XrServer::singleton();
+        let t = xr.get_tracker(&m.tracker).and_then(|t| t.try_cast::<XrHandTracker>().ok())?;
+        if !t.get_has_tracking_data() {
+            return None;
+        }
+        let w = (oxf * t.get_hand_joint_transform(HandJoint::WRIST)).origin;
+        let p = (oxf * t.get_hand_joint_transform(HandJoint::MIDDLE_FINGER_METACARPAL)).origin;
+        let dir = if (p - w).length() > 1e-3 { (p - w).normalized() } else { Vector3::FORWARD };
+        Some((w, dir))
+    }
+
+    /// Hueso de la muñeca en la malla de la mano (por nombre; si no, el más cercano
+    /// a la articulación de la muñeca). Se busca una vez que el esqueleto tiene huesos.
+    fn hueso_muneca(&mut self, i: usize, sk: &Gd<Skeleton3D>, oxf: Transform3D) -> i32 {
+        if self.manos[i].hueso_muneca >= 0 {
+            return self.manos[i].hueso_muneca;
+        }
+        let n = sk.get_bone_count();
+        if n == 0 {
+            return -1;
+        }
+        let mut elegido = -1;
+        for b in 0..n {
+            let nombre = sk.get_bone_name(b).to_string().to_lowercase();
+            if nombre.contains("wrist") || nombre == "lefthand" || nombre == "righthand" || nombre.starts_with("hand") {
+                elegido = b;
+                break;
+            }
+        }
+        if elegido < 0 {
+            let Some((w, _)) = self.muneca_articulaciones(i, oxf) else { return -1 };
+            let sxf = sk.get_global_transform();
+            let mut mejor = f32::MAX;
+            for b in 0..n {
+                let d = (sxf * sk.get_bone_global_pose(b)).origin.distance_to(w);
+                if d < mejor {
+                    mejor = d;
+                    elegido = b;
+                }
+            }
+        }
+        if elegido >= 0 {
+            godot_print!(
+                "Manos: {} usa el hueso '{}' ({} huesos) como muñeca",
+                if i == 0 { "izquierda" } else { "derecha" },
+                sk.get_bone_name(elegido),
+                n
+            );
+        }
+        self.manos[i].hueso_muneca = elegido;
+        elegido
+    }
+
+    /// La malla de la mano ya está en pose: el brazo va a la muñeca que se ve.
+    fn brazo_desde_malla(&mut self, i: usize) {
+        let Some(sk) = self.manos.get(i).and_then(|m| m.esqueleto.clone()) else { return };
+        if !sk.is_visible_in_tree() || self.cuerpo.is_none() {
+            return;
+        }
+        let Some(oxf) = self.origen_xf() else { return };
+        let b = self.hueso_muneca(i, &sk, oxf);
+        if b < 0 {
+            return;
+        }
+        let w = (sk.get_global_transform() * sk.get_bone_global_pose(b)).origin;
+        let dir = self.muneca_articulaciones(i, oxf).map_or(Vector3::FORWARD, |(_, d)| d);
+        self.ubicar_brazo(i, w, dir, None);
+        self.manos[i].fuente = "malla";
+    }
+
+    /// Torso (desde la cabeza) y los brazos que no siguen a una malla de mano:
+    /// con controles (guante) o, si la malla no tiene huesos, con las articulaciones.
     fn actualizar_brazos(&mut self, dt: f32) {
         let Some(cam) = self.cabeza.clone() else { return };
-        let Some(origen) = self.base().get_parent().and_then(|p| p.try_cast::<Node3D>().ok()) else {
-            return;
-        };
-        let oxf = origen.get_global_transform();
+        let Some(oxf) = self.origen_xf() else { return };
         let cxf = cam.get_global_transform();
         let mut frente = -cxf.basis.col_c();
         frente.y = 0.0;
@@ -950,39 +1060,117 @@ impl ManosXR {
         let frente = self.frente_cuerpo;
         let derecha = frente.cross(Vector3::UP).normalized();
         let cuello = cxf.origin - Vector3::UP * 0.23 - frente * 0.08;
+        self.cuerpo = Some((cuello, frente, derecha));
         for i in 0..self.manos.len() {
             let lado = if i == 0 { -1.0 } else { 1.0 };
-            let mut dato = self.muneca(i, oxf);
-            if dato.is_none() && self.prueba {
+            // Con la malla de la mano visible, la manga la ubica brazo_desde_malla.
+            let con_malla = self.manos[i].esqueleto.as_ref().is_some_and(|s| s.is_visible_in_tree())
+                && self.manos[i].hueso_muneca >= 0;
+            if con_malla {
+                continue;
+            }
+            let control = self.manos[i]
+                .control
+                .clone()
+                .filter(|c| c.get_has_tracking_data() && self.muneca_articulaciones(i, oxf).is_none());
+            if let Some(c) = control {
+                let xf = c.get_global_transform();
+                self.ubicar_brazo(i, xf.origin, -xf.basis.col_c().normalized(), Some(xf));
+                self.manos[i].fuente = "control";
+                continue;
+            }
+            if let Some((w, dir)) = self.muneca_articulaciones(i, oxf) {
+                self.ubicar_brazo(i, w, dir, None);
+                self.manos[i].fuente = "articulaciones";
+                continue;
+            }
+            if self.prueba {
                 // Prueba en la PC: manos delante, a la altura del pecho.
                 let w = cxf.origin + frente * 0.42 + derecha * (lado * 0.2) - Vector3::UP * 0.2;
-                dato = Some((w, (frente - derecha * lado * 0.3).normalized()));
-            }
-            let Some(manga) = self.manos[i].manga.as_mut() else { continue };
-            let Some((w, dir_mano)) = dato else {
-                manga.mostrar(false);
+                self.ubicar_brazo(i, w, (frente - derecha * lado * 0.3).normalized(), None);
+                self.manos[i].fuente = "prueba";
                 continue;
-            };
-            let hombro = cuello - Vector3::UP * 0.04 + derecha * (lado * 0.18);
-            let polo = Vector3::DOWN + derecha * (lado * 0.55) - frente * 0.35;
-            let codo = codo_ik(hombro, w, polo);
-            let mut dir_ante = w - codo;
-            if dir_ante.length() < 1e-3 {
-                dir_ante = dir_mano;
             }
-            let dir_ante = dir_ante.normalized();
-            // El puño va en la muñeca, alineado entre el antebrazo y la mano.
-            let eje_puno = (dir_ante * 0.7 + dir_mano * 0.3).normalized();
-            let fin_manga = w - dir_ante * 0.035;
-            tramo(&mut manga.brazo, codo, hombro);
-            // Manga ancha a media altura del antebrazo, fruncida hacia el puño.
-            let medio = codo.lerp(fin_manga, 0.55);
-            tramo(&mut manga.antebrazo, medio, codo);
-            tramo(&mut manga.antebrazo2, fin_manga, medio);
-            tramo(&mut manga.puno, w + eje_puno * 0.012, w - eje_puno * 0.045);
-            manga.codo.set_global_position(codo);
-            manga.hombro.set_global_position(hombro);
-            manga.mostrar(true);
+            if let Some(manga) = self.manos[i].manga.as_mut() {
+                manga.mostrar(false);
+            }
+            self.manos[i].fuente = "nada";
+        }
+    }
+
+    /// Hombro estimado, codo por IK y la manga hasta la muñeca `w`. Con control
+    /// (`agarre`), `w` es el centro del agarre: el guante se alinea con el
+    /// antebrazo y la muñeca queda en su borde de atrás.
+    fn ubicar_brazo(&mut self, i: usize, w: Vector3, dir_mano: Vector3, agarre: Option<Transform3D>) {
+        let Some((cuello, frente, derecha)) = self.cuerpo else { return };
+        let lado = if i == 0 { -1.0 } else { 1.0 };
+        let hombro = cuello - Vector3::UP * 0.04 + derecha * (lado * 0.18);
+        let polo = Vector3::DOWN + derecha * (lado * 0.55) - frente * 0.35;
+        let extra = if agarre.is_some() { GUANTE_A_MUNECA } else { 0.0 };
+        let codo = codo_ik(hombro, w, polo, LARGO_ANTEBRAZO + extra);
+        let mut dir_ante = w - codo;
+        if dir_ante.length() < 1e-3 {
+            dir_ante = dir_mano;
+        }
+        let dir_ante = dir_ante.normalized();
+        let (w, dir_mano) = match agarre {
+            Some(xf) => {
+                // Guante alineado con el antebrazo, centrado en el agarre.
+                if let Some(mut g) = self.manos[i].control.as_ref().and_then(|c| c.try_get_node_as::<Node3D>("Guante")) {
+                    let z = dir_ante;
+                    let arriba = xf.basis.col_b();
+                    let mut x = arriba.cross(z);
+                    if x.length() < 1e-3 {
+                        x = Vector3::RIGHT;
+                    }
+                    let x = x.normalized();
+                    let y = z.cross(x);
+                    g.set_global_transform(Transform3D::new(Basis::from_cols(x, y, z), xf.origin));
+                }
+                (w - dir_ante * GUANTE_A_MUNECA, dir_ante)
+            }
+            None => (w, dir_mano),
+        };
+        let Some(manga) = self.manos[i].manga.as_mut() else { return };
+        // El puño va en la muñeca, alineado entre el antebrazo y la mano.
+        let eje_puno = (dir_ante * 0.7 + dir_mano * 0.3).normalized();
+        let fin_manga = w - dir_ante * 0.035;
+        tramo(&mut manga.brazo, codo, hombro);
+        // Manga ancha a media altura del antebrazo, fruncida hacia el puño.
+        let medio = codo.lerp(fin_manga, 0.55);
+        tramo(&mut manga.antebrazo, medio, codo);
+        tramo(&mut manga.antebrazo2, fin_manga, medio);
+        tramo(&mut manga.puno, w + eje_puno * 0.012, w - eje_puno * 0.045);
+        manga.codo.set_global_position(codo);
+        manga.hombro.set_global_position(hombro);
+        manga.mostrar(true);
+    }
+
+    /// Log (logcat) cuando cambia de dónde sale cada brazo, y cuánto se separa la
+    /// muñeca de la malla de la articulación del hand tracking.
+    fn diagnostico(&mut self, dt: f32) {
+        self.diag_t += dt;
+        if self.diag_t < 1.0 {
+            return;
+        }
+        self.diag_t = 0.0;
+        let Some(oxf) = self.origen_xf() else { return };
+        let mut partes = Vec::new();
+        for i in 0..self.manos.len() {
+            let mut txt = format!("{}={}", if i == 0 { "izq" } else { "der" }, self.manos[i].fuente);
+            if let (Some(sk), Some((w, _))) = (self.manos[i].esqueleto.clone(), self.muneca_articulaciones(i, oxf)) {
+                let b = self.manos[i].hueso_muneca;
+                if b >= 0 && sk.is_visible_in_tree() {
+                    let d = (sk.get_global_transform() * sk.get_bone_global_pose(b)).origin.distance_to(w);
+                    txt += &format!(" (malla vs articulación: {:.0} cm)", d * 100.0);
+                }
+            }
+            partes.push(txt);
+        }
+        let estado = partes.join(", ");
+        if estado != self.diag_previo {
+            godot_print!("Brazos: {estado}");
+            self.diag_previo = estado;
         }
     }
 
