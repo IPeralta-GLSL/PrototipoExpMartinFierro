@@ -3,7 +3,7 @@
 //! brasas se arremolinan y la vista se funde en naranja y negro hasta pasar
 //! al otro escenario. No espera ninguna acción del jugador.
 
-use godot::classes::{Engine, GpuParticles3D};
+use godot::classes::{light_3d::Param, Engine, GpuParticles3D, Light3D};
 use godot::prelude::*;
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -30,6 +30,9 @@ pub struct PortalFogon {
     fogon: Option<Gd<Node3D>>,
     #[export]
     brasas: Option<Gd<GpuParticles3D>>,
+    /// Sin fuego (la pulpería): una luz que crece durante el fundido (el farol).
+    #[export]
+    luz: Option<Gd<Light3D>>,
     /// Segundos que dura el fundido del fuego.
     #[export]
     duracion: f32,
@@ -44,6 +47,7 @@ pub struct PortalFogon {
     tiempo: f32,
     energia0: f32,
     llamas0: f32,
+    luz0: f32,
     base: Base<Node3D>,
 }
 
@@ -54,6 +58,7 @@ impl INode3D for PortalFogon {
             escena_destino: GString::new(),
             fogon: None,
             brasas: None,
+            luz: None,
             duracion: 4.0,
             tiempo_maximo: 0.0,
             cuenta: -1.0,
@@ -61,6 +66,7 @@ impl INode3D for PortalFogon {
             tiempo: 0.0,
             energia0: 2.4,
             llamas0: 2.2,
+            luz0: 1.0,
             base,
         }
     }
@@ -103,6 +109,10 @@ impl INode3D for PortalFogon {
         if let Some(f) = self.fogon.as_mut() {
             f.set("energia_base", &(e0 * (1.0 + 4.0 * u)).to_variant());
             f.set("intensidad_llamas", &(l0 * (1.0 + 1.8 * u)).to_variant());
+        }
+        let l0 = self.luz0;
+        if let Some(l) = self.luz.as_mut() {
+            l.set_param(Param::ENERGY, l0 * (1.0 + 5.0 * u * u));
         }
         if let Some(b) = self.brasas.as_mut() {
             b.set_amount_ratio(1.0);
@@ -151,6 +161,9 @@ impl PortalFogon {
             // Parte de la intensidad actual (el ciclo de la noche ya la subió).
             self.energia0 = f.get("energia_base").try_to::<f32>().unwrap_or(2.4);
             self.llamas0 = f.get("intensidad_llamas").try_to::<f32>().unwrap_or(2.2);
+        }
+        if let Some(l) = &self.luz {
+            self.luz0 = l.get_param(Param::ENERGY);
         }
         self.cuenta = -1.0;
         self.transicion = 0.0;

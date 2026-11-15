@@ -20,6 +20,7 @@ use godot::global::Key;
 use godot::prelude::*;
 
 use crate::ciclo::CicloDia;
+use crate::guitarra::GuitarraCriolla;
 use crate::modelos::ModeloIA;
 use crate::personajes::{altura_global, girar_hacia, Mandibula};
 use crate::portal::PortalFogon;
@@ -50,6 +51,9 @@ pub struct Narrador {
     portal: Option<Gd<PortalFogon>>,
     #[export]
     terreno: Option<Gd<TerrenoPampa>>,
+    /// Guitarra que rasguea mientras canta (evento "guitarra" del guion).
+    #[export]
+    guitarra: Option<Gd<GuitarraCriolla>>,
     /// Segundos antes de la primera línea.
     #[export]
     demora_inicial: f32,
@@ -83,6 +87,11 @@ pub struct Narrador {
     boca: Option<Gd<Mandibula>>,
     envolvente: Vec<f32>,
     apertura: f32,
+    /// Segundos que le quedan al rasguido de milonga.
+    rasgueo: f32,
+    t_compas: f32,
+    compas: usize,
+    golpe: usize,
     voz: Option<Gd<AudioStreamPlayer3D>>,
     base: Base<Node3D>,
 }
@@ -96,6 +105,7 @@ impl INode3D for Narrador {
             ciclo: None,
             portal: None,
             terreno: None,
+            guitarra: None,
             demora_inicial: 4.0,
             accion_inicial: GString::from("idle"),
             mirar_inicial: GString::new(),
@@ -116,6 +126,10 @@ impl INode3D for Narrador {
             boca: None,
             envolvente: Vec::new(),
             apertura: 0.0,
+            rasgueo: 0.0,
+            t_compas: 0.0,
+            compas: 0,
+            golpe: 0,
             voz: None,
             base,
         }
@@ -196,6 +210,7 @@ impl INode3D for Narrador {
             return;
         }
         self.orientar(dt);
+        self.milonga(dt);
         if self.terminado {
             return;
         }
@@ -369,6 +384,14 @@ impl Narrador {
                         c.bind_mut().fijar_progreso(1.0);
                     }
                 }
+                "guitarra" => {
+                    // Rasguea durante la línea y un poco después.
+                    if self.rasgueo <= 0.0 {
+                        self.t_compas = 0.0;
+                        self.golpe = 0;
+                    }
+                    self.rasgueo = duracion + 2.6;
+                }
                 "portal" => {
                     // El fuego se lleva al jugador apenas el gaucho termina de hablar.
                     if let Some(p) = self.portal.as_mut() {
@@ -397,6 +420,32 @@ impl Narrador {
         let k = (dt * 22.0).min(1.0);
         let a = self.apertura + (objetivo - self.apertura) * k;
         self.fijar_boca(a);
+    }
+
+    /// Milonga: compás de 2.4 s con rasguidos en 0, 0.9 y 1.8 s (3+3+2),
+    /// Mi menor / Si séptima / La menor.
+    fn milonga(&mut self, dt: f32) {
+        const GOLPES: [(f32, f32); 3] = [(0.0, 0.62), (0.9, 0.42), (1.8, 0.47)];
+        const ACORDES: [i32; 8] = [0, 0, 1, 1, 2, 0, 1, 0];
+        const COMPAS: f32 = 2.4;
+        if self.rasgueo <= 0.0 {
+            return;
+        }
+        self.rasgueo -= dt;
+        self.t_compas += dt;
+        while self.golpe < GOLPES.len() && self.t_compas >= GOLPES[self.golpe].0 {
+            let (_, fuerza) = GOLPES[self.golpe];
+            let acorde = ACORDES[self.compas % ACORDES.len()];
+            if let Some(g) = self.guitarra.as_mut() {
+                g.bind_mut().rasguear_acorde(acorde, true, fuerza);
+            }
+            self.golpe += 1;
+        }
+        if self.t_compas >= COMPAS {
+            self.t_compas -= COMPAS;
+            self.compas += 1;
+            self.golpe = 0;
+        }
     }
 
     fn fijar_boca(&mut self, a: f32) {

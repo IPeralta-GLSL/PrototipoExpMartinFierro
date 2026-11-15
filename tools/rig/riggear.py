@@ -216,12 +216,53 @@ def limitar_mandibula(malla, J):
             (gn if z < menton else gc).add([vv.index], w - nueva, "ADD")
 
 
+def pesos_desde_copia(malla, arm, voxel=0.02):
+    """Bone heat falla en mallas con partes sueltas o abiertas: se calculan los
+    pesos sobre una copia remallada con vóxeles (cerrada) y se transfieren."""
+    copia = malla.copy()
+    copia.data = malla.data.copy()
+    bpy.context.scene.collection.objects.link(copia)
+    copia.parent = None
+    copia.modifiers.clear()
+    copia.vertex_groups.clear()
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = copia
+    copia.select_set(True)
+    copia.data.remesh_voxel_size = voxel
+    bpy.ops.object.voxel_remesh()
+    copia.select_set(True)
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.parent_set(type="ARMATURE_AUTO")
+    malla.vertex_groups.clear()
+    for b in arm.data.bones:
+        malla.vertex_groups.new(name=b.name)
+    mod = malla.modifiers.new("TransferirPesos", "DATA_TRANSFER")
+    mod.object = copia
+    mod.use_vert_data = True
+    mod.data_types_verts = {"VGROUP_WEIGHTS"}
+    mod.vert_mapping = "POLYINTERP_NEAREST"
+    mod.layers_vgroup_select_src = "ALL"
+    mod.layers_vgroup_select_dst = "NAME"
+    bpy.ops.object.select_all(action="DESELECT")
+    malla.select_set(True)
+    bpy.context.view_layer.objects.active = malla
+    bpy.ops.object.modifier_move_to_index(modifier=mod.name, index=0)
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(copia)
+
+
 def pesar(malla, arm, J):
     bpy.ops.object.select_all(action="DESELECT")
     malla.select_set(True)
     arm.select_set(True)
     bpy.context.view_layer.objects.active = arm
     bpy.ops.object.parent_set(type="ARMATURE_AUTO")
+    total = len(malla.data.vertices)
+    sin_peso = sum(1 for vv in malla.data.vertices if sum(g.weight for g in vv.groups) <= 1e-4)
+    if sin_peso > 0.05 * total:
+        print(f"[rig] bone heat falló en {sin_peso} de {total} vértices: pesos desde una copia remallada")
+        pesos_desde_copia(malla, arm)
     # Vértices sin peso (si bone heat falla en alguna zona) -> hueso más cercano.
     segs = [(b.name, b.head_local.copy(), b.tail_local.copy()) for b in arm.data.bones]
     grupos = {g.name: g for g in malla.vertex_groups}
@@ -617,6 +658,86 @@ def animaciones(J, poser):
         (72, cavar(abajo_r, abajo_l, 25, 15, 0.03, 0)),
     ])
 
+    # TOCAR: el payador con la guitarra (izquierda en el mástil, derecha rasguea).
+    # Un ciclo = un compás de milonga (2.4 s): rasguidos en 0, 0.9 y 1.8 s, como
+    # el patrón que toca el Narrador con la GuitarraCriolla.
+    mastil = v(0.38 * k, yc - 0.30 * k, 0.65 * H)
+    boca_guitarra = v(-0.06 * k, yc - 0.24 * k, 0.555 * H)
+    polo_mastil = unit(1.0, 0.3, -1.0)
+
+    def toca(dz, giro=0.0, cabeza=6.0):
+        return con(base(),
+                   brazo("L", mastil, polo_mastil, palma=unit(-0.6, 0.2, 0.8), curl=55),
+                   brazo("R", boca_guitarra + v(0, 0, dz * k), palma=unit(0.3, 1.0, 0.0), curl=35),
+                   pecho=[("rot", Z, giro), ("rot", X, 3)], columna=[("rot", Y, giro * 0.4)],
+                   cabeza=[("rot", X, cabeza), ("rot", Z, -giro)])
+
+    A["tocar"] = (72, [
+        (0, toca(0.035, 2)), (6, toca(-0.035, 2, 7)), (18, toca(0.03, 1)),
+        (27, toca(0.035, 0, 4)), (33, toca(-0.035, -1, 5)), (45, toca(0.03, -2)),
+        (54, toca(0.035, -2, 6)), (60, toca(-0.035, -1, 8)), (72, toca(0.035, 2)),
+    ])
+
+    # TRUCO: sentado a la mesa con las cartas; cada tanto tira una al centro.
+    asiento = 0.58 * k   # cadera sentada: banco de ~0.52 m (mesa_truco, banco)
+    bajar = J["caderaL"].z - asiento
+    mesa = 0.90 * k      # manos con las cartas sobre un tablero de ~0.84 m
+
+    def sentado(r, l, cabeza_x=10.0, cabeza_z=0.0, lean=8.0):
+        p = con(base(),
+                brazo("R", r, palma=unit(0.6, 0.0, 0.8), curl=50),
+                brazo("L", l, palma=unit(-0.6, 0.0, 0.8), curl=50),
+                columna=[("rot", X, lean * 0.5)], pecho=[("rot", X, lean * 0.5)],
+                cabeza=[("rot", X, cabeza_x), ("rot", Z, cabeza_z)])
+        for lado in "LR":
+            p["muslo." + lado] = [("aim", unit(sg[lado] * 0.10, -1.0, 0.04))]
+            p["pierna." + lado] = [("aim", unit(sg[lado] * 0.04, 0.10, -1.0))]
+            p["pie." + lado] = [("aim", unit(0.0, -1.0, -0.25))]
+        p["_loc"] = v(0, 0, -bajar)
+        return p
+
+    cartas_r = v(-0.07 * k, yc - 0.30 * k, mesa)
+    cartas_l = v(0.07 * k, yc - 0.30 * k, mesa)
+    A["truco"] = (180, [
+        (0, sentado(cartas_r, cartas_l)),
+        (40, sentado(cartas_r + v(0, 0, 0.02), cartas_l + v(0, 0, 0.02), 4, 6)),
+        (80, sentado(cartas_r, cartas_l, 12, -4)),
+        (95, sentado(v(-0.02 * k, yc - 0.52 * k, mesa - 0.04 * k), cartas_l, 16, 0, 12)),
+        (115, sentado(cartas_r, cartas_l, 8, 0)),
+        (150, sentado(cartas_r + v(0, 0, 0.015), cartas_l, 2, 8)),
+        (180, sentado(cartas_r, cartas_l)),
+    ])
+
+    # SENTADO: en un banco, con las manos en las rodillas; mira alrededor y respira.
+    rodilla = {l: v(sg[l] * 0.12 * k, yc - 0.33 * k, asiento - 0.02 * k) for l in "LR"}
+    en_rodillas = lambda l, d=v(0, 0, 0): brazo(l, rodilla[l] + d, palma=unit(-sg[l] * 0.3, 0.0, -1.0), curl=35)  # noqa: E731
+
+    def banco(cz, cx, pecho=0.0):
+        p = sentado(cartas_r, cartas_l, cx, cz, 4.0)
+        p.update(en_rodillas("R"))
+        p.update(en_rodillas("L"))
+        p["pecho"] = [("rot", X, 2.0 + pecho)]
+        return p
+
+    A["sentado"] = (240, [
+        (0, banco(0, 2)), (60, banco(18, 0, -1.5)), (100, banco(14, -3)),
+        (150, banco(-20, 2, -1.5)), (200, banco(-12, 4)), (240, banco(0, 2)),
+    ])
+
+    # ESCUCHAR: de pie, brazos cruzados, asiente despacio.
+    def cruzado(nod, peso):
+        return con(base(),
+                   brazo("R", v(0.13 * k, yc - 0.21 * k, 0.68 * H), unit(-1.0, 0.1, -0.6),
+                         palma=unit(0.0, 1.0, 0.0), curl=40),
+                   brazo("L", v(-0.13 * k, yc - 0.18 * k, 0.64 * H), unit(1.0, 0.1, -0.6),
+                         palma=unit(0.0, 1.0, 0.0), curl=40),
+                   cadera=[("rot", Y, peso)], pecho=[("rot", Y, -peso * 0.5)],
+                   cabeza=[("rot", X, nod), ("rot", Z, peso * 2)])
+
+    A["escuchar"] = (150, [
+        (0, cruzado(0, 1.5)), (40, cruzado(6, 1.0)), (60, cruzado(1, 0.5)),
+        (90, cruzado(5, -1.5)), (120, cruzado(0, -1.0)), (150, cruzado(0, 1.5)),
+    ])
     return A
 
 

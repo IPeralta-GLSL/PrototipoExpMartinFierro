@@ -75,18 +75,18 @@ Cada objeto es un nodo `ModeloIA` que carga `godot/modelos/<nombre>.glb`: si reg
 aparece solo en la escena (también en el editor). Las copias múltiples (cardos, vacas, ñandúes,
 teros) las siembra `DispersorModelos` sobre el terreno.
 
-## Relato: del atardecer a la noche, y el fortín
+## Relato: el pago, el fortín y la pulpería
 
 La experiencia es **lineal y por tiempo**: nada espera al jugador. Se puede mirar alrededor (y
 caminar), pero las escenas avanzan solas y al final vuelve a empezar.
 
-| Momento | Pampa (~2 min 25 s) | Fortín (~1 min 15 s) |
-|---|---|---|
-| Fundido desde negro + título (el gaucho asa la carne) | 0–11 s | 0–8 s |
-| El gaucho se presenta | 12–38 s | — |
-| El gaucho recita | desde ~41 s | desde 9 s |
-| Anochecer (70 s) | ~71 s → noche cerrada a ~141 s | ya es de noche |
-| El fuego se lleva al jugador | ~142 s → fortín | ~71 s → pampa |
+| Momento | Pampa (~2 min 25 s) | Fortín (~1 min 15 s) | Pulpería (~1 min 30 s) |
+|---|---|---|---|
+| Fundido desde negro + título | 0–11 s (asa la carne) | 0–8 s | 0–8 s |
+| El gaucho se presenta | 12–38 s | — | 9–20 s |
+| El gaucho recita / canta | desde ~41 s | desde 9 s | desde ~22 s, con guitarra |
+| Anochecer (70 s) | ~71 s → noche cerrada a ~141 s | de noche | de noche |
+| Pasa a la escena siguiente | ~142 s: el fuego → fortín | ~71 s: el fuego → pulpería | ~85 s: la luz del farol → pampa |
 
 1. **Rancho, al atardecer.** Mientras aparece el título, el gaucho está asando la carne. Después
    se da vuelta, saluda tocándose el sombrero ("¡Buenas tardes, paisanos!"), cuenta dónde
@@ -102,19 +102,32 @@ caminar), pero las escenas avanzan solas y al final vuelve a empezar.
 4. **El fortín de frontera** (Canto III): empalizada, mangrullo, cuadras de soldados y el cañón,
    de noche. Hay vida alrededor: un **centinela** con fusil otea el horizonte desde el mangrullo
    (alumbrado por un farol), el **sargento** hace la ronda, un **gaucho levado** cava con la pala
-   y un **soldado** toma mate junto al fuego. El gaucho cuenta la leva y el trabajo sin paga; su
-   fuego lleva de vuelta al pago.
+   y un **soldado** toma mate junto al fuego. El gaucho cuenta la leva y el trabajo sin paga
+   hasta que se larga del fortín: "esta noche hay guitarreada en la pulpería".
+5. **La pulpería**, por dentro y de noche: un salón grande de adobe encalado con vigas, horcones
+   y ventanas enrejadas por las que se ve la pampa (los caballos en el palenque, la carreta, el
+   ombú). El pulpero detrás de la reja del mostrador, estantes con botellas, ristras colgando,
+   bolsas de yerba, dos mesas de truco (dos paisanos; el sargento y un soldado), un tropero en el
+   banco, un soldado acodado al mostrador, un oyente con mate y un muchacho que va y viene. El
+   gaucho le pide la guitarra al pulpero y **canta como payador** ("Atencion pido al silencio…",
+   "Cantando me he de morir…", "Soy gaucho…" y el consejo "Los hermanos sean unidos…"),
+   rasgueando una milonga con la guitarra sintetizada. Al final señala **el farol**: su luz crece
+   y la vista se funde de vuelta al pago.
 
 Atajos de prueba en la PC: **N** salta a la siguiente línea del narrador; `-- --ciclo=1.0` arranca
 de noche y `-- --portal` pasa de escena enseguida (por ejemplo con `tools\captura.ps1 -Extra`).
 
-El guion está en `godot/guion/rancho.json` y `fortin.json`. Cada línea tiene texto, audio,
-`espera` (pausa antes de la línea), `evento` (`anochecer`, `noche`, `portal`) y la puesta en
+El guion está en `godot/guion/rancho.json`, `fortin.json` y `pulperia.json`. Cada línea tiene texto, audio,
+`espera` (pausa antes de la línea), `evento` (`anochecer`, `noche`, `portal`; `guitarra` rasguea una milonga mientras canta) y la puesta en
 escena del gaucho: `accion` (animación mientras habla: `saludar`, `mostrar`, `senalar`, `mate`,
 `hablar`…), `mirar` (`jugador` o un nodo, p. ej. `Asador`) e `ir_a` (camina hasta un nodo antes
 de hablar, p. ej. `PuntoCharla`). El evento `portal` programa el fundido 1,2 s después de que
-termina esa línea. Cada `PortalFogon` tiene además `tiempo_maximo` (200 s y 110 s) como red de
-seguridad.
+termina esa línea. Cada `PortalFogon` tiene además `tiempo_maximo` (200 s, 110 s y 150 s) como red
+de seguridad; sin fogón (la pulpería) hace crecer una luz (`luz`).
+
+La pulpería se genera con `tools/escenas/crear_pulperia.py` (parte de `fortin.tscn` y arma el
+salón, los muebles, la gente y las luces): para cambiar la distribución, editá el script y
+volvé a correrlo.
 
 ### Voz del narrador (Qwen3-TTS, local)
 

@@ -549,7 +549,7 @@
       "caras": 26000,
       "escala": {
         "eje": "alto",
-        "metros": 1.70
+        "metros": 1.7
       }
     },
     {
@@ -578,6 +578,230 @@
       "escala": {
         "eje": "largo",
         "metros": 1.35
+      }
+    },
+    {
+      "nombre": "pulperia",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "a 19th-century Argentine rural pulperia, a general store and tavern alone on the open pampa: a long low building with thick whitewashed adobe walls and a thatched straw roof, a heavy weathered wooden door, a wide window protected by thick black iron bars over a wooden counter, a long wooden bench along the front wall, three-quarter view",
+      "semilla": 1872,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 40000,
+      "escala": {
+        "eje": "largo",
+        "metros": 9.0
+      }
+    },
+    {
+      "nombre": "mesa_truco",
+      "lote": "E",
+      "grupo": "mediano",
+      "prompt": "a rustic heavy wooden table with two long plain wooden benches on its sides, worn and scratched, 19th century rural furniture, three-quarter view",
+      "semilla": 1879,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 12000,
+      "escala": {
+        "eje": "largo",
+        "metros": 1.7
+      }
+    },
+    {
+      "nombre": "mostrador",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "the counter of a 19th-century Argentine pulperia seen from the front: a long sturdy dark wooden counter with a tall wooden frame above it holding thick black wrought iron bars (the reja) from the counter top up to a wooden lintel, with a small open gap above the counter to pass bottles and glasses, isolated piece of furniture",
+      "semilla": 1873,
+      "ancho": 1344,
+      "alto": 768,
+      "caras": 20000,
+      "escala": {
+        "eje": "largo",
+        "metros": 3.4
+      }
+    },
+    {
+      "nombre": "estante",
+      "lote": "E",
+      "grupo": "mediano",
+      "prompt": "rustic wooden wall shelves of a 19th-century general store, three shelves filled with old green and brown glass bottles, clay jars, small demijohns and tin boxes, isolated piece of furniture, front view",
+      "semilla": 1881,
+      "ancho": 1344,
+      "alto": 768,
+      "caras": 20000,
+      "escala": {
+        "eje": "largo",
+        "metros": 2.6
+      }
+    },
+    {
+      "nombre": "farol",
+      "lote": "E",
+      "grupo": "chico",
+      "prompt": "a single 19th-century tin and glass candle lantern with a pointed top and a ring handle, a lit candle inside, centered",
+      "semilla": 1866,
+      "ancho": 832,
+      "alto": 1216,
+      "caras": 5000,
+      "escala": {
+        "eje": "alto",
+        "metros": 0.38
+      }
+    },
+    {
+      "nombre": "damajuana",
+      "lote": "E",
+      "grupo": "chico",
+      "prompt": "a single large glass demijohn bottle wrapped in woven brown wicker with a wicker handle, cork stopper, centered",
+      "semilla": 1880,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 5000,
+      "escala": {
+        "eje": "alto",
+        "metros": 0.5
+      }
+    },
+    {
+      "nombre": "pulpero_rig",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "full body view of a 19th-century pulpero, a rural shopkeeper in Argentina, a stout friendly Basque immigrant man in his fifties with a thick dark mustache, black Basque beret (boina), white shirt with rolled-up sleeves, dark vest, long white apron, dark trousers, leather shoes, realistic human proportions, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands",
+      "semilla": 1868,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.72
+      }
+    },
+    {
+      "nombre": "paisano_rig",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "full body view of a young 19th-century Argentine gaucho in his twenties, tanned face with a thin dark mustache, flat-brimmed black hat with a chin strap, white shirt, red neckerchief, black chiripa over white fringed calzoncillos, wide leather belt decorated with silver coins (tirador), colt-skin boots, realistic human proportions, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands, no poncho",
+      "semilla": 1874,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.74
+      }
+    },
+    {
+      "nombre": "viejo_rig",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "full body view of an old 19th-century Argentine gaucho in his sixties with a long white beard and a kind weathered face, soft grey felt hat, cream shirt, brown vest, faded blue chiripa over white fringed calzoncillos, colt-skin boots, realistic human proportions, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands, no poncho",
+      "semilla": 1846,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.7
+      }
+    },
+    {
+      "nombre": "bolsas",
+      "lote": "E",
+      "grupo": "mediano",
+      "prompt": "a pile of old burlap sacks of yerba mate and flour stacked on the floor, some tied with rope, one open showing green yerba, 19th century general store",
+      "semilla": 1871,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 12000,
+      "escala": {
+        "eje": "largo",
+        "metros": 1.3
+      }
+    },
+    {
+      "nombre": "cajones",
+      "lote": "E",
+      "grupo": "mediano",
+      "prompt": "a stack of three old rough wooden crates of different sizes, 19th century, weathered planks and nails",
+      "semilla": 1876,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 8000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.1
+      }
+    },
+    {
+      "nombre": "ristras",
+      "lote": "E",
+      "grupo": "chico",
+      "prompt": "braided strings of garlic heads and dry cured sausages hanging together from a short wooden pole, rustic 19th century pantry",
+      "semilla": 1869,
+      "ancho": 832,
+      "alto": 1216,
+      "caras": 8000,
+      "escala": {
+        "eje": "alto",
+        "metros": 0.8
+      }
+    },
+    {
+      "nombre": "botellas",
+      "lote": "E",
+      "grupo": "chico",
+      "prompt": "a small group of three old 19th-century glass bottles of gin and wine, dark green and amber glass with corks, and two small thick drinking glasses, standing together",
+      "semilla": 1877,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 6000,
+      "escala": {
+        "eje": "largo",
+        "metros": 0.35
+      }
+    },
+    {
+      "nombre": "banco",
+      "lote": "E",
+      "grupo": "mediano",
+      "prompt": "a long rustic wooden bench with four sturdy legs, plain worn planks, 19th century rural furniture, three-quarter view",
+      "semilla": 1883,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 5000,
+      "escala": {
+        "eje": "largo",
+        "metros": 2.0
+      }
+    },
+    {
+      "nombre": "tropero_rig",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "full body view of a 19th-century Argentine tropero, a cattle drover in his forties with a thick black beard and a sunburnt face, wide brown felt hat, red poncho folded over one shoulder, white shirt, black bombachas, wide leather belt, colt-skin boots, realistic human proportions, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands",
+      "semilla": 1878,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 22000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.76
+      }
+    },
+    {
+      "nombre": "muchacho_rig",
+      "lote": "E",
+      "grupo": "grande",
+      "prompt": "full body view of a 19th-century Argentine country boy of about thirteen working as an errand boy at a pulperia, dark messy hair, barefoot, simple white shirt, short dark trousers held by a rope belt, realistic human proportions, friendly, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands",
+      "semilla": 1885,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 20000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.5
       }
     }
   ]

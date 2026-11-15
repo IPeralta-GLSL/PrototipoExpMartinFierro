@@ -30,7 +30,7 @@
     "accion": "hablar"
   },
   {
-    "texto": "Ansí fue, paisano.\nMirá el fuego otra vez, que te llevo de vuelta al pago.",
+    "texto": "Ansí fue, paisano... hasta que un día me largué del fortín.\nMirá el fuego, que esta noche hay guitarreada en la pulpería.",
     "fuente": "narración",
     "audio": "res://voz/fortin_05.ogg",
     "espera": 4.0,

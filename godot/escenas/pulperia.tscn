@@ -1,0 +1,1760 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/terreno.gdshader" id="sh_terreno"]
+[ext_resource type="Shader" path="res://shaders/pasto.gdshader" id="sh_pasto"]
+[ext_resource type="Shader" path="res://shaders/fuego.gdshader" id="sh_fuego"]
+[ext_resource type="Shader" path="res://shaders/cielo.gdshader" id="sh_cielo"]
+
+[sub_resource type="FastNoiseLite" id="ruido_nubes"]
+frequency = 0.006
+fractal_octaves = 5
+fractal_gain = 0.55
+
+[sub_resource type="NoiseTexture2D" id="tex_nubes"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("ruido_nubes")
+
+[sub_resource type="ShaderMaterial" id="cielo_mat"]
+shader = ExtResource("sh_cielo")
+shader_parameter/ruido_nubes = SubResource("tex_nubes")
+
+[sub_resource type="Sky" id="cielo"]
+sky_material = SubResource("cielo_mat")
+process_mode = 2
+radiance_size = 1
+
+[sub_resource type="Environment" id="entorno"]
+background_mode = 2
+sky = SubResource("cielo")
+ambient_light_source = 3
+ambient_light_energy = 1.1
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_white = 6.0
+fog_enabled = true
+fog_light_color = Color(0.05, 0.06, 0.1, 1)
+fog_sun_scatter = 0.4
+fog_density = 0.0028
+fog_sky_affect = 0.12
+
+[sub_resource type="FastNoiseLite" id="ruido_detalle"]
+frequency = 0.035
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="tex_detalle"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("ruido_detalle")
+
+[sub_resource type="ShaderMaterial" id="mat_terreno"]
+shader = ExtResource("sh_terreno")
+shader_parameter/detalle = SubResource("tex_detalle")
+shader_parameter/escala_detalle = 0.3
+shader_parameter/fuerza_detalle = 0.45
+shader_parameter/tinte = Color(1.12, 1.12, 1.1, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_pasto"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.1
+shader_parameter/velocidad_viento = 1.4
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.5
+
+[sub_resource type="ShaderMaterial" id="mat_cortadera"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.22
+shader_parameter/velocidad_viento = 1.1
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.6
+
+[sub_resource type="FastNoiseLite" id="ruido_fuego"]
+frequency = 0.045
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="tex_fuego"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("ruido_fuego")
+
+[sub_resource type="ShaderMaterial" id="mat_llamas"]
+shader = ExtResource("sh_fuego")
+shader_parameter/ruido = SubResource("tex_fuego")
+shader_parameter/intensidad = 2.2
+shader_parameter/velocidad = 1.25
+
+[sub_resource type="QuadMesh" id="quad_llama"]
+size = Vector2(0.75, 1.05)
+center_offset = Vector3(0, 0.5, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="proc_brasas"]
+emission_shape = 1
+emission_sphere_radius = 0.25
+direction = Vector3(0, 1, 0)
+spread = 20.0
+initial_velocity_min = 0.35
+initial_velocity_max = 1.1
+gravity = Vector3(0, 0.3, 0)
+damping_min = 0.1
+damping_max = 0.4
+scale_min = 0.6
+scale_max = 1.3
+color = Color(1, 0.55, 0.16, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_brasa"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.7, 0.3, 1)
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_brasa"]
+material = SubResource("mat_brasa")
+size = Vector2(0.022, 0.022)
+
+[sub_resource type="Gradient" id="grad_disco"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="tex_disco"]
+gradient = SubResource("grad_disco")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="mat_humo"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_humo"]
+material = SubResource("mat_humo")
+size = Vector2(0.7, 0.7)
+
+[sub_resource type="Curve" id="curva_humo"]
+max_value = 2.0
+_data = [Vector2(0, 0.45), 0.0, 0.0, 0, 0, Vector2(1, 1.8), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="ct_humo"]
+curve = SubResource("curva_humo")
+
+[sub_resource type="Gradient" id="grad_humo"]
+offsets = PackedFloat32Array(0, 0.15, 1)
+colors = PackedColorArray(0.32, 0.28, 0.26, 0, 0.36, 0.33, 0.31, 0.32, 0.55, 0.52, 0.5, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_humo"]
+gradient = SubResource("grad_humo")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_humo"]
+emission_shape = 1
+emission_sphere_radius = 0.15
+direction = Vector3(0.15, 1, 0.1)
+spread = 12.0
+initial_velocity_min = 0.35
+initial_velocity_max = 0.6
+gravity = Vector3(0.14, 0.05, 0.1)
+scale_min = 0.7
+scale_max = 1.2
+scale_curve = SubResource("ct_humo")
+color_ramp = SubResource("gt_humo")
+
+[sub_resource type="Gradient" id="grad_luciernaga"]
+offsets = PackedFloat32Array(0, 0.2, 0.3, 0.45, 0.6, 0.75, 1)
+colors = PackedColorArray(0.85, 1, 0.45, 0, 0.85, 1, 0.45, 1, 0.85, 1, 0.45, 0.1, 0.85, 1, 0.45, 0.9, 0.85, 1, 0.45, 0, 0.85, 1, 0.45, 0.8, 0.85, 1, 0.45, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_luciernaga"]
+gradient = SubResource("grad_luciernaga")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_luciernagas"]
+emission_shape = 3
+emission_box_extents = Vector3(13, 0.7, 13)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.22
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("gt_luciernaga")
+
+[sub_resource type="StandardMaterial3D" id="mat_luciernaga"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_luciernaga"]
+material = SubResource("mat_luciernaga")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="SystemFont" id="fuente_serif"]
+font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "serif")
+
+[sub_resource type="StandardMaterial3D" id="mat_cuero"]
+albedo_color = Color(0.36, 0.22, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="m_guante"]
+material = SubResource("mat_cuero")
+size = Vector3(0.08, 0.035, 0.13)
+
+[sub_resource type="FastNoiseLite" id="ruido_cal"]
+noise_type = 1
+frequency = 0.035
+fractal_octaves = 5
+
+[sub_resource type="Gradient" id="grad_cal"]
+colors = PackedColorArray(0.78, 0.75, 0.68, 1, 0.93, 0.91, 0.86, 1)
+
+[sub_resource type="NoiseTexture2D" id="tex_cal"]
+width = 512
+height = 512
+seamless = true
+color_ramp = SubResource("grad_cal")
+noise = SubResource("ruido_cal")
+
+[sub_resource type="NoiseTexture2D" id="nor_cal"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 7.0
+noise = SubResource("ruido_cal")
+
+[sub_resource type="StandardMaterial3D" id="mat_cal"]
+albedo_texture = SubResource("tex_cal")
+roughness = 1.0
+normal_enabled = true
+normal_scale = 0.6
+normal_texture = SubResource("nor_cal")
+uv1_scale = Vector3(0.45, 0.45, 0.45)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="FastNoiseLite" id="ruido_tierra"]
+noise_type = 3
+frequency = 0.03
+fractal_octaves = 4
+
+[sub_resource type="Gradient" id="grad_tierra"]
+colors = PackedColorArray(0.26, 0.19, 0.13, 1, 0.42, 0.33, 0.23, 1)
+
+[sub_resource type="NoiseTexture2D" id="tex_tierra"]
+width = 512
+height = 512
+seamless = true
+color_ramp = SubResource("grad_tierra")
+noise = SubResource("ruido_tierra")
+
+[sub_resource type="NoiseTexture2D" id="nor_tierra"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 4.0
+noise = SubResource("ruido_tierra")
+
+[sub_resource type="StandardMaterial3D" id="mat_tierra"]
+albedo_texture = SubResource("tex_tierra")
+roughness = 1.0
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = SubResource("nor_tierra")
+uv1_scale = Vector3(0.6, 0.6, 0.6)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="FastNoiseLite" id="ruido_madera"]
+noise_type = 3
+frequency = 0.05
+fractal_octaves = 3
+fractal_lacunarity = 3.0
+[sub_resource type="Gradient" id="grad_madera"]
+colors = PackedColorArray(0.16, 0.1, 0.06, 1, 0.34, 0.23, 0.14, 1)
+
+[sub_resource type="NoiseTexture2D" id="tex_madera"]
+width = 128
+height = 1024
+seamless = true
+color_ramp = SubResource("grad_madera")
+noise = SubResource("ruido_madera")
+
+[sub_resource type="NoiseTexture2D" id="nor_madera"]
+width = 128
+height = 1024
+seamless = true
+as_normal_map = true
+bump_strength = 3.0
+noise = SubResource("ruido_madera")
+
+[sub_resource type="StandardMaterial3D" id="mat_madera_salon"]
+albedo_texture = SubResource("tex_madera")
+roughness = 1.0
+normal_enabled = true
+normal_scale = 0.6
+normal_texture = SubResource("nor_madera")
+uv1_scale = Vector3(0.8, 0.8, 0.8)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="FastNoiseLite" id="ruido_paja"]
+noise_type = 2
+frequency = 0.08
+fractal_octaves = 3
+
+[sub_resource type="Gradient" id="grad_paja"]
+colors = PackedColorArray(0.28, 0.21, 0.11, 1, 0.52, 0.41, 0.24, 1)
+
+[sub_resource type="NoiseTexture2D" id="tex_paja"]
+width = 512
+height = 512
+seamless = true
+color_ramp = SubResource("grad_paja")
+noise = SubResource("ruido_paja")
+
+[sub_resource type="NoiseTexture2D" id="nor_paja"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 8.0
+noise = SubResource("ruido_paja")
+
+[sub_resource type="StandardMaterial3D" id="mat_paja_salon"]
+albedo_texture = SubResource("tex_paja")
+roughness = 1.0
+normal_enabled = true
+normal_scale = 1.0
+normal_texture = SubResource("nor_paja")
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="mat_hierro"]
+albedo_color = Color(0.08, 0.08, 0.08, 1)
+metallic = 0.6
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="mat_cuerda"]
+albedo_color = Color(0.3, 0.24, 0.16, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="m_salon_1"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_2"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.000, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_3"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.200, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_4"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_5"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_6"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_7"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_8"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_9"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_10"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_11"]
+material = SubResource("mat_madera_salon")
+size = Vector3(1.520, 0.060, 0.480)
+
+[sub_resource type="BoxMesh" id="m_salon_12"]
+material = SubResource("mat_cal")
+size = Vector3(9.200, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_13"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.000, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_14"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.200, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_15"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_16"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_17"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_18"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_19"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_20"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_21"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_22"]
+material = SubResource("mat_madera_salon")
+size = Vector3(1.520, 0.060, 0.480)
+
+[sub_resource type="BoxMesh" id="m_salon_23"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_24"]
+material = SubResource("mat_cal")
+size = Vector3(2.200, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_25"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.000, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_26"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.200, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_27"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_28"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_29"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_30"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_31"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_32"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_33"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_34"]
+material = SubResource("mat_madera_salon")
+size = Vector3(1.520, 0.060, 0.480)
+
+[sub_resource type="BoxMesh" id="m_salon_35"]
+material = SubResource("mat_cal")
+size = Vector3(3.200, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_36"]
+material = SubResource("mat_cal")
+size = Vector3(1.200, 1.200, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_37"]
+material = SubResource("mat_cal")
+size = Vector3(3.200, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_38"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.000, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_39"]
+material = SubResource("mat_cal")
+size = Vector3(1.400, 1.200, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_40"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_41"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_42"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_43"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_44"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_45"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_46"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_47"]
+material = SubResource("mat_madera_salon")
+size = Vector3(1.520, 0.060, 0.480)
+
+[sub_resource type="BoxMesh" id="m_salon_48"]
+material = SubResource("mat_cal")
+size = Vector3(2.200, 3.500, 0.400)
+
+[sub_resource type="BoxMesh" id="m_salon_49"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 2.100)
+
+[sub_resource type="BoxMesh" id="m_salon_50"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.000, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_51"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.200, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_52"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_53"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_54"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_55"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_56"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_57"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_58"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_59"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.480, 0.060, 1.520)
+
+[sub_resource type="BoxMesh" id="m_salon_60"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 2.200)
+
+[sub_resource type="BoxMesh" id="m_salon_61"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.000, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_62"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.200, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_63"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_64"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_65"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_66"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_67"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_68"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_69"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_70"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.480, 0.060, 1.520)
+
+[sub_resource type="BoxMesh" id="m_salon_71"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 1.900)
+
+[sub_resource type="BoxMesh" id="m_salon_72"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 2.100)
+
+[sub_resource type="BoxMesh" id="m_salon_73"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.000, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_74"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.200, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_75"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_76"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_77"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_78"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_79"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_80"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_81"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_82"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.480, 0.060, 1.520)
+
+[sub_resource type="BoxMesh" id="m_salon_83"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 2.200)
+
+[sub_resource type="BoxMesh" id="m_salon_84"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.000, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_85"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 1.200, 1.400)
+
+[sub_resource type="BoxMesh" id="m_salon_86"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_87"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_88"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_89"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_90"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_91"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_92"]
+material = SubResource("mat_hierro")
+size = Vector3(0.030, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="m_salon_93"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.480, 0.060, 1.520)
+
+[sub_resource type="BoxMesh" id="m_salon_94"]
+material = SubResource("mat_cal")
+size = Vector3(0.400, 3.500, 1.900)
+
+[sub_resource type="BoxMesh" id="m_salon_95"]
+material = SubResource("mat_madera_salon")
+size = Vector3(1.200, 2.300, 0.060)
+
+[sub_resource type="BoxMesh" id="m_salon_96"]
+material = SubResource("mat_tierra")
+size = Vector3(14.000, 0.040, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_97"]
+material = SubResource("mat_paja_salon")
+size = Vector3(14.800, 0.120, 9.800)
+
+[sub_resource type="BoxMesh" id="m_salon_98"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_99"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_100"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_101"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_102"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_103"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_104"]
+material = SubResource("mat_madera_salon")
+size = Vector3(0.180, 0.220, 9.000)
+
+[sub_resource type="BoxMesh" id="m_salon_105"]
+material = SubResource("mat_madera_salon")
+size = Vector3(14.000, 0.240, 0.240)
+
+[sub_resource type="CylinderMesh" id="m_salon_106"]
+material = SubResource("mat_madera_salon")
+top_radius = 0.111
+bottom_radius = 0.130
+height = 3.040
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="m_salon_107"]
+material = SubResource("mat_madera_salon")
+top_radius = 0.111
+bottom_radius = 0.130
+height = 3.040
+radial_segments = 10
+rings = 1
+
+[sub_resource type="BoxMesh" id="m_salon_108"]
+material = SubResource("mat_cuerda")
+size = Vector3(0.012, 0.160, 0.012)
+
+[sub_resource type="BoxMesh" id="m_salon_109"]
+material = SubResource("mat_cuerda")
+size = Vector3(0.012, 0.160, 0.012)
+
+[sub_resource type="BoxMesh" id="m_salon_110"]
+material = SubResource("mat_cuerda")
+size = Vector3(0.012, 0.160, 0.012)
+
+[node name="Pulperia" type="Node3D"]
+
+[node name="Entorno" type="WorldEnvironment" parent="."]
+environment = SubResource("entorno")
+
+[node name="Sol" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-9, 142, 0)
+light_color = Color(1, 0.71, 0.46, 1)
+light_energy = 1.35
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 40.0
+
+[node name="Terreno" type="TerrenoPampa" parent="."]
+semilla = 1879
+amplitud = 0.9
+radio_llano = 16.0
+manchas = PackedVector3Array(0, 0, 10.5)
+senderos = PackedVector3Array(0, 5.2, 1.8, -3, 26, 0)
+material = SubResource("mat_terreno")
+
+[node name="Pasto" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_pasto")
+cantidad = 6500
+radio = 42.0
+radio_interno = 9.6
+semilla = 11
+alto = 0.5
+hojas = 6
+ancho_hoja = 0.028
+
+[node name="Cortaderas" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_cortadera")
+cortadera = true
+cantidad = 120
+radio = 70.0
+radio_interno = 12.0
+tamano_parcela = 20.0
+distancia_visible = 110.0
+semilla = 23
+escala_min = 0.75
+escala_max = 1.25
+color_a = Color(0.92, 0.9, 0.82, 1)
+color_b = Color(1, 0.97, 0.88, 1)
+
+[node name="Ambiente" type="AmbientePampa" parent="."]
+material_pasto = SubResource("mat_pasto")
+material_cortadera = SubResource("mat_cortadera")
+
+[node name="CicloDia" type="CicloDia" parent="." node_paths=PackedStringArray("sol", "entorno", "luciernagas", "ambiente")]
+sol = NodePath("../Sol")
+entorno = NodePath("../Entorno")
+cielo = SubResource("cielo_mat")
+luciernagas = NodePath("../Luciernagas")
+ambiente = NodePath("../Ambiente")
+progreso_inicial = 1.0
+
+[node name="Salon" type="Node3D" parent="."]
+
+[node name="Narrador" type="Narrador" parent="Salon" node_paths=PackedStringArray("modelo", "ciclo", "portal", "terreno", "guitarra") groups=["apoyar_en_suelo"]]
+position = Vector3(1.3, 0, -0.7)
+rotation_degrees = Vector3(0, -15, 0)
+demora_inicial = 8.8
+guion = "res://guion/pulperia.json"
+guitarra = NodePath("Guitarra/Cuerdas")
+terreno = NodePath("../../Terreno")
+modelo = NodePath("Gaucho")
+ciclo = NodePath("../../CicloDia")
+portal = NodePath("../Portal")
+
+[node name="Gaucho" type="ModeloIA" parent="Salon/Narrador"]
+modelo = "gaucho"
+
+[node name="Cardos" type="DispersorModelos" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+modelo = "cardo"
+cantidad = 14
+radio_min = 10.0
+radio_max = 34.0
+escala_min = 0.7
+escala_max = 1.3
+separacion = 2.5
+semilla = 31
+sombras = false
+distancia_visible = 70.0
+
+[node name="Luciernagas" type="GPUParticles3D" parent="."]
+visible = false
+position = Vector3(0, 0.9, -12)
+cast_shadow = 0
+amount = 70
+lifetime = 5.0
+preprocess = 5.0
+visibility_aabb = AABB(-16, -2, -16, 32, 5, 32)
+process_material = SubResource("proc_luciernagas")
+draw_pass_1 = SubResource("quad_luciernaga")
+
+[node name="Titulo" type="Label3D" parent="."]
+position = Vector3(0, 1.75, 1.6)
+pixel_size = 0.004
+modulate = Color(1, 0.93, 0.8, 1)
+outline_modulate = Color(0.12, 0.06, 0.02, 1)
+outline_size = 10
+text = "La pulpería
+Noche de guitarreada"
+font = SubResource("fuente_serif")
+font_size = 56
+
+[node name="Jugador" type="JugadorXR" parent="." node_paths=PackedStringArray("terreno", "titulo")]
+position = Vector3(0, 0, 3.0)
+terreno = NodePath("../Terreno")
+titulo = NodePath("../Titulo")
+radio_limite = 6.0
+duracion_titulo = 6.0
+fundido_inicial = 3.0
+
+[node name="Cabeza" type="XRCamera3D" parent="Jugador"]
+position = Vector3(0, 1.65, 0)
+current = true
+near = 0.05
+far = 2500.0
+
+[node name="ManoIzquierda" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(-0.25, 1.1, -0.3)
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoIzquierda"]
+mesh = SubResource("m_guante")
+
+[node name="ManoDerecha" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(0.25, 1.1, -0.3)
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
+mesh = SubResource("m_guante")
+
+[node name="Habitacion" type="Node3D" parent="Salon"]
+
+[node name="Fondo1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-6.700, 1.750, -4.700)
+mesh = SubResource("m_salon_1")
+
+[node name="Fondo2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.300, 0.500, -4.700)
+mesh = SubResource("m_salon_2")
+
+[node name="Fondo3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.300, 2.900, -4.700)
+mesh = SubResource("m_salon_3")
+
+[node name="FondoReja3_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.900, 1.650, -4.700)
+mesh = SubResource("m_salon_4")
+
+[node name="FondoReja3_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.700, 1.650, -4.700)
+mesh = SubResource("m_salon_5")
+
+[node name="FondoReja3_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.500, 1.650, -4.700)
+mesh = SubResource("m_salon_6")
+
+[node name="FondoReja3_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.300, 1.650, -4.700)
+mesh = SubResource("m_salon_7")
+
+[node name="FondoReja3_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.100, 1.650, -4.700)
+mesh = SubResource("m_salon_8")
+
+[node name="FondoReja3_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.900, 1.650, -4.700)
+mesh = SubResource("m_salon_9")
+
+[node name="FondoReja3_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.700, 1.650, -4.700)
+mesh = SubResource("m_salon_10")
+
+[node name="FondoAlfeizar3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.300, 1.030, -4.700)
+mesh = SubResource("m_salon_11")
+
+[node name="Fondo4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 1.750, -4.700)
+mesh = SubResource("m_salon_12")
+
+[node name="Fondo5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.300, 0.500, -4.700)
+mesh = SubResource("m_salon_13")
+
+[node name="Fondo6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.300, 2.900, -4.700)
+mesh = SubResource("m_salon_14")
+
+[node name="FondoReja6_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.700, 1.650, -4.700)
+mesh = SubResource("m_salon_15")
+
+[node name="FondoReja6_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.900, 1.650, -4.700)
+mesh = SubResource("m_salon_16")
+
+[node name="FondoReja6_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.100, 1.650, -4.700)
+mesh = SubResource("m_salon_17")
+
+[node name="FondoReja6_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.300, 1.650, -4.700)
+mesh = SubResource("m_salon_18")
+
+[node name="FondoReja6_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.500, 1.650, -4.700)
+mesh = SubResource("m_salon_19")
+
+[node name="FondoReja6_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.700, 1.650, -4.700)
+mesh = SubResource("m_salon_20")
+
+[node name="FondoReja6_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.900, 1.650, -4.700)
+mesh = SubResource("m_salon_21")
+
+[node name="FondoAlfeizar6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.300, 1.030, -4.700)
+mesh = SubResource("m_salon_22")
+
+[node name="Fondo7" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(6.700, 1.750, -4.700)
+mesh = SubResource("m_salon_23")
+
+[node name="Frente1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-6.300, 1.750, 4.700)
+mesh = SubResource("m_salon_24")
+
+[node name="Frente2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.500, 0.500, 4.700)
+mesh = SubResource("m_salon_25")
+
+[node name="Frente3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.500, 2.900, 4.700)
+mesh = SubResource("m_salon_26")
+
+[node name="FrenteReja3_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-5.100, 1.650, 4.700)
+mesh = SubResource("m_salon_27")
+
+[node name="FrenteReja3_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.900, 1.650, 4.700)
+mesh = SubResource("m_salon_28")
+
+[node name="FrenteReja3_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.700, 1.650, 4.700)
+mesh = SubResource("m_salon_29")
+
+[node name="FrenteReja3_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.500, 1.650, 4.700)
+mesh = SubResource("m_salon_30")
+
+[node name="FrenteReja3_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.300, 1.650, 4.700)
+mesh = SubResource("m_salon_31")
+
+[node name="FrenteReja3_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.100, 1.650, 4.700)
+mesh = SubResource("m_salon_32")
+
+[node name="FrenteReja3_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-3.900, 1.650, 4.700)
+mesh = SubResource("m_salon_33")
+
+[node name="FrenteAlfeizar3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.500, 1.030, 4.700)
+mesh = SubResource("m_salon_34")
+
+[node name="Frente4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-2.200, 1.750, 4.700)
+mesh = SubResource("m_salon_35")
+
+[node name="Frente5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 2.900, 4.700)
+mesh = SubResource("m_salon_36")
+
+[node name="Frente6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(2.200, 1.750, 4.700)
+mesh = SubResource("m_salon_37")
+
+[node name="Frente7" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.500, 0.500, 4.700)
+mesh = SubResource("m_salon_38")
+
+[node name="Frente8" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.500, 2.900, 4.700)
+mesh = SubResource("m_salon_39")
+
+[node name="FrenteReja8_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(3.900, 1.650, 4.700)
+mesh = SubResource("m_salon_40")
+
+[node name="FrenteReja8_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.100, 1.650, 4.700)
+mesh = SubResource("m_salon_41")
+
+[node name="FrenteReja8_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.300, 1.650, 4.700)
+mesh = SubResource("m_salon_42")
+
+[node name="FrenteReja8_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.500, 1.650, 4.700)
+mesh = SubResource("m_salon_43")
+
+[node name="FrenteReja8_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.700, 1.650, 4.700)
+mesh = SubResource("m_salon_44")
+
+[node name="FrenteReja8_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.900, 1.650, 4.700)
+mesh = SubResource("m_salon_45")
+
+[node name="FrenteReja8_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(5.100, 1.650, 4.700)
+mesh = SubResource("m_salon_46")
+
+[node name="FrenteAlfeizar8" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.500, 1.030, 4.700)
+mesh = SubResource("m_salon_47")
+
+[node name="Frente9" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(6.300, 1.750, 4.700)
+mesh = SubResource("m_salon_48")
+
+[node name="Izquierda1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.750, -3.450)
+mesh = SubResource("m_salon_49")
+
+[node name="Izquierda2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 0.500, -1.700)
+mesh = SubResource("m_salon_50")
+
+[node name="Izquierda3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 2.900, -1.700)
+mesh = SubResource("m_salon_51")
+
+[node name="IzquierdaReja3_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -2.300)
+mesh = SubResource("m_salon_52")
+
+[node name="IzquierdaReja3_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -2.100)
+mesh = SubResource("m_salon_53")
+
+[node name="IzquierdaReja3_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -1.900)
+mesh = SubResource("m_salon_54")
+
+[node name="IzquierdaReja3_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -1.700)
+mesh = SubResource("m_salon_55")
+
+[node name="IzquierdaReja3_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -1.500)
+mesh = SubResource("m_salon_56")
+
+[node name="IzquierdaReja3_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -1.300)
+mesh = SubResource("m_salon_57")
+
+[node name="IzquierdaReja3_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, -1.100)
+mesh = SubResource("m_salon_58")
+
+[node name="IzquierdaAlfeizar3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.030, -1.700)
+mesh = SubResource("m_salon_59")
+
+[node name="Izquierda4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.750, 0.100)
+mesh = SubResource("m_salon_60")
+
+[node name="Izquierda5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 0.500, 1.900)
+mesh = SubResource("m_salon_61")
+
+[node name="Izquierda6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 2.900, 1.900)
+mesh = SubResource("m_salon_62")
+
+[node name="IzquierdaReja6_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 1.300)
+mesh = SubResource("m_salon_63")
+
+[node name="IzquierdaReja6_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 1.500)
+mesh = SubResource("m_salon_64")
+
+[node name="IzquierdaReja6_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 1.700)
+mesh = SubResource("m_salon_65")
+
+[node name="IzquierdaReja6_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 1.900)
+mesh = SubResource("m_salon_66")
+
+[node name="IzquierdaReja6_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 2.100)
+mesh = SubResource("m_salon_67")
+
+[node name="IzquierdaReja6_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 2.300)
+mesh = SubResource("m_salon_68")
+
+[node name="IzquierdaReja6_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.650, 2.500)
+mesh = SubResource("m_salon_69")
+
+[node name="IzquierdaAlfeizar6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.030, 1.900)
+mesh = SubResource("m_salon_70")
+
+[node name="Izquierda7" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-7.200, 1.750, 3.550)
+mesh = SubResource("m_salon_71")
+
+[node name="Derecha1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.750, -3.450)
+mesh = SubResource("m_salon_72")
+
+[node name="Derecha2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 0.500, -1.700)
+mesh = SubResource("m_salon_73")
+
+[node name="Derecha3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 2.900, -1.700)
+mesh = SubResource("m_salon_74")
+
+[node name="DerechaReja3_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -2.300)
+mesh = SubResource("m_salon_75")
+
+[node name="DerechaReja3_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -2.100)
+mesh = SubResource("m_salon_76")
+
+[node name="DerechaReja3_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -1.900)
+mesh = SubResource("m_salon_77")
+
+[node name="DerechaReja3_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -1.700)
+mesh = SubResource("m_salon_78")
+
+[node name="DerechaReja3_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -1.500)
+mesh = SubResource("m_salon_79")
+
+[node name="DerechaReja3_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -1.300)
+mesh = SubResource("m_salon_80")
+
+[node name="DerechaReja3_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, -1.100)
+mesh = SubResource("m_salon_81")
+
+[node name="DerechaAlfeizar3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.030, -1.700)
+mesh = SubResource("m_salon_82")
+
+[node name="Derecha4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.750, 0.100)
+mesh = SubResource("m_salon_83")
+
+[node name="Derecha5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 0.500, 1.900)
+mesh = SubResource("m_salon_84")
+
+[node name="Derecha6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 2.900, 1.900)
+mesh = SubResource("m_salon_85")
+
+[node name="DerechaReja6_0" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 1.300)
+mesh = SubResource("m_salon_86")
+
+[node name="DerechaReja6_1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 1.500)
+mesh = SubResource("m_salon_87")
+
+[node name="DerechaReja6_2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 1.700)
+mesh = SubResource("m_salon_88")
+
+[node name="DerechaReja6_3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 1.900)
+mesh = SubResource("m_salon_89")
+
+[node name="DerechaReja6_4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 2.100)
+mesh = SubResource("m_salon_90")
+
+[node name="DerechaReja6_5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 2.300)
+mesh = SubResource("m_salon_91")
+
+[node name="DerechaReja6_6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.650, 2.500)
+mesh = SubResource("m_salon_92")
+
+[node name="DerechaAlfeizar6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.030, 1.900)
+mesh = SubResource("m_salon_93")
+
+[node name="Derecha7" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(7.200, 1.750, 3.550)
+mesh = SubResource("m_salon_94")
+
+[node name="Puerta" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(1.200, 1.150, 4.450)
+mesh = SubResource("m_salon_95")
+
+[node name="Piso" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 0.000, 0.000)
+mesh = SubResource("m_salon_96")
+
+[node name="Techo" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 3.560, 0.000)
+mesh = SubResource("m_salon_97")
+
+[node name="Viga1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-6.000, 3.390, 0.000)
+mesh = SubResource("m_salon_98")
+
+[node name="Viga2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.000, 3.390, 0.000)
+mesh = SubResource("m_salon_99")
+
+[node name="Viga3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-2.000, 3.390, 0.000)
+mesh = SubResource("m_salon_100")
+
+[node name="Viga4" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 3.390, 0.000)
+mesh = SubResource("m_salon_101")
+
+[node name="Viga5" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(2.000, 3.390, 0.000)
+mesh = SubResource("m_salon_102")
+
+[node name="Viga6" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.000, 3.390, 0.000)
+mesh = SubResource("m_salon_103")
+
+[node name="Viga7" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(6.000, 3.390, 0.000)
+mesh = SubResource("m_salon_104")
+
+[node name="Cumbrera" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 3.160, 0.000)
+mesh = SubResource("m_salon_105")
+
+[node name="Horcon1" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-3.500, 1.520, 0.000)
+mesh = SubResource("m_salon_106")
+
+[node name="Horcon2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(3.500, 1.520, 0.000)
+mesh = SubResource("m_salon_107")
+
+[node name="CuerdaFarolColgado" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(0.000, 3.200, -1.000)
+mesh = SubResource("m_salon_108")
+
+[node name="CuerdaFarolColgado2" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(-4.000, 3.200, 1.800)
+mesh = SubResource("m_salon_109")
+
+[node name="CuerdaFarolColgado3" type="MeshInstance3D" parent="Salon/Habitacion"]
+position = Vector3(4.000, 3.200, 1.800)
+mesh = SubResource("m_salon_110")
+
+[node name="Mostrador" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(0, 0, -2.6)
+modelo = "mostrador"
+
+[node name="Estante1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.35, 0, -4.13)
+modelo = "estante"
+
+[node name="Estante2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(1.45, 0, -4.13)
+modelo = "estante"
+
+[node name="Pulpero" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(0.55, 0, -3.48)
+modelo = "pulpero"
+animacion = "escuchar"
+
+[node name="BotellasMostrador" type="ModeloIA" parent="Salon"]
+position = Vector3(0.95, 0.97, -2.45)
+rotation_degrees = Vector3(0, 20, 0)
+modelo = "botellas"
+sombras = false
+
+[node name="Ristras1" type="ModeloIA" parent="Salon"]
+position = Vector3(-2.0, 2.46, -3.75)
+modelo = "ristras"
+sombras = false
+
+[node name="Ristras2" type="ModeloIA" parent="Salon"]
+position = Vector3(0.0, 2.46, -3.75)
+rotation_degrees = Vector3(0, 25, 0)
+modelo = "ristras"
+sombras = false
+
+[node name="Ristras3" type="ModeloIA" parent="Salon"]
+position = Vector3(2.0, 2.46, -3.75)
+rotation_degrees = Vector3(0, 50, 0)
+modelo = "ristras"
+sombras = false
+
+[node name="Barril1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.05, 0, -4.05)
+modelo = "barril"
+
+[node name="Barril2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.75, 0, -4.1)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "barril"
+
+[node name="Barril3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(3.2, 0, -4.05)
+rotation_degrees = Vector3(0, 40, 0)
+modelo = "barril"
+
+[node name="Barril4" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.35, 0, -4.0)
+rotation_degrees = Vector3(0, 10, 0)
+modelo = "barril"
+
+[node name="Barril5" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.35, 0, 0.3)
+rotation_degrees = Vector3(0, 70, 0)
+modelo = "barril"
+
+[node name="Damajuana1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-2.55, 0, -3.45)
+modelo = "damajuana"
+sombras = false
+
+[node name="Damajuana2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(2.45, 0, -3.5)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "damajuana"
+sombras = false
+
+[node name="Damajuana3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.4, 0, 3.9)
+modelo = "damajuana"
+sombras = false
+
+[node name="Damajuana4" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.0, 0, 4.15)
+rotation_degrees = Vector3(0, -40, 0)
+modelo = "damajuana"
+sombras = false
+
+[node name="Damajuana5" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.4, 0, 4.0)
+rotation_degrees = Vector3(0, 20, 0)
+modelo = "damajuana"
+sombras = false
+
+[node name="Damajuana6" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.1, 0, 0.75)
+rotation_degrees = Vector3(0, 50, 0)
+modelo = "damajuana"
+sombras = false
+
+[node name="Bolsas1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(5.3, 0, -3.85)
+rotation_degrees = Vector3(0, -10, 0)
+modelo = "bolsas"
+
+[node name="Bolsas2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.6, 0, -3.8)
+rotation_degrees = Vector3(0, 25, 0)
+modelo = "bolsas"
+
+[node name="Cajones1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.35, 0, -3.1)
+rotation_degrees = Vector3(0, 15, 0)
+modelo = "cajones"
+
+[node name="Cajones2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.6, 0, -4.0)
+rotation_degrees = Vector3(0, -20, 0)
+modelo = "cajones"
+
+[node name="Cuero" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(3.6, 0, 4.2)
+rotation_degrees = Vector3(0, 180, 0)
+modelo = "cuero"
+
+[node name="Recado" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.2, 0, 3.0)
+rotation_degrees = Vector3(0, -60, 0)
+modelo = "recado"
+
+[node name="Mesa" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.4, 0, -0.6)
+modelo = "mesa_truco"
+
+[node name="Paisano" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.02, 0, -0.85)
+rotation_degrees = Vector3(0, 90, 0)
+modelo = "paisano"
+animacion = "truco"
+
+[node name="Viejo" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.78, 0, -0.85)
+rotation_degrees = Vector3(0, -90, 0)
+modelo = "viejo"
+animacion = "truco"
+
+[node name="BotellasMesa" type="ModeloIA" parent="Salon"]
+position = Vector3(-4.4, 0.84, -0.15)
+rotation_degrees = Vector3(0, -30, 0)
+modelo = "botellas"
+sombras = false
+
+[node name="FarolMesa" type="ModeloIA" parent="Salon"]
+position = Vector3(-4.4, 0.84, 0.35)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolMesa"]
+position = Vector3(0, 0.22, 0)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 1.0
+omni_range = 4.5
+omni_attenuation = 1.15
+
+[node name="Mesa2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(4.6, 0, 1.3)
+modelo = "mesa_truco"
+
+[node name="Sargento" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(3.98, 0, 1.05)
+rotation_degrees = Vector3(0, 90, 0)
+modelo = "sargento"
+animacion = "truco"
+
+[node name="Soldado" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(5.22, 0, 1.05)
+rotation_degrees = Vector3(0, -90, 0)
+modelo = "soldado"
+animacion = "truco"
+
+[node name="BotellasMesa2" type="ModeloIA" parent="Salon"]
+position = Vector3(4.6, 0.84, 1.7)
+rotation_degrees = Vector3(0, 60, 0)
+modelo = "botellas"
+sombras = false
+
+[node name="Sombrero" type="ModeloIA" parent="Salon"]
+position = Vector3(4.5, 0.84, 2.0)
+rotation_degrees = Vector3(0, 40, 0)
+modelo = "sombrero"
+sombras = false
+
+[node name="FarolMesa2" type="ModeloIA" parent="Salon"]
+position = Vector3(4.7, 0.84, 0.75)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolMesa2"]
+position = Vector3(0, 0.22, 0)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 0.9
+omni_range = 4.5
+omni_attenuation = 1.15
+
+[node name="Banco" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.55, 0, 1.9)
+rotation_degrees = Vector3(0, 90, 0)
+modelo = "banco"
+
+[node name="Tropero" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.55, 0, 1.7)
+rotation_degrees = Vector3(0, 90, 0)
+modelo = "tropero"
+animacion = "sentado"
+
+[node name="Banco2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(6.55, 0, 1.9)
+rotation_degrees = Vector3(0, -90, 0)
+modelo = "banco"
+
+[node name="Oyente" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.5, 0, -1.25)
+rotation_degrees = Vector3(0, 70, 0)
+modelo = "levado"
+animacion = "mate"
+
+[node name="Mate" type="Accesorio" parent="Salon/Oyente" node_paths=PackedStringArray("portador")]
+position = Vector3(0, -0.07, 0)
+portador = NodePath("..")
+vertical = true
+solo_durante = "mate"
+
+[node name="Modelo" type="ModeloIA" parent="Salon/Oyente/Mate"]
+position = Vector3(0, 0, 0)
+modelo = "mate"
+sombras = false
+
+[node name="Acodado" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-0.75, 0, -1.72)
+rotation_degrees = Vector3(0, 165, 0)
+modelo = "soldado"
+animacion = "escuchar"
+
+[node name="Perro" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(2.4, 0, 0.6)
+rotation_degrees = Vector3(0, -60, 0)
+modelo = "perro"
+animacion = "lie|sleep|sit|rest|idle"
+
+[node name="Mandadero" type="Caminante" parent="Salon" node_paths=PackedStringArray("modelo", "terreno") groups=["apoyar_en_suelo"]]
+position = Vector3(-2.2, 0, -1.6)
+modelo = NodePath("Muchacho")
+puntos = PackedVector3Array(-2.2, 0, -1.6, -3.3, 0, 0.7, -0.6, 0, 1.3, 2.9, 0, 0.3, -0.6, 0, 1.3, -3.3, 0, 0.7)
+velocidad = 0.9
+pausa = 2.5
+terreno = NodePath("../../Terreno")
+
+[node name="Muchacho" type="ModeloIA" parent="Salon/Mandadero"]
+position = Vector3(0, 0, 0)
+modelo = "muchacho"
+animacion = "idle"
+
+[node name="Guitarra" type="Accesorio" parent="Salon/Narrador" node_paths=PackedStringArray("portador")]
+position = Vector3(-0.75, 0, 0)
+rotation_degrees = Vector3(0, 0, -90)
+portador = NodePath("../Gaucho")
+hueso = "mano.L"
+hacia_hueso = "mano.R"
+solo_durante = "tocar"
+
+[node name="Modelo" type="ModeloIA" parent="Salon/Narrador/Guitarra"]
+position = Vector3(0, 0, 0)
+modelo = "guitarra"
+sombras = false
+
+[node name="Cuerdas" type="GuitarraCriolla" parent="Salon/Narrador/Guitarra"]
+volumen_db = -2.0
+
+[node name="FarolMostrador" type="ModeloIA" parent="Salon"]
+position = Vector3(-0.95, 0.97, -2.5)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolMostrador"]
+position = Vector3(0, 0.2, 0.2)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 1.3
+omni_range = 5.5
+omni_attenuation = 1.15
+
+[node name="FarolColgado" type="ModeloIA" parent="Salon"]
+position = Vector3(0, 2.74, -1.0)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolColgado"]
+position = Vector3(0, 0.15, 0)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 1.9
+shadow_enabled = true
+omni_range = 9.0
+omni_attenuation = 1.15
+
+[node name="FarolColgado2" type="ModeloIA" parent="Salon"]
+position = Vector3(-4, 2.74, 1.8)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolColgado2"]
+position = Vector3(0, 0.15, 0)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 1.2
+omni_range = 6.5
+omni_attenuation = 1.15
+
+[node name="FarolColgado3" type="ModeloIA" parent="Salon"]
+position = Vector3(4, 2.74, 1.8)
+modelo = "farol"
+sombras = false
+
+[node name="Luz" type="OmniLight3D" parent="Salon/FarolColgado3"]
+position = Vector3(0, 0.15, 0)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 1.2
+omni_range = 6.5
+omni_attenuation = 1.15
+
+[node name="Portal" type="PortalFogon" parent="Salon" node_paths=PackedStringArray("luz")]
+escena_destino = "res://escenas/pampa.tscn"
+luz = NodePath("../FarolColgado/Luz")
+tiempo_maximo = 150.0
+
+[node name="Afuera" type="Node3D" parent="."]
+
+[node name="Palenque" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.3, 0, -7.4)
+modelo = "palenque"
+
+[node name="CaballoMoro" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.1, 0, -8.3)
+rotation_degrees = Vector3(0, 95, 0)
+modelo = "caballo_moro"
+respirar = 0.008
+periodo = 3.6
+
+[node name="CaballoGateado" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.5, 0, -8.6)
+rotation_degrees = Vector3(0, 75, 0)
+modelo = "caballo_gateado"
+respirar = 0.008
+periodo = 4.1
+
+[node name="Carreta" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(11.0, 0, -1.2)
+rotation_degrees = Vector3(0, 25, 0)
+modelo = "carreta"
+
+[node name="Ombu" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(17.0, 0, -19.0)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "ombu"
+
+[node name="LuzVentana" type="OmniLight3D" parent="Afuera"]
+position = Vector3(-5.3, 1.7, -5.4)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 0.7
+omni_range = 6.0
+omni_attenuation = 1.15
+
+[node name="LuzPuerta" type="OmniLight3D" parent="Afuera"]
+position = Vector3(0, 2.2, 5.6)
+light_color = Color(1, 0.7, 0.42, 1)
+light_energy = 0.6
+omni_range = 5.0
+omni_attenuation = 1.15

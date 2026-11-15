@@ -321,7 +321,7 @@ process_material = SubResource("proc_brasas")
 draw_pass_1 = SubResource("quad_brasa")
 
 [node name="Portal" type="PortalFogon" parent="Fuerte/Fogon" node_paths=PackedStringArray("fogon", "brasas")]
-escena_destino = "res://escenas/pampa.tscn"
+escena_destino = "res://escenas/pulperia.tscn"
 fogon = NodePath("..")
 brasas = NodePath("../Brasas")
 tiempo_maximo = 110.0

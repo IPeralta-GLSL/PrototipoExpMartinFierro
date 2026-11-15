@@ -1,0 +1,63 @@
+[
+  {
+    "texto": "¡Buenas noches, paisanos!\nEsta es la pulpería: acá se junta la gente\na tomar algo, a jugar al truco y a escuchar a los payadores.",
+    "fuente": "narración",
+    "audio": "res://voz/pulperia_01.ogg",
+    "espera": 0.0,
+    "evento": "",
+    "accion": "mostrar",
+    "mirar": "jugador"
+  },
+  {
+    "texto": "Pulpero, alcánceme la guitarra,\nque esta noche voy a cantar.",
+    "fuente": "narración",
+    "audio": "res://voz/pulperia_02.ogg",
+    "espera": 1.2,
+    "evento": "",
+    "accion": "saludar",
+    "mirar": "Pulpero"
+  },
+  {
+    "texto": "Atencion pido al silencio\nY silencio á la atencion,\nQue voy en esta ocasion\nSi me ayuda la memoria,\nA mostrarles que á mi historia\nLe faltaba lo mejor.",
+    "fuente": "La Vuelta, Canto I, 1",
+    "audio": "res://voz/pulperia_03.ogg",
+    "espera": 3.0,
+    "evento": "guitarra",
+    "accion": "tocar",
+    "mirar": "jugador"
+  },
+  {
+    "texto": "Cantando me he de morir,\nCantando me han de enterrar,\nY cantando he de llegar\nAl pié del Eterno Padre—\nDende el vientre de mi madre\nVine á este mundo á cantar.",
+    "fuente": "Canto I, 6",
+    "audio": "res://voz/pulperia_04.ogg",
+    "espera": 3.0,
+    "evento": "guitarra",
+    "accion": "tocar"
+  },
+  {
+    "texto": "Soy gaucho, y entiendaló\nComo mi lengua lo esplica,\nPara mí la tierra es chica\nY pudiera ser mayor;\nNi la víbora me pica\nNi quema mi frente el Sol.",
+    "fuente": "Canto I, 14",
+    "audio": "res://voz/pulperia_05.ogg",
+    "espera": 3.0,
+    "evento": "guitarra",
+    "accion": "tocar"
+  },
+  {
+    "texto": "Los hermanos sean unidos,\nPorque esa es la ley primera—\nTengan union verdadera\nEn cualquier tiempo que sea—\nPorque si entre ellos pelean\nLos devoran los de ajuera.",
+    "fuente": "La Vuelta, Canto XXXII",
+    "audio": "res://voz/pulperia_06.ogg",
+    "espera": 4.0,
+    "evento": "",
+    "accion": "hablar",
+    "mirar": "jugador"
+  },
+  {
+    "texto": "Y aquí me despido, paisanos.\nMirá la luz del farol, que te llevo de vuelta al pago.",
+    "fuente": "narración",
+    "audio": "res://voz/pulperia_07.ogg",
+    "espera": 3.0,
+    "evento": "portal",
+    "accion": "senalar",
+    "mirar": "FarolColgado"
+  }
+]
