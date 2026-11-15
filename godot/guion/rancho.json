@@ -1,9 +1,46 @@
 [
   {
+    "texto": "¡Buenas tardes, paisanos!\nBienvenidos al pago.",
+    "fuente": "narración",
+    "audio": "res://voz/rancho_intro_01.ogg",
+    "espera": 0.0,
+    "evento": "",
+    "accion": "saludar",
+    "mirar": "jugador"
+  },
+  {
+    "texto": "Estamos en la pampa de Buenos Aires,\nallá por el año setenta y dos.\nCampo abierto, hasta donde da la vista.",
+    "fuente": "narración",
+    "audio": "res://voz/rancho_intro_02.ogg",
+    "espera": 1.2,
+    "evento": "",
+    "accion": "mostrar",
+    "mirar": "jugador"
+  },
+  {
+    "texto": "Acá me ven, haciendo un asadito al fogón...\nya va tomando color la carne.",
+    "fuente": "narración",
+    "audio": "res://voz/rancho_intro_03.ogg",
+    "espera": 1.0,
+    "evento": "",
+    "accion": "senalar",
+    "mirar": "Asador"
+  },
+  {
+    "texto": "Arrímense nomás, que mientras tomamos unos mates\nles voy a contar algo.",
+    "fuente": "narración",
+    "audio": "res://voz/rancho_intro_04.ogg",
+    "espera": 0.6,
+    "evento": "",
+    "ir_a": "PuntoCharla",
+    "accion": "mate",
+    "mirar": "jugador"
+  },
+  {
     "texto": "Aquí me pongo á cantar\nAl compás de la vigüela,\nQue el hombre que lo desvela\nUna pena estraordinaria,\nComo la ave solitaria\nCon el cantar se consuela.",
     "fuente": "Canto I, 1",
     "audio": "res://voz/rancho_01.ogg",
-    "espera": 6.0,
+    "espera": 2.5,
     "evento": ""
   },
   {
@@ -24,21 +61,24 @@
     "texto": "Yo no tengo en el amor\nQuien me venga con querellas;\nComo esas aves tan bellas\nQue saltan de rama en rama—\nYo hago en el trébol mi cama,\nY me cubren las estrellas.",
     "fuente": "Canto I, 17",
     "audio": "res://voz/rancho_04.ogg",
-    "espera": 20.0,
-    "evento": ""
+    "espera": 16.0,
+    "evento": "",
+    "accion": "mostrar"
   },
   {
     "texto": "Tuve en mi pago en un tiempo\nHijos, hacienda y mujer,\nPero empecé á padecer,\nMe echaron á la frontera,\n¡Y qué iba á hallar al volver!\nTan solo hallé la tapera.",
     "fuente": "Canto III, 1",
     "audio": "res://voz/rancho_05.ogg",
-    "espera": 12.0,
+    "espera": 10.0,
     "evento": ""
   },
   {
     "texto": "Mirá el fuego, paisano...\nque en las llamas se ve todo.",
     "fuente": "narración",
     "audio": "res://voz/rancho_06.ogg",
-    "espera": 6.0,
-    "evento": "portal"
+    "espera": 8.0,
+    "evento": "portal",
+    "accion": "senalar",
+    "mirar": "Fogon"
   }
 ]

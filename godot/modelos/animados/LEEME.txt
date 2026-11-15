@@ -1,28 +1,38 @@
-MODELOS ANIMADOS (Mesh2Motion)
-==============================
+MODELOS ANIMADOS
+================
 
-Todo GLB que guardes acá reemplaza automáticamente al modelo estático del mismo
+Todo GLB que esté acá reemplaza automáticamente al modelo estático del mismo
 nombre (godot/modelos/<nombre>.glb), en el editor y en el juego, y reproduce sus
-animaciones en bucle.
+animaciones en bucle (ModeloIA.reproducir, por nombre).
 
-Cómo hacerlo (https://mesh2motion.org o la versión de escritorio):
+PERSONAS (automático, con Blender): tools/rig/riggear.py toma el modelo en pose A,
+le arma el esqueleto, lo pesa y le crea las animaciones:
+  idle, hablar, saludar, mostrar, senalar, mate, caminar, asar, mirar, cavar
 
+  $B = "$env:LOCALAPPDATA\Programs\Blender\blender-4.5.16-windows-x64\blender.exe"
+  & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\gaucho_rig.glb godot\modelos\animados\gaucho.glb
+
+ Modelo en pose A                 Guardar como     Dónde aparece
+ ------------------------------   --------------   ------------------------------------
+ godot/modelos/gaucho_rig.glb     gaucho.glb       narrador (rancho y fortín)
+ godot/modelos/soldado_rig.glb    soldado.glb      centinela del mangrullo, soldado del mate
+ godot/modelos/sargento_rig.glb   sargento.glb     la ronda del fortín
+ godot/modelos/levado_rig.glb     levado.glb       el gaucho levado que cava
+
+ANIMALES (a mano, con Mesh2Motion: https://mesh2motion.org):
  1. Load model -> elegí el GLB de la tabla.
  2. Elegí el esqueleto indicado y acomodá las articulaciones sobre el modelo.
  3. Bind / Skin -> elegí las animaciones -> Export GLB (todas juntas).
  4. Guardalo en esta carpeta con el nombre de "Guardar como".
 
- Cargar en Mesh2Motion            Esqueleto   Animaciones sugeridas          Guardar como
- ------------------------------   ---------   ----------------------------   ---------------------
- godot/modelos/gaucho_rig.glb     Human       idle, talking/gesture          gaucho.glb
- godot/modelos/caballo_moro.glb   Horse       idle, graze/eat, walk          caballo_moro.glb
- godot/modelos/caballo_gateado.glb Horse      idle, graze/eat                caballo_gateado.glb
- godot/modelos/vaca_parada.glb    Horse       idle, graze/eat                vaca.glb
- godot/modelos/perro_parado.glb   Fox         sit / lie / sleep, idle        perro.glb
+ Cargar en Mesh2Motion             Esqueleto   Animaciones sugeridas     Guardar como
+ -------------------------------   ---------   -----------------------   -------------------
+ godot/modelos/caballo_moro.glb    Horse       idle, graze/eat, walk     caballo_moro.glb
+ godot/modelos/caballo_gateado.glb Horse       idle, graze/eat           caballo_gateado.glb
+ godot/modelos/vaca_parada.glb     Horse       idle, graze/eat           vaca.glb
+ godot/modelos/perro_parado.glb    Fox         sit / lie / sleep, idle   perro.glb
 
 Qué animación usa cada uno (por nombre, sin importar mayúsculas):
- - El narrador (gaucho): "talk|hablar|gesture|speak" mientras habla, "idle|breath|stand" en silencio.
- - El perro: "lie|sleep|sit|rest|idle".
- - Caballos y vacas: "idle|graze|eat|breath".
-Si tus animaciones se llaman distinto, renombralas al exportar o cambiá la propiedad
-"animacion" del nodo ModeloIA en la escena.
+ - El narrador: la "accion" de cada línea del guion (godot/guion/*.json), "hablar" por defecto.
+ - El perro: "lie|sleep|sit|rest|idle".  Caballos y vacas: "idle|graze|eat|breath".
+ - Los demás: la propiedad "animacion" del nodo ModeloIA en la escena.

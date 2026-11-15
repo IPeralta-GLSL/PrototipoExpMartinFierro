@@ -389,7 +389,7 @@ draw_pass_1 = SubResource("quad_brasa")
 escena_destino = "res://escenas/fortin.tscn"
 fogon = NodePath("..")
 brasas = NodePath("../Brasas")
-tiempo_maximo = 150.0
+tiempo_maximo = 200.0
 
 [node name="Humo" type="GPUParticles3D" parent="Campamento/Fogon"]
 position = Vector3(0, 0.9, 0)
@@ -607,17 +607,33 @@ position = Vector3(9.4, 0, -18.4)
 rotation_degrees = Vector3(0, -40, 0)
 modelo = "chimango"
 
-[node name="Narrador" type="Narrador" parent="Campamento" node_paths=PackedStringArray("modelo", "ciclo", "portal") groups=["apoyar_en_suelo"]]
+[node name="PuntoCharla" type="Marker3D" parent="Campamento"]
 position = Vector3(0.6, 0, -2.05)
-rotation_degrees = Vector3(0, -8, 0)
+
+[node name="Narrador" type="Narrador" parent="Campamento" node_paths=PackedStringArray("modelo", "ciclo", "portal", "terreno") groups=["apoyar_en_suelo"]]
+position = Vector3(1.75, 0, -0.95)
+rotation_degrees = Vector3(0, -60, 0)
 demora_inicial = 11.8
 guion = "res://guion/rancho.json"
 modelo = NodePath("Gaucho")
 ciclo = NodePath("../../CicloDia")
 portal = NodePath("../Fogon/Portal")
+terreno = NodePath("../../Terreno")
+accion_inicial = "asar"
+mirar_inicial = "Asador"
 
 [node name="Gaucho" type="ModeloIA" parent="Campamento/Narrador"]
 modelo = "gaucho"
+
+[node name="MateEnMano" type="Accesorio" parent="Campamento/Narrador" node_paths=PackedStringArray("portador")]
+position = Vector3(0, -0.07, 0.03)
+vertical = true
+portador = NodePath("../Gaucho")
+solo_durante = "mate"
+
+[node name="Mate" type="ModeloIA" parent="Campamento/Narrador/MateEnMano"]
+modelo = "mate"
+sombras = false
 
 [node name="Fauna" type="Node3D" parent="."]
 

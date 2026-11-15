@@ -336,11 +336,12 @@ visibility_aabb = AABB(-4, -1, -4, 8, 10, 8)
 process_material = SubResource("proc_humo")
 draw_pass_1 = SubResource("quad_humo")
 
-[node name="Narrador" type="Narrador" parent="Fuerte" node_paths=PackedStringArray("modelo", "ciclo", "portal") groups=["apoyar_en_suelo"]]
+[node name="Narrador" type="Narrador" parent="Fuerte" node_paths=PackedStringArray("modelo", "ciclo", "portal", "terreno") groups=["apoyar_en_suelo"]]
 position = Vector3(0.6, 0, -1.95)
 rotation_degrees = Vector3(0, -8, 0)
 demora_inicial = 8.8
 guion = "res://guion/fortin.json"
+terreno = NodePath("../../Terreno")
 modelo = NodePath("Gaucho")
 ciclo = NodePath("../../CicloDia")
 portal = NodePath("../Fogon/Portal")
@@ -541,3 +542,68 @@ pose = &"grip"
 
 [node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
 mesh = SubResource("m_guante")
+
+[node name="Centinela" type="ModeloIA" parent="Fuerte/Mangrullo"]
+position = Vector3(-0.01, 5.95, 0.95)
+rotation_degrees = Vector3(0, -91, 0)
+modelo = "soldado"
+animacion = "mirar"
+
+[node name="Fusil" type="Accesorio" parent="Fuerte/Mangrullo/Centinela" node_paths=PackedStringArray("portador")]
+position = Vector3(0, -0.29, 0.05)
+rotation_degrees = Vector3(0, 0, 90)
+vertical = true
+portador = NodePath("..")
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Mangrullo/Centinela/Fusil"]
+modelo = "fusil"
+sombras = false
+
+[node name="Ronda" type="Caminante" parent="Fuerte" node_paths=PackedStringArray("modelo", "terreno") groups=["apoyar_en_suelo"]]
+position = Vector3(-1.6, 0, -3.2)
+modelo = NodePath("Sargento")
+puntos = PackedVector3Array(-1.6, 0, -3.2, 1.9, 0, -3.4)
+pausa = 3.5
+terreno = NodePath("../../Terreno")
+
+[node name="Sargento" type="ModeloIA" parent="Fuerte/Ronda"]
+modelo = "sargento"
+animacion = "idle"
+
+[node name="Levado" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-2.8, 0, -1.2)
+rotation_degrees = Vector3(0, 60, 0)
+modelo = "levado"
+animacion = "cavar"
+
+[node name="Pala" type="Accesorio" parent="Fuerte/Levado" node_paths=PackedStringArray("portador")]
+position = Vector3(-0.18, 0, 0)
+hacia_hueso = "mano.L"
+portador = NodePath("..")
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Levado/Pala"]
+modelo = "pala"
+sombras = false
+
+[node name="SoldadoMate" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(1.7, 0, 0.8)
+rotation_degrees = Vector3(0, -115, 0)
+modelo = "soldado"
+animacion = "mate"
+
+[node name="Mate" type="Accesorio" parent="Fuerte/SoldadoMate" node_paths=PackedStringArray("portador")]
+position = Vector3(0, -0.07, 0.03)
+vertical = true
+portador = NodePath("..")
+solo_durante = "mate"
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/SoldadoMate/Mate"]
+modelo = "mate"
+sombras = false
+
+[node name="FarolMangrullo" type="OmniLight3D" parent="Fuerte/Mangrullo"]
+position = Vector3(0.35, 6.75, 0.55)
+light_color = Color(1, 0.72, 0.42, 1)
+light_energy = 1.4
+omni_range = 3.6
+omni_attenuation = 1.4

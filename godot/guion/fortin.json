@@ -4,7 +4,8 @@
     "fuente": "Canto III, 16",
     "audio": "res://voz/fortin_01.ogg",
     "espera": 4.0,
-    "evento": ""
+    "evento": "",
+    "accion": "mostrar"
   },
   {
     "texto": "A naides le dieron armas,\nPues toditas las que había\nEl Coronel las tenia,\nSigun dijo esa ocasión,\nPa repartirlas el día\nEn que hubiera una invasión.",
@@ -25,13 +26,16 @@
     "fuente": "Canto III, 24",
     "audio": "res://voz/fortin_04.ogg",
     "espera": 3.0,
-    "evento": ""
+    "evento": "",
+    "accion": "hablar"
   },
   {
     "texto": "Ansí fue, paisano.\nMirá el fuego otra vez, que te llevo de vuelta al pago.",
     "fuente": "narración",
     "audio": "res://voz/fortin_05.ogg",
     "espera": 4.0,
-    "evento": "portal"
+    "evento": "portal",
+    "accion": "senalar",
+    "mirar": "Fogon"
   }
 ]

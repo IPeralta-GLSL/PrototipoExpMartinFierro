@@ -12,7 +12,9 @@ param(
     [int]$Esperar = 120,
     [string]$Resolucion = "1600x900",
     [string]$Escena = "",
-    [string[]]$Extra = @()
+    [string[]]$Extra = @(),
+    # Paso de tiempo fijo (p. ej. 30): -Esperar pasa a ser segundos * Fps.
+    [int]$Fps = 0
 )
 $ErrorActionPreference = 'Stop'
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -22,6 +24,7 @@ $logs = Join-Path $raiz 'build'
 New-Item -ItemType Directory -Force $logs | Out-Null
 
 $argumentos = @('--path', $proyecto, '--xr-mode', 'off', '--resolution', $Resolucion)
+if ($Fps -gt 0) { $argumentos += @('--fixed-fps', "$Fps") }
 if ($Escena) { $argumentos += $Escena }
 $argumentos += @('--', "--captura=$Salida", "--vista=$Vista", "--esperar=$Esperar") + $Extra
 

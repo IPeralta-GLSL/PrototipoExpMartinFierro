@@ -24,6 +24,7 @@ pub mod jugador;
 pub mod modelos;
 pub mod narrador;
 pub mod pasto;
+pub mod personajes;
 pub mod portal;
 pub mod ruido;
 pub mod sintesis;

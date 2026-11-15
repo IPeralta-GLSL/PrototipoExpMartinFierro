@@ -12,15 +12,15 @@ use std::f32::consts::TAU;
 
 use godot::classes::{
     animation::LoopMode, geometry_instance_3d::ShadowCastingSetting, AnimationPlayer, Engine,
-    GeometryInstance3D, Node, PackedScene, ResourceLoader,
+    GeometryInstance3D, Node, PackedScene, ResourceLoader, Skeleton3D,
 };
 use godot::prelude::*;
 
 use crate::azar::Azar;
 use crate::terreno::TerrenoPampa;
 
-/// Ruta del modelo: primero la versión animada (exportada de Mesh2Motion a
-/// res://modelos/animados/), si no la estática generada por la IA.
+/// Ruta del modelo: primero la versión animada (riggeada con tools/rig o
+/// Mesh2Motion, en res://modelos/animados/), si no la estática de la IA.
 fn ruta_modelo(nombre: &str) -> Option<String> {
     if nombre.is_empty() {
         return None;
@@ -202,10 +202,40 @@ impl ModeloIA {
         self.base_mut().add_child(&n);
         self.instancia = Some(n);
         let anim = self.animacion.clone();
-        if !anim.is_empty() {
-            self.reproducir(anim);
+        if !anim.is_empty() && self.reproducir(anim) {
+            // Cada personaje arranca en otro punto del ciclo (no van sincronizados).
+            let semilla = self.base().instance_id().to_i64().unsigned_abs();
+            if let Some(a) = self.animador.as_mut() {
+                let largo = a.get_current_animation_length();
+                if largo > 0.0 {
+                    let pos = (semilla % 1000) as f64 / 1000.0 * largo;
+                    a.seek_ex(pos).update(true).done();
+                }
+            }
         }
         true
+    }
+
+    /// Animación que se está reproduciendo ("" si no hay).
+    #[func]
+    pub fn animacion_actual(&self) -> GString {
+        self.animador
+            .as_ref()
+            .filter(|a| a.is_playing())
+            .map(|a| GString::from(&a.get_current_animation().to_string()))
+            .unwrap_or_default()
+    }
+
+    /// Esqueleto del modelo animado (para colgar accesorios de un hueso).
+    #[func]
+    pub fn esqueleto(&self) -> Option<Gd<Skeleton3D>> {
+        fn buscar(n: &Gd<Node>) -> Option<Gd<Skeleton3D>> {
+            if let Ok(s) = n.clone().try_cast::<Skeleton3D>() {
+                return Some(s);
+            }
+            n.get_children().iter_shared().find_map(|h| buscar(&h))
+        }
+        self.instancia.as_ref().and_then(|i| buscar(&i.clone().upcast::<Node>()))
     }
 
     /// Reproduce en bucle la primera animación que coincida con alguno de los

@@ -42,11 +42,16 @@ PrototipoJuego/
 │     ├─ ambiente.rs           AmbientePampa (viento + grillos) y Fogon (luz + crepitar)
 │     ├─ guitarra.rs           GuitarraCriolla: rasguido con síntesis Karplus-Strong
 │     ├─ jugador.rs            JugadorXR: OpenXR, locomoción, modo escritorio, capturas
+│     ├─ narrador.rs           Narrador: guion, voz, subtítulos y puesta en escena del gaucho
+│     ├─ personajes.rs         Accesorio (objetos en la mano) y Caminante (recorridos)
+│     ├─ ciclo.rs, portal.rs   CicloDia (tarde -> noche) y PortalFogon (cambio de escena)
 │     ├─ sintesis.rs, ruido.rs, geometria.rs, azar.rs   (Rust puro, con tests)
 └─ tools/
    ├─ build_rust.ps1           compila Rust para PC y Quest y copia a godot/bin
    ├─ exportar_quest.ps1       APK + instalar + abrir + logcat
    ├─ captura.ps1              ejecuta la escena en la PC y guarda una captura PNG
+   ├─ rig/riggear.py           riggeo y animaciones automáticas de personajes (Blender)
+   ├─ voz/                     voz del narrador (Qwen3-TTS, acento argentino)
    └─ assetgen/                generación de modelos con IA local (ver abajo)
 ```
 
@@ -75,15 +80,19 @@ teros) las siembra `DispersorModelos` sobre el terreno.
 La experiencia es **lineal y por tiempo**: nada espera al jugador. Se puede mirar alrededor (y
 caminar), pero las escenas avanzan solas y al final vuelve a empezar.
 
-| Momento | Pampa (~2 min) | Fortín (~1 min 15 s) |
+| Momento | Pampa (~2 min 25 s) | Fortín (~1 min 15 s) |
 |---|---|---|
-| Fundido desde negro + título | 0–11 s | 0–8 s |
-| El gaucho recita | desde 12 s | desde 9 s |
-| Anochecer (70 s) | ~40 s → noche cerrada a ~110 s | ya es de noche |
-| El fuego se lleva al jugador | ~115 s → fortín | ~71 s → pampa |
+| Fundido desde negro + título (el gaucho asa la carne) | 0–11 s | 0–8 s |
+| El gaucho se presenta | 12–38 s | — |
+| El gaucho recita | desde ~41 s | desde 9 s |
+| Anochecer (70 s) | ~71 s → noche cerrada a ~141 s | ya es de noche |
+| El fuego se lleva al jugador | ~142 s → fortín | ~71 s → pampa |
 
-1. **Rancho, al atardecer.** Un gaucho (Martín Fierro) recita junto al fogón versos del poema
-   (edición de 1894, ortografía original), con voz y subtítulos sobre su cabeza.
+1. **Rancho, al atardecer.** Mientras aparece el título, el gaucho está asando la carne. Después
+   se da vuelta, saluda tocándose el sombrero ("¡Buenas tardes, paisanos!"), cuenta dónde
+   estamos mostrando el campo, señala el asado, camina hasta su lugar y, mate en mano, invita:
+   "mientras tomamos unos mates les voy a contar algo". Ahí recita versos del poema (edición de
+   1894, ortografía original), con voz y subtítulos sobre su cabeza, mirando al jugador.
 2. Con "Y verlos al cair la tarde…" empieza a **anochecer** (`CicloDia`, ~70 s): el sol se pone,
    el cielo pasa por el crepúsculo a una **noche estrellada** con luna, Vía Láctea y las Tres
    Marías; el fogón y el farol cobran fuerza, aparecen las luciérnagas, calma el viento y suben
@@ -91,15 +100,21 @@ caminar), pero las escenas avanzan solas y al final vuelve a empezar.
 3. "…Me echaron á la frontera": el gaucho invita a **mirar el fuego**. Cuando termina de hablar,
    el fuego crece solo y la vista se funde en naranja y negro…
 4. **El fortín de frontera** (Canto III): empalizada, mangrullo, cuadras de soldados y el cañón,
-   de noche. El gaucho cuenta la leva y el trabajo sin paga; su fuego lleva de vuelta al pago.
+   de noche. Hay vida alrededor: un **centinela** con fusil otea el horizonte desde el mangrullo
+   (alumbrado por un farol), el **sargento** hace la ronda, un **gaucho levado** cava con la pala
+   y un **soldado** toma mate junto al fuego. El gaucho cuenta la leva y el trabajo sin paga; su
+   fuego lleva de vuelta al pago.
 
 Atajos de prueba en la PC: **N** salta a la siguiente línea del narrador; `-- --ciclo=1.0` arranca
 de noche y `-- --portal` pasa de escena enseguida (por ejemplo con `tools\captura.ps1 -Extra`).
 
-El guion está en `godot/guion/rancho.json` y `fortin.json` (texto, audio, pausa antes de la línea
-y evento: `anochecer`, `noche`, `portal`). Los tiempos se ajustan ahí: `espera` es la pausa antes
-de cada línea; el evento `portal` programa el fundido 1,2 s después de que termina esa línea. Cada
-`PortalFogon` tiene además `tiempo_maximo` (150 s y 110 s) como red de seguridad.
+El guion está en `godot/guion/rancho.json` y `fortin.json`. Cada línea tiene texto, audio,
+`espera` (pausa antes de la línea), `evento` (`anochecer`, `noche`, `portal`) y la puesta en
+escena del gaucho: `accion` (animación mientras habla: `saludar`, `mostrar`, `senalar`, `mate`,
+`hablar`…), `mirar` (`jugador` o un nodo, p. ej. `Asador`) e `ir_a` (camina hasta un nodo antes
+de hablar, p. ej. `PuntoCharla`). El evento `portal` programa el fundido 1,2 s después de que
+termina esa línea. Cada `PortalFogon` tiene además `tiempo_maximo` (200 s y 110 s) como red de
+seguridad.
 
 ### Voz del narrador (Qwen3-TTS, local)
 
@@ -133,13 +148,27 @@ Alternativa probada: **Tomás** (`es-AR-TomasNeural`), voz neural masculina arge
 & $py -I -B tools\voz\voz_microsoft.py --estilo pausado       # reemplaza todas las líneas
 ```
 
-### Animaciones (Mesh2Motion)
+### Personajes animados (riggeo automático con Blender)
 
-Los modelos de la IA son estáticos. Para animarlos, riggealos en
-[Mesh2Motion](https://mesh2motion.org) y guardá el GLB exportado en `godot/modelos/animados/`
-con el nombre del modelo: reemplaza al estático solo y reproduce sus animaciones. La tabla de
-qué archivo cargar, qué esqueleto usar y cómo guardarlo está en
-`godot/modelos/animados/LEEME.txt` (el gaucho para riggear es `gaucho_rig.glb`, en pose A).
+Los modelos de la IA son estáticos. Las **personas** se generan en pose A (`*_rig` en
+`assets.json`) y `tools/rig/riggear.py` las riggea solas con **Blender 4.5 LTS** (portable, en
+`%LOCALAPPDATA%\Programs\Blender`, sin instalar nada):
+
+1. estima las articulaciones a partir de la malla (hombros, codos, muñecas, cadera, rodillas…);
+2. arma el esqueleto y lo pesa con los pesos automáticos de Blender;
+3. crea por código (cinemática directa + IK de brazos) las animaciones `idle`, `hablar`,
+   `saludar`, `mostrar`, `senalar`, `mate`, `caminar`, `asar`, `mirar` y `cavar`;
+4. exporta `godot/modelos/animados/<nombre>.glb`, que reemplaza al estático solo.
+
+```powershell
+$B = "$env:LOCALAPPDATA\Programs\Blender\blender-4.5.16-windows-x64\blender.exe"
+& $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\soldado_rig.glb godot\modelos\animados\soldado.glb --previas build\previas_soldado
+```
+
+En Godot: `Accesorio` cuelga un objeto de un hueso (el mate y el fusil derechos en la palma; la
+pala de una mano a la otra) y `Caminante` lleva a un personaje por puntos (la ronda del
+sargento). Los **animales** todavía se animan a mano con [Mesh2Motion](https://mesh2motion.org):
+la tabla está en `godot/modelos/animados/LEEME.txt`.
 
 ## Teaser en video
 

@@ -509,6 +509,76 @@
         "eje": "largo",
         "metros": 1.9
       }
+    },
+    {
+      "nombre": "soldado_rig",
+      "lote": "D",
+      "grupo": "grande",
+      "prompt": "full body view of a young 19th-century Argentine frontier soldier from the 1870s, tanned face with a short dark beard, faded dark-blue kepi cap, worn dark-blue military jacket with a row of brass buttons, white canvas trousers tucked into colt-skin boots, brown leather belt with a cartridge pouch, realistic human proportions, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands, no weapons, no poncho, no cape",
+      "semilla": 1872,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.72
+      }
+    },
+    {
+      "nombre": "sargento_rig",
+      "lote": "D",
+      "grupo": "grande",
+      "prompt": "full body view of a weathered 19th-century Argentine frontier sergeant from the 1870s, man in his forties with a thick grey mustache, dark-blue kepi with a red band, long dark-blue frock coat buttoned to the chest, red woven sash at the waist, white trousers tucked into tall black leather boots, realistic human proportions, stern but calm, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands, no weapons, no cape",
+      "semilla": 1879,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.78
+      }
+    },
+    {
+      "nombre": "levado_rig",
+      "lote": "D",
+      "grupo": "grande",
+      "prompt": "full body view of a thin 19th-century Argentine gaucho conscript at a frontier fort, 1870s, man in his thirties with messy dark hair and stubble, soft brown wool cap, rough white shirt with rolled-up sleeves, faded brown chiripa over white fringed calzoncillos, worn colt-skin boots, realistic human proportions, tired but dignified, standing in an A-pose with both arms straight and angled about 45 degrees down and away from the body, hands open and clearly separated from the hips, legs slightly apart, front view, nothing in the hands, no hat brim, no poncho",
+      "semilla": 1834,
+      "ancho": 1024,
+      "alto": 1216,
+      "caras": 26000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.70
+      }
+    },
+    {
+      "nombre": "fusil",
+      "lote": "D",
+      "grupo": "chico",
+      "prompt": "a single 19th-century Remington rolling block rifle lying horizontally, long steel barrel, oiled walnut wooden stock and forend, brass details, side view, centered, nothing else",
+      "semilla": 1866,
+      "ancho": 1344,
+      "alto": 768,
+      "caras": 6000,
+      "escala": {
+        "eje": "largo",
+        "metros": 1.3
+      }
+    },
+    {
+      "nombre": "pala",
+      "lote": "D",
+      "grupo": "chico",
+      "prompt": "a single old hand-forged iron spade shovel with a long straight worn wooden handle, lying horizontally, side view, centered, nothing else",
+      "semilla": 1880,
+      "ancho": 1344,
+      "alto": 768,
+      "caras": 4000,
+      "escala": {
+        "eje": "largo",
+        "metros": 1.35
+      }
     }
   ]
 }
