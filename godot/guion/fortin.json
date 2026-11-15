@@ -1,0 +1,37 @@
+[
+  {
+    "texto": "Ansi en mi moro escarciando,\nEnderesé á la frontera;\nAparcero! si usté viera\nLo que se llama Cantón...\nNi envidia tengo al ratón\nEn aquella ratonera.",
+    "fuente": "Canto III, 16",
+    "audio": "res://voz/fortin_01.ogg",
+    "espera": 4.0,
+    "evento": ""
+  },
+  {
+    "texto": "A naides le dieron armas,\nPues toditas las que había\nEl Coronel las tenia,\nSigun dijo esa ocasión,\nPa repartirlas el día\nEn que hubiera una invasión.",
+    "fuente": "Canto III, 19",
+    "audio": "res://voz/fortin_02.ogg",
+    "espera": 3.0,
+    "evento": ""
+  },
+  {
+    "texto": "Yo primero sembré trigo\nY despues hice un corral,\nCorté adobe pa un tapial,\nHice un quincho, corté paja...\nLa pucha que se trabaja\nSin que le larguen un rial.",
+    "fuente": "Canto III, 23",
+    "audio": "res://voz/fortin_03.ogg",
+    "espera": 3.0,
+    "evento": ""
+  },
+  {
+    "texto": "Y es lo pior de aquel enriedo\nQue si uno anda hinchando el lomo\nSe le apéan como un plomo...\n¡Quién aguanta aquel infierno!\nSi eso es servir al Gobierno,\nA mi no me gusta el cómo.",
+    "fuente": "Canto III, 24",
+    "audio": "res://voz/fortin_04.ogg",
+    "espera": 3.0,
+    "evento": ""
+  },
+  {
+    "texto": "Ansí fue, paisano.\nMirá el fuego otra vez, que te llevo de vuelta al pago.",
+    "fuente": "narración",
+    "audio": "res://voz/fortin_05.ogg",
+    "espera": 4.0,
+    "evento": "portal"
+  }
+]

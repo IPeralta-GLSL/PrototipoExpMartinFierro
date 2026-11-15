@@ -130,6 +130,22 @@ impl INode for AmbientePampa {
     }
 }
 
+#[godot_api]
+impl AmbientePampa {
+    /// Cambia los volúmenes en vivo (lo usa el ciclo tarde→noche).
+    #[func]
+    pub fn fijar_volumenes(&mut self, viento: f32, grillos: f32) {
+        self.volumen_viento = viento;
+        self.volumen_grillos = grillos;
+        if let Some(v) = self.viento.as_mut() {
+            v.volumen = viento;
+        }
+        if let Some(g) = self.grillos.as_mut() {
+            g.volumen = grillos;
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 
 #[derive(GodotClass)]

@@ -11,28 +11,70 @@
 use std::f32::consts::TAU;
 
 use godot::classes::{
-    geometry_instance_3d::ShadowCastingSetting, Engine, GeometryInstance3D, Node, PackedScene,
-    ResourceLoader,
+    animation::LoopMode, geometry_instance_3d::ShadowCastingSetting, AnimationPlayer, Engine,
+    GeometryInstance3D, Node, PackedScene, ResourceLoader,
 };
 use godot::prelude::*;
 
 use crate::azar::Azar;
 use crate::terreno::TerrenoPampa;
 
-fn ruta_modelo(nombre: &str) -> String {
-    format!("res://modelos/{nombre}.glb")
+/// Ruta del modelo: primero la versión animada (exportada de Mesh2Motion a
+/// res://modelos/animados/), si no la estática generada por la IA.
+fn ruta_modelo(nombre: &str) -> Option<String> {
+    if nombre.is_empty() {
+        return None;
+    }
+    let mut cargador = ResourceLoader::singleton();
+    let animado = format!("res://modelos/animados/{nombre}.glb");
+    if cargador.exists(&animado) {
+        return Some(animado);
+    }
+    let estatico = format!("res://modelos/{nombre}.glb");
+    cargador.exists(&estatico).then_some(estatico)
 }
 
 pub fn modelo_existe(nombre: &str) -> bool {
-    !nombre.is_empty() && ResourceLoader::singleton().exists(&ruta_modelo(nombre))
+    ruta_modelo(nombre).is_some()
 }
 
 pub fn instanciar_modelo(nombre: &str) -> Option<Gd<Node3D>> {
-    if !modelo_existe(nombre) {
-        return None;
-    }
-    let escena = try_load::<PackedScene>(&ruta_modelo(nombre)).ok()?;
+    let ruta = ruta_modelo(nombre)?;
+    let escena = try_load::<PackedScene>(&ruta).ok()?;
     escena.instantiate()?.try_cast::<Node3D>().ok()
+}
+
+fn buscar_animador(n: &Gd<Node>) -> Option<Gd<AnimationPlayer>> {
+    if let Ok(a) = n.clone().try_cast::<AnimationPlayer>() {
+        return Some(a);
+    }
+    n.get_children().iter_shared().find_map(|h| buscar_animador(&h))
+}
+
+/// Reproduce en bucle la primera animación cuyo nombre contenga alguno de
+/// los candidatos ("idle|breath": separados por '|', sin distinguir mayúsculas).
+fn reproducir_en(animador: &mut Gd<AnimationPlayer>, candidatos: &str) -> bool {
+    let lista: Vec<String> = animador
+        .get_animation_list()
+        .as_slice()
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+    let elegida = candidatos
+        .split('|')
+        .map(|c| c.trim().to_lowercase())
+        .filter(|c| !c.is_empty())
+        .find_map(|c| lista.iter().find(|a| a.to_lowercase().contains(&c)).cloned());
+    let Some(nombre) = elegida else {
+        return false;
+    };
+    if let Some(mut anim) = animador.get_animation(&nombre) {
+        anim.set_loop_mode(LoopMode::LINEAR);
+    }
+    if animador.get_current_animation().to_string() != nombre || !animador.is_playing() {
+        animador.play_ex().name(&nombre).custom_blend(0.35).done();
+    }
+    true
 }
 
 /// Sombras y distancia de corte para todas las geometrías de un modelo.
@@ -71,8 +113,13 @@ pub struct ModeloIA {
     /// Período de la respiración, en segundos.
     #[export]
     periodo: f32,
+    /// Animación en bucle al cargar, si el GLB trae animaciones (p. ej. "idle").
+    /// Se aceptan varios candidatos separados por '|'.
+    #[export]
+    animacion: GString,
 
     instancia: Option<Gd<Node3D>>,
+    animador: Option<Gd<AnimationPlayer>>,
     t: f64,
     espera: f64,
     base: Base<Node3D>,
@@ -87,7 +134,9 @@ impl INode3D for ModeloIA {
             distancia_visible: 0.0,
             respirar: 0.0,
             periodo: 3.5,
+            animacion: GString::from("idle|breath|stand"),
             instancia: None,
+            animador: None,
             t: 0.0,
             espera: 0.0,
             base,
@@ -115,6 +164,10 @@ impl INode3D for ModeloIA {
                     self.base_mut().set_process(false);
                 }
             }
+            return;
+        }
+        // Con animaciones reales (Mesh2Motion) no hace falta "respirar".
+        if self.animador.is_some() {
             return;
         }
         let Some(m) = self.instancia.as_mut() else {
@@ -145,9 +198,33 @@ impl ModeloIA {
                 m3.hide();
             }
         }
+        self.animador = buscar_animador(&n.clone().upcast::<Node>());
         self.base_mut().add_child(&n);
         self.instancia = Some(n);
+        let anim = self.animacion.clone();
+        if !anim.is_empty() {
+            self.reproducir(anim);
+        }
         true
+    }
+
+    /// Reproduce en bucle la primera animación que coincida con alguno de los
+    /// candidatos ("talk|idle"). Devuelve false si el modelo no tiene animaciones.
+    #[func]
+    pub fn reproducir(&mut self, candidatos: GString) -> bool {
+        match self.animador.as_mut() {
+            Some(a) => reproducir_en(a, &candidatos.to_string()),
+            None => false,
+        }
+    }
+
+    /// Nombres de las animaciones del modelo (vacío si no tiene).
+    #[func]
+    pub fn animaciones(&self) -> PackedStringArray {
+        self.animador
+            .as_ref()
+            .map(|a| a.get_animation_list())
+            .unwrap_or_default()
     }
 }
 
@@ -192,9 +269,13 @@ pub struct DispersorModelos {
     respirar: f32,
     #[export]
     periodo: f32,
+    /// Animación en bucle para cada copia, si el GLB es animado.
+    #[export]
+    animacion: GString,
 
     instancias: Vec<Gd<Node3D>>,
     escalas: Vec<f32>,
+    animados: bool,
     t: f64,
     espera: f64,
     base: Base<Node3D>,
@@ -220,8 +301,10 @@ impl INode3D for DispersorModelos {
             evitar_tierra: true,
             respirar: 0.0,
             periodo: 3.5,
+            animacion: GString::from("idle|graze|eat|breath"),
             instancias: Vec::new(),
             escalas: Vec::new(),
+            animados: false,
             t: 0.0,
             espera: 0.0,
             base,
@@ -247,6 +330,9 @@ impl INode3D for DispersorModelos {
                     self.base_mut().set_process(false);
                 }
             }
+            return;
+        }
+        if self.animados {
             return;
         }
         let w = std::f64::consts::TAU / self.periodo.max(0.5) as f64;
@@ -321,6 +407,12 @@ impl DispersorModelos {
             n.set_rotation(Vector3::new(0.0, giro, 0.0));
             n.set_scale(Vector3::splat(escala));
             self.base_mut().add_child(&n);
+            if let Some(mut a) = buscar_animador(&n.clone().upcast::<Node>()) {
+                let anim = self.animacion.to_string();
+                if reproducir_en(&mut a, &anim) {
+                    self.animados = true;
+                }
+            }
             self.instancias.push(n);
             self.escalas.push(escala);
         }

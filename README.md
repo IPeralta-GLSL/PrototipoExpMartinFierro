@@ -70,6 +70,46 @@ Cada objeto es un nodo `ModeloIA` que carga `godot/modelos/<nombre>.glb`: si reg
 aparece solo en la escena (también en el editor). Las copias múltiples (cardos, vacas, ñandúes,
 teros) las siembra `DispersorModelos` sobre el terreno.
 
+## Relato: del atardecer a la noche, y el fortín
+
+1. **Rancho, al atardecer.** Un gaucho (Martín Fierro) recita junto al fogón versos del poema
+   (edición de 1894, ortografía original), con voz y subtítulos sobre su cabeza.
+2. Con "Y verlos al cair la tarde…" empieza a **anochecer** (`CicloDia`, ~70 s): el sol se pone,
+   el cielo pasa por el crepúsculo a una **noche estrellada** con luna, Vía Láctea y las Tres
+   Marías; el fogón y el farol cobran fuerza, aparecen las luciérnagas, calma el viento y suben
+   los grillos.
+3. "…Me echaron á la frontera": el gaucho invita a **mirar el fuego**. Al acercarse a las llamas
+   (o con **E** en la PC) el fuego crece y la vista se funde en naranja y negro…
+4. **El fortín de frontera** (Canto III): empalizada, mangrullo, cuadras de soldados y el cañón,
+   de noche. El gaucho cuenta la leva y el trabajo sin paga; su fuego lleva de vuelta al pago.
+
+En la PC: **N** salta a la siguiente línea del narrador, **E** activa el portal cuando aparece la
+pista. Para probar la noche: `-- --ciclo=1.0` (por ejemplo con `tools\captura.ps1 -Extra`).
+
+El guion está en `godot/guion/rancho.json` y `fortin.json` (texto, audio, pausa y evento por
+línea: `anochecer`, `noche`, `portal`).
+
+### Voz del narrador (Qwen3-TTS, local)
+
+```powershell
+$py = "E:\ComfyUI\ComfyUIStudio\App\python_embeded\python.exe"
+& $py -B tools\voz\generar_voz.py              # genera lo que falte en godot/voz/
+& $py -B tools\voz\generar_voz.py --rehacer    # todas las líneas de nuevo
+& $py -B tools\voz\generar_voz.py --nueva-voz  # diseñar otra voz de gaucho
+```
+
+VoiceDesign crea una voz original a partir de una descripción (no clona a nadie), Whisper elige
+la candidata que mejor se entiende y el modelo Base la clona para todas las líneas. Cada línea se
+verifica con Whisper y se regenera si no se entiende.
+
+### Animaciones (Mesh2Motion)
+
+Los modelos de la IA son estáticos. Para animarlos, riggealos en
+[Mesh2Motion](https://mesh2motion.org) y guardá el GLB exportado en `godot/modelos/animados/`
+con el nombre del modelo: reemplaza al estático solo y reproduce sus animaciones. La tabla de
+qué archivo cargar, qué esqueleto usar y cómo guardarlo está en
+`godot/modelos/animados/LEEME.txt` (el gaucho para riggear es `gaucho_rig.glb`, en pose A).
+
 ## Teaser en video
 
 ```powershell

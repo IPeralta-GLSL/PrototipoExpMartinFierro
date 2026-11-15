@@ -1,0 +1,543 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/terreno.gdshader" id="sh_terreno"]
+[ext_resource type="Shader" path="res://shaders/pasto.gdshader" id="sh_pasto"]
+[ext_resource type="Shader" path="res://shaders/fuego.gdshader" id="sh_fuego"]
+[ext_resource type="Shader" path="res://shaders/cielo.gdshader" id="sh_cielo"]
+
+[sub_resource type="FastNoiseLite" id="ruido_nubes"]
+frequency = 0.006
+fractal_octaves = 5
+fractal_gain = 0.55
+
+[sub_resource type="NoiseTexture2D" id="tex_nubes"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("ruido_nubes")
+
+[sub_resource type="ShaderMaterial" id="cielo_mat"]
+shader = ExtResource("sh_cielo")
+shader_parameter/ruido_nubes = SubResource("tex_nubes")
+
+[sub_resource type="Sky" id="cielo"]
+sky_material = SubResource("cielo_mat")
+process_mode = 2
+radiance_size = 1
+
+[sub_resource type="Environment" id="entorno"]
+background_mode = 2
+sky = SubResource("cielo")
+ambient_light_source = 3
+ambient_light_energy = 1.1
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_white = 6.0
+fog_enabled = true
+fog_light_color = Color(0.05, 0.06, 0.1, 1)
+fog_sun_scatter = 0.4
+fog_density = 0.0028
+fog_sky_affect = 0.12
+
+[sub_resource type="FastNoiseLite" id="ruido_detalle"]
+frequency = 0.035
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="tex_detalle"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("ruido_detalle")
+
+[sub_resource type="ShaderMaterial" id="mat_terreno"]
+shader = ExtResource("sh_terreno")
+shader_parameter/detalle = SubResource("tex_detalle")
+shader_parameter/escala_detalle = 0.3
+shader_parameter/fuerza_detalle = 0.45
+shader_parameter/tinte = Color(1.12, 1.12, 1.1, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_pasto"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.1
+shader_parameter/velocidad_viento = 1.4
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.5
+
+[sub_resource type="ShaderMaterial" id="mat_cortadera"]
+shader = ExtResource("sh_pasto")
+shader_parameter/fuerza_viento = 0.22
+shader_parameter/velocidad_viento = 1.1
+shader_parameter/direccion_viento = Vector2(0.8, 0.6)
+shader_parameter/rafaga = 0.5
+shader_parameter/tinte = Color(1, 1, 1, 1)
+shader_parameter/oscuridad_base = 0.6
+
+[sub_resource type="FastNoiseLite" id="ruido_fuego"]
+frequency = 0.045
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="tex_fuego"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("ruido_fuego")
+
+[sub_resource type="ShaderMaterial" id="mat_llamas"]
+shader = ExtResource("sh_fuego")
+shader_parameter/ruido = SubResource("tex_fuego")
+shader_parameter/intensidad = 2.2
+shader_parameter/velocidad = 1.25
+
+[sub_resource type="QuadMesh" id="quad_llama"]
+size = Vector2(0.75, 1.05)
+center_offset = Vector3(0, 0.5, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="proc_brasas"]
+emission_shape = 1
+emission_sphere_radius = 0.25
+direction = Vector3(0, 1, 0)
+spread = 20.0
+initial_velocity_min = 0.35
+initial_velocity_max = 1.1
+gravity = Vector3(0, 0.3, 0)
+damping_min = 0.1
+damping_max = 0.4
+scale_min = 0.6
+scale_max = 1.3
+color = Color(1, 0.55, 0.16, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_brasa"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.7, 0.3, 1)
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_brasa"]
+material = SubResource("mat_brasa")
+size = Vector2(0.022, 0.022)
+
+[sub_resource type="Gradient" id="grad_disco"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="tex_disco"]
+gradient = SubResource("grad_disco")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="mat_humo"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_humo"]
+material = SubResource("mat_humo")
+size = Vector2(0.7, 0.7)
+
+[sub_resource type="Curve" id="curva_humo"]
+max_value = 2.0
+_data = [Vector2(0, 0.45), 0.0, 0.0, 0, 0, Vector2(1, 1.8), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="ct_humo"]
+curve = SubResource("curva_humo")
+
+[sub_resource type="Gradient" id="grad_humo"]
+offsets = PackedFloat32Array(0, 0.15, 1)
+colors = PackedColorArray(0.32, 0.28, 0.26, 0, 0.36, 0.33, 0.31, 0.32, 0.55, 0.52, 0.5, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_humo"]
+gradient = SubResource("grad_humo")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_humo"]
+emission_shape = 1
+emission_sphere_radius = 0.15
+direction = Vector3(0.15, 1, 0.1)
+spread = 12.0
+initial_velocity_min = 0.35
+initial_velocity_max = 0.6
+gravity = Vector3(0.14, 0.05, 0.1)
+scale_min = 0.7
+scale_max = 1.2
+scale_curve = SubResource("ct_humo")
+color_ramp = SubResource("gt_humo")
+
+[sub_resource type="Gradient" id="grad_luciernaga"]
+offsets = PackedFloat32Array(0, 0.2, 0.3, 0.45, 0.6, 0.75, 1)
+colors = PackedColorArray(0.85, 1, 0.45, 0, 0.85, 1, 0.45, 1, 0.85, 1, 0.45, 0.1, 0.85, 1, 0.45, 0.9, 0.85, 1, 0.45, 0, 0.85, 1, 0.45, 0.8, 0.85, 1, 0.45, 0)
+
+[sub_resource type="GradientTexture1D" id="gt_luciernaga"]
+gradient = SubResource("grad_luciernaga")
+
+[sub_resource type="ParticleProcessMaterial" id="proc_luciernagas"]
+emission_shape = 3
+emission_box_extents = Vector3(13, 0.7, 13)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.22
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("gt_luciernaga")
+
+[sub_resource type="StandardMaterial3D" id="mat_luciernaga"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("tex_disco")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="quad_luciernaga"]
+material = SubResource("mat_luciernaga")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="SystemFont" id="fuente_serif"]
+font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "serif")
+
+[sub_resource type="StandardMaterial3D" id="mat_cuero"]
+albedo_color = Color(0.36, 0.22, 0.12, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="m_guante"]
+material = SubResource("mat_cuero")
+size = Vector3(0.08, 0.035, 0.13)
+
+[node name="Fortin" type="Node3D"]
+
+[node name="Entorno" type="WorldEnvironment" parent="."]
+environment = SubResource("entorno")
+
+[node name="Sol" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-9, 142, 0)
+light_color = Color(1, 0.71, 0.46, 1)
+light_energy = 1.35
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 40.0
+
+[node name="Terreno" type="TerrenoPampa" parent="."]
+semilla = 1879
+amplitud = 0.9
+radio_llano = 16.0
+manchas = PackedVector3Array(0, 0, 8.4, 0, -9.5, 2.6)
+senderos = PackedVector3Array(0, -7.0, 2.2, 0, -26.0, 0)
+material = SubResource("mat_terreno")
+
+[node name="Pasto" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_pasto")
+cantidad = 6500
+radio = 42.0
+radio_interno = 8.6
+semilla = 11
+alto = 0.5
+hojas = 6
+ancho_hoja = 0.028
+
+[node name="Cortaderas" type="PastoPampa" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+material = SubResource("mat_cortadera")
+cortadera = true
+cantidad = 120
+radio = 70.0
+radio_interno = 12.0
+tamano_parcela = 20.0
+distancia_visible = 110.0
+semilla = 23
+escala_min = 0.75
+escala_max = 1.25
+color_a = Color(0.92, 0.9, 0.82, 1)
+color_b = Color(1, 0.97, 0.88, 1)
+
+[node name="Ambiente" type="AmbientePampa" parent="."]
+material_pasto = SubResource("mat_pasto")
+material_cortadera = SubResource("mat_cortadera")
+
+[node name="CicloDia" type="CicloDia" parent="." node_paths=PackedStringArray("sol", "entorno", "luciernagas", "ambiente", "fogon")]
+sol = NodePath("../Sol")
+entorno = NodePath("../Entorno")
+cielo = SubResource("cielo_mat")
+luciernagas = NodePath("../Luciernagas")
+ambiente = NodePath("../Ambiente")
+fogon = NodePath("../Fuerte/Fogon")
+progreso_inicial = 1.0
+
+[node name="Fuerte" type="Node3D" parent="."]
+
+[node name="Fogon" type="Fogon" parent="Fuerte" node_paths=PackedStringArray("luz") groups=["apoyar_en_suelo"]]
+luz = NodePath("Luz")
+material_llamas = SubResource("mat_llamas")
+
+[node name="Luz" type="OmniLight3D" parent="Fuerte/Fogon"]
+position = Vector3(0, 0.55, 0)
+light_color = Color(1, 0.55, 0.22, 1)
+light_energy = 2.4
+omni_range = 10.0
+omni_attenuation = 1.2
+
+[node name="Hogar" type="ModeloIA" parent="Fuerte/Fogon"]
+modelo = "fogon"
+sombras = false
+
+[node name="Llamas" type="Node3D" parent="Fuerte/Fogon"]
+position = Vector3(0, 0.08, 0)
+
+[node name="Llama1" type="MeshInstance3D" parent="Fuerte/Fogon/Llamas"]
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Llama2" type="MeshInstance3D" parent="Fuerte/Fogon/Llamas"]
+transform = Transform3D(0.5, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, 0.5, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Llama3" type="MeshInstance3D" parent="Fuerte/Fogon/Llamas"]
+transform = Transform3D(-0.5, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.5, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("quad_llama")
+surface_material_override/0 = SubResource("mat_llamas")
+
+[node name="Brasas" type="GPUParticles3D" parent="Fuerte/Fogon"]
+position = Vector3(0, 0.25, 0)
+cast_shadow = 0
+amount = 28
+lifetime = 2.6
+visibility_aabb = AABB(-2, -0.5, -2, 4, 5, 4)
+process_material = SubResource("proc_brasas")
+draw_pass_1 = SubResource("quad_brasa")
+
+[node name="Portal" type="PortalFogon" parent="Fuerte/Fogon" node_paths=PackedStringArray("fogon", "brasas")]
+escena_destino = "res://escenas/pampa.tscn"
+fogon = NodePath("..")
+brasas = NodePath("../Brasas")
+texto_pista = "Acercate al fuego para volver al pago"
+
+[node name="Humo" type="GPUParticles3D" parent="Fuerte/Fogon"]
+position = Vector3(0, 0.9, 0)
+cast_shadow = 0
+amount = 16
+lifetime = 7.0
+preprocess = 7.0
+visibility_aabb = AABB(-4, -1, -4, 8, 10, 8)
+process_material = SubResource("proc_humo")
+draw_pass_1 = SubResource("quad_humo")
+
+[node name="Narrador" type="Narrador" parent="Fuerte" node_paths=PackedStringArray("modelo", "ciclo", "portal") groups=["apoyar_en_suelo"]]
+position = Vector3(0.6, 0, -1.95)
+rotation_degrees = Vector3(0, -8, 0)
+demora_inicial = 8.8
+guion = "res://guion/fortin.json"
+modelo = NodePath("Gaucho")
+ciclo = NodePath("../../CicloDia")
+portal = NodePath("../Fogon/Portal")
+
+[node name="Gaucho" type="ModeloIA" parent="Fuerte/Narrador"]
+modelo = "gaucho"
+
+[node name="Mangrullo" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.0, 0, -4.4)
+rotation_degrees = Vector3(0, 35, 0)
+modelo = "mangrullo"
+
+[node name="Cuadra1" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(3.9, 0, -2.3)
+rotation_degrees = Vector3(0, -58, 0)
+scale = Vector3(0.62, 0.62, 0.62)
+modelo = "cuadra"
+
+[node name="Cuadra2" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.0, 0, 0.3)
+rotation_degrees = Vector3(0, 96, 0)
+scale = Vector3(0.62, 0.62, 0.62)
+modelo = "cuadra"
+
+[node name="Canon" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(1.6, 0, -6.0)
+rotation_degrees = Vector3(0, 160, 0)
+modelo = "canon"
+
+[node name="Moro" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(4.9, 0, 2.2)
+rotation_degrees = Vector3(0, 150, 0)
+modelo = "caballo_moro"
+respirar = 0.006
+periodo = 3.8
+
+[node name="Barril" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(2.9, 0, -4.6)
+modelo = "barril"
+
+[node name="Cuero" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.3, 0, -1.0)
+rotation_degrees = Vector3(0, 80, 0)
+modelo = "cuero"
+
+[node name="Perro" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.2, 0, -1.4)
+rotation_degrees = Vector3(0, 40, 0)
+modelo = "perro"
+animacion = "lie|sleep|sit|rest|idle"
+respirar = 0.014
+periodo = 2.2
+
+[node name="Empalizada1" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(4.272, 0, -6.393)
+rotation_degrees = Vector3(0, -33.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada2" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(6.393, 0, -4.272)
+rotation_degrees = Vector3(0, -56.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada3" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(7.541, 0, -1.500)
+rotation_degrees = Vector3(0, -78.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada4" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(7.541, 0, 1.500)
+rotation_degrees = Vector3(0, -101.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada5" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(6.393, 0, 4.272)
+rotation_degrees = Vector3(0, -123.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada6" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(4.272, 0, 6.393)
+rotation_degrees = Vector3(0, -146.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada7" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(1.500, 0, 7.541)
+rotation_degrees = Vector3(0, -168.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada8" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.500, 0, 7.541)
+rotation_degrees = Vector3(0, -191.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada9" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.272, 0, 6.393)
+rotation_degrees = Vector3(0, -213.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada10" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.393, 0, 4.272)
+rotation_degrees = Vector3(0, -236.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada11" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-7.541, 0, 1.500)
+rotation_degrees = Vector3(0, -258.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada12" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-7.541, 0, -1.500)
+rotation_degrees = Vector3(0, -281.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada13" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.393, 0, -4.272)
+rotation_degrees = Vector3(0, -303.75, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Empalizada14" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.272, 0, -6.393)
+rotation_degrees = Vector3(0, -326.25, 0)
+modelo = "empalizada"
+distancia_visible = 90.0
+
+[node name="Cardos" type="DispersorModelos" parent="." node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../Terreno")
+modelo = "cardo"
+cantidad = 14
+radio_min = 10.0
+radio_max = 34.0
+escala_min = 0.7
+escala_max = 1.3
+separacion = 2.5
+semilla = 31
+sombras = false
+distancia_visible = 70.0
+
+[node name="Luciernagas" type="GPUParticles3D" parent="."]
+position = Vector3(0, 0.9, -12)
+cast_shadow = 0
+amount = 70
+lifetime = 5.0
+preprocess = 5.0
+visibility_aabb = AABB(-16, -2, -16, 32, 5, 32)
+process_material = SubResource("proc_luciernagas")
+draw_pass_1 = SubResource("quad_luciernaga")
+
+[node name="Titulo" type="Label3D" parent="."]
+position = Vector3(0, 1.85, 1.0)
+pixel_size = 0.004
+modulate = Color(1, 0.93, 0.8, 1)
+outline_modulate = Color(0.12, 0.06, 0.02, 1)
+outline_size = 10
+text = "El fortín
+La frontera, hacia 1872"
+font = SubResource("fuente_serif")
+font_size = 56
+
+[node name="Jugador" type="JugadorXR" parent="." node_paths=PackedStringArray("terreno", "titulo")]
+position = Vector3(0, 0, 3.4)
+terreno = NodePath("../Terreno")
+titulo = NodePath("../Titulo")
+radio_limite = 30.0
+duracion_titulo = 6.0
+fundido_inicial = 3.0
+
+[node name="Cabeza" type="XRCamera3D" parent="Jugador"]
+position = Vector3(0, 1.65, 0)
+current = true
+near = 0.05
+far = 2500.0
+
+[node name="ManoIzquierda" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(-0.25, 1.1, -0.3)
+tracker = &"left_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoIzquierda"]
+mesh = SubResource("m_guante")
+
+[node name="ManoDerecha" type="XRController3D" parent="Jugador" groups=["manos"]]
+position = Vector3(0.25, 1.1, -0.3)
+tracker = &"right_hand"
+pose = &"grip"
+
+[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
+mesh = SubResource("m_guante")

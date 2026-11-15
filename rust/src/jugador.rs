@@ -4,9 +4,14 @@
 //! y puede sacar capturas: `-- --captura=ruta.png --vista=x,alto,z,yaw,pitch`.
 
 use godot::classes::{
-    display_server::VSyncMode, viewport::VrsMode, xr_server::RotationMode, DisplayServer, Engine,
-    IXrOrigin3D, Input, InputEvent, InputEventMouseMotion, Label3D, OpenXrInterface,
-    RenderingServer, XrCamera3D, XrController3D, XrInterface, XrOrigin3D, XrServer,
+    base_material_3d::{CullMode, Flags, ShadingMode, Transparency},
+    display_server::VSyncMode,
+    geometry_instance_3d::ShadowCastingSetting,
+    viewport::VrsMode,
+    xr_server::RotationMode,
+    DisplayServer, Engine, IXrOrigin3D, Input, InputEvent, InputEventMouseMotion, Label3D,
+    MeshInstance3D, OpenXrInterface, RenderingServer, SphereMesh, StandardMaterial3D, XrCamera3D,
+    XrController3D, XrInterface, XrOrigin3D, XrServer,
 };
 use godot::global::{Key, MouseButton};
 use godot::prelude::*;
@@ -37,6 +42,9 @@ pub struct JugadorXR {
     altura_escritorio: f32,
     #[export]
     duracion_titulo: f32,
+    /// Segundos de fundido desde negro al empezar la escena (0 = sin fundido).
+    #[export]
+    fundido_inicial: f32,
 
     modo_xr: bool,
     interfaz: Option<Gd<XrInterface>>,
@@ -52,6 +60,8 @@ pub struct JugadorXR {
     captura: Option<String>,
     esperar_cuadros: u32,
     cuadros: u32,
+    velo: Option<Gd<StandardMaterial3D>>,
+    velo_externo: bool,
     base: Base<XrOrigin3D>,
 }
 
@@ -67,6 +77,7 @@ impl IXrOrigin3D for JugadorXR {
             frecuencia_hz: 90.0,
             altura_escritorio: 1.65,
             duracion_titulo: 9.0,
+            fundido_inicial: 0.0,
             modo_xr: false,
             interfaz: None,
             tasa_lista: false,
@@ -81,6 +92,8 @@ impl IXrOrigin3D for JugadorXR {
             captura: None,
             esperar_cuadros: 90,
             cuadros: 0,
+            velo: None,
+            velo_externo: false,
             base,
         }
     }
@@ -92,6 +105,8 @@ impl IXrOrigin3D for JugadorXR {
         if Engine::singleton().is_editor_hint() {
             return;
         }
+        self.base_mut().add_to_group("jugador");
+        self.crear_velo();
 
         self.captura = argumento_usuario("captura").filter(|s| !s.is_empty());
         if let Some(n) = argumento_usuario("esperar").and_then(|s| s.parse::<u32>().ok()) {
@@ -112,6 +127,10 @@ impl IXrOrigin3D for JugadorXR {
         let dt = (delta as f32).min(0.1);
         self.tiempo += dt;
         self.actualizar_titulo();
+        if !self.velo_externo && self.fundido_inicial > 0.0 {
+            let a = (1.0 - self.tiempo / self.fundido_inicial).clamp(0.0, 1.0);
+            self.aplicar_velo(Color::from_rgba(0.0, 0.0, 0.0, a));
+        }
         if self.modo_xr {
             self.ajustar_frecuencia();
             if !self.centrado && self.tiempo > 1.0 {
@@ -149,6 +168,13 @@ impl JugadorXR {
         self.modo_xr
     }
 
+    /// Tiñe la vista (fundidos y transiciones). Alfa 0 = transparente.
+    #[func]
+    pub fn fijar_velo(&mut self, color: Color) {
+        self.velo_externo = true;
+        self.aplicar_velo(color);
+    }
+
     /// Señal `pose_recentered` de OpenXR (botón Meta mantenido).
     #[func]
     fn al_recentrar(&mut self) {
@@ -157,6 +183,49 @@ impl JugadorXR {
 }
 
 impl JugadorXR {
+    /// Esfera pegada a la cámara, vista desde adentro, sin prueba de
+    /// profundidad: tapa toda la vista en el casco y en la PC.
+    fn crear_velo(&mut self) {
+        let Some(mut cabeza) = self.cabeza.clone() else {
+            return;
+        };
+        let mut esfera = SphereMesh::new_gd();
+        esfera.set_radius(0.3);
+        esfera.set_height(0.6);
+        esfera.set_flip_faces(true);
+        let mut mat = StandardMaterial3D::new_gd();
+        mat.set_shading_mode(ShadingMode::UNSHADED);
+        mat.set_transparency(Transparency::ALPHA);
+        mat.set_cull_mode(CullMode::DISABLED);
+        mat.set_flag(Flags::DISABLE_DEPTH_TEST, true);
+        mat.set_flag(Flags::DISABLE_FOG, true);
+        mat.set_render_priority(127);
+        let inicial = if self.fundido_inicial > 0.0 { 1.0 } else { 0.0 };
+        mat.set_albedo(Color::from_rgba(0.0, 0.0, 0.0, inicial));
+        let mut mi = MeshInstance3D::new_alloc();
+        mi.set_name("Velo");
+        mi.set_mesh(&esfera);
+        mi.set_material_override(&mat);
+        mi.set_cast_shadows_setting(ShadowCastingSetting::OFF);
+        mi.set_visible(inicial > 0.0);
+        cabeza.add_child(&mi);
+        self.velo = Some(mat);
+    }
+
+    fn aplicar_velo(&mut self, color: Color) {
+        let Some(mat) = self.velo.as_mut() else {
+            return;
+        };
+        mat.set_albedo(color);
+        if let Some(mut mi) = self
+            .cabeza
+            .as_ref()
+            .and_then(|c| c.try_get_node_as::<MeshInstance3D>("Velo"))
+        {
+            mi.set_visible(color.a > 0.002);
+        }
+    }
+
     fn iniciar_xr(&mut self) -> bool {
         let xr = XrServer::singleton();
         let Some(mut iface) = xr.find_interface("OpenXR") else {

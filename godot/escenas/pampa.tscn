@@ -22,6 +22,8 @@ shader_parameter/ruido_nubes = SubResource("tex_nubes")
 
 [sub_resource type="Sky" id="cielo"]
 sky_material = SubResource("cielo_mat")
+process_mode = 2
+radiance_size = 1
 
 [sub_resource type="Environment" id="entorno"]
 background_mode = 2
@@ -343,6 +345,17 @@ color_b = Color(1, 0.97, 0.88, 1)
 material_pasto = SubResource("mat_pasto")
 material_cortadera = SubResource("mat_cortadera")
 
+[node name="CicloDia" type="CicloDia" parent="." node_paths=PackedStringArray("sol", "entorno", "luciernagas", "ambiente", "fogon", "farol")]
+sol = NodePath("../Sol")
+entorno = NodePath("../Entorno")
+cielo = SubResource("cielo_mat")
+luciernagas = NodePath("../Luciernagas")
+ambiente = NodePath("../Ambiente")
+fogon = NodePath("../Campamento/Fogon")
+farol = NodePath("../Campamento/Farol")
+tablas = SubResource("mat_tabla")
+duracion = 70.0
+
 [node name="Campamento" type="Node3D" parent="."]
 
 [node name="Fogon" type="Fogon" parent="Campamento" node_paths=PackedStringArray("luz") groups=["apoyar_en_suelo"]]
@@ -392,6 +405,11 @@ lifetime = 2.6
 visibility_aabb = AABB(-2, -0.5, -2, 4, 5, 4)
 process_material = SubResource("proc_brasas")
 draw_pass_1 = SubResource("quad_brasa")
+
+[node name="Portal" type="PortalFogon" parent="Campamento/Fogon" node_paths=PackedStringArray("fogon", "brasas")]
+escena_destino = "res://escenas/fortin.tscn"
+fogon = NodePath("..")
+brasas = NodePath("../Brasas")
 
 [node name="Humo" type="GPUParticles3D" parent="Campamento/Fogon"]
 position = Vector3(0, 0.9, 0)
@@ -464,6 +482,7 @@ mesh = SubResource("m_mango_guitarra")
 position = Vector3(-1.05, 0, -1.65)
 rotation_degrees = Vector3(0, 32, 0)
 modelo = "perro"
+animacion = "lie|sleep|sit|rest|idle"
 respirar = 0.014
 periodo = 2.2
 
@@ -608,6 +627,18 @@ position = Vector3(9.4, 0, -18.4)
 rotation_degrees = Vector3(0, -40, 0)
 modelo = "chimango"
 
+[node name="Narrador" type="Narrador" parent="Campamento" node_paths=PackedStringArray("modelo", "ciclo", "portal") groups=["apoyar_en_suelo"]]
+position = Vector3(0.6, 0, -2.05)
+rotation_degrees = Vector3(0, -8, 0)
+demora_inicial = 11.8
+guion = "res://guion/rancho.json"
+modelo = NodePath("Gaucho")
+ciclo = NodePath("../../CicloDia")
+portal = NodePath("../Fogon/Portal")
+
+[node name="Gaucho" type="ModeloIA" parent="Campamento/Narrador"]
+modelo = "gaucho"
+
 [node name="Fauna" type="Node3D" parent="."]
 
 [node name="Vacas" type="DispersorModelos" parent="Fauna" node_paths=PackedStringArray("terreno")]
@@ -667,7 +698,8 @@ distancia_visible = 70.0
 [node name="Luciernagas" type="GPUParticles3D" parent="."]
 position = Vector3(0, 0.9, -3)
 cast_shadow = 0
-amount = 60
+amount = 110
+amount_ratio = 0.15
 lifetime = 5.0
 preprocess = 5.0
 visibility_aabb = AABB(-16, -2, -16, 32, 5, 32)
@@ -817,6 +849,7 @@ font_size = 30
 position = Vector3(0, 0, 3.6)
 terreno = NodePath("../Terreno")
 titulo = NodePath("../Titulo")
+fundido_inicial = 2.5
 
 [node name="Cabeza" type="XRCamera3D" parent="Jugador"]
 position = Vector3(0, 1.65, 0)

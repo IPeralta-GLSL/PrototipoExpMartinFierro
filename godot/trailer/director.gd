@@ -74,6 +74,11 @@ func _ready() -> void:
 		ocultar += ["../Pampa/Versos", "../Pampa/VersoLibre", "../Pampa/VersoHermanos"]
 	if not mostrar_creditos:
 		negro_final = 0.8
+	# En el render no habla el narrador ni se abre el portal.
+	for ruta in ["../Pampa/Campamento/Narrador", "../Pampa/Campamento/Fogon/Portal"]:
+		var nodo := get_node_or_null(ruta)
+		if nodo:
+			nodo.process_mode = Node.PROCESS_MODE_DISABLED
 	for ruta in ocultar:
 		var n := get_node_or_null(ruta)
 		if n:
