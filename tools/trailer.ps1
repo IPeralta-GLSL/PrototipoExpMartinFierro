@@ -6,13 +6,12 @@
 .EXAMPLE
   .\tools\trailer.ps1
   .\tools\trailer.ps1 -Resolucion 2560x1440 -Fps 60
-  .\tools\trailer.ps1 -SinCarteles -SinCreditos -Salida build\teaser_limpio.mp4
+  .\tools\trailer.ps1 -SinCreditos -Salida build\teaser_limpio.mp4
 #>
 param(
     [string]$Salida = "",
     [int]$Fps = 30,
     [string]$Resolucion = "1920x1080",
-    [switch]$SinCarteles,
     [switch]$SinCreditos,
     [switch]$ConservarCuadros
 )
@@ -50,7 +49,6 @@ window/size/always_on_top=true
 "@ | Out-File -Encoding ascii $override
 Write-Host "No minimices la ventana de Godot mientras renderiza: si no se ve, deja de dibujar." -ForegroundColor Yellow
 $opciones = @('--escritorio')
-if ($SinCarteles) { $opciones += '--sin-carteles' }
 if ($SinCreditos) { $opciones += '--sin-creditos' }
 $previo = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
 try {

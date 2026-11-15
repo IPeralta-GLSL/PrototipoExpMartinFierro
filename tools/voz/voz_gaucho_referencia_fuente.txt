@@ -1,0 +1,4 @@
+Voz del narrador: clonada (Qwen3-TTS Base) del hablante 2484 del
+"Crowdsourced high-quality Argentinian Spanish speech data set" (Google, OpenSLR SLR61),
+licencia CC BY-SA 4.0. Guevara-Rukoz et al., "Crowdsourcing Latin American Spanish for
+Low-Resource Text-to-Speech", LREC 2020. https://www.openslr.org/61/

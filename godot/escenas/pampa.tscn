@@ -211,12 +211,6 @@ roughness = 0.9
 albedo_color = Color(0.22, 0.15, 0.1, 1)
 roughness = 0.9
 
-[sub_resource type="StandardMaterial3D" id="mat_tabla"]
-albedo_color = Color(0.7, 0.56, 0.4, 1)
-roughness = 0.95
-emission_enabled = true
-emission = Color(0.22, 0.16, 0.1, 1)
-
 [sub_resource type="StandardMaterial3D" id="mat_adobe"]
 albedo_color = Color(0.8, 0.72, 0.6, 1)
 roughness = 1.0
@@ -276,20 +270,6 @@ size = Vector3(0.38, 0.48, 0.1)
 [sub_resource type="BoxMesh" id="m_mango_guitarra"]
 material = SubResource("mat_madera_oscura")
 size = Vector3(0.06, 0.55, 0.04)
-
-[sub_resource type="BoxMesh" id="m_tabla"]
-material = SubResource("mat_tabla")
-size = Vector3(1.6, 1.12, 0.05)
-
-[sub_resource type="BoxMesh" id="m_tabla_chica"]
-material = SubResource("mat_tabla")
-size = Vector3(1.3, 0.9, 0.05)
-
-[sub_resource type="CylinderMesh" id="m_poste_cartel"]
-material = SubResource("mat_madera_oscura")
-top_radius = 0.045
-bottom_radius = 0.05
-height = 1.7
 
 [sub_resource type="SystemFont" id="fuente_serif"]
 font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "serif")
@@ -353,7 +333,6 @@ luciernagas = NodePath("../Luciernagas")
 ambiente = NodePath("../Ambiente")
 fogon = NodePath("../Campamento/Fogon")
 farol = NodePath("../Campamento/Farol")
-tablas = SubResource("mat_tabla")
 duracion = 70.0
 
 [node name="Campamento" type="Node3D" parent="."]
@@ -410,6 +389,7 @@ draw_pass_1 = SubResource("quad_brasa")
 escena_destino = "res://escenas/fortin.tscn"
 fogon = NodePath("..")
 brasas = NodePath("../Brasas")
+tiempo_maximo = 150.0
 
 [node name="Humo" type="GPUParticles3D" parent="Campamento/Fogon"]
 position = Vector3(0, 0.9, 0)
@@ -706,123 +686,6 @@ visibility_aabb = AABB(-16, -2, -16, 32, 5, 32)
 process_material = SubResource("proc_luciernagas")
 draw_pass_1 = SubResource("quad_luciernaga")
 
-[node name="Versos" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
-position = Vector3(2.7, 0, 1.75)
-rotation_degrees = Vector3(0, -49, 0)
-
-[node name="Poste1" type="MeshInstance3D" parent="Versos"]
-position = Vector3(-0.68, 0.85, -0.04)
-mesh = SubResource("m_poste_cartel")
-
-[node name="Poste2" type="MeshInstance3D" parent="Versos"]
-position = Vector3(0.68, 0.85, -0.04)
-mesh = SubResource("m_poste_cartel")
-
-[node name="Tabla" type="MeshInstance3D" parent="Versos"]
-position = Vector3(0, 1.25, 0)
-mesh = SubResource("m_tabla")
-
-[node name="Texto" type="Label3D" parent="Versos"]
-position = Vector3(0, 1.25, 0.03)
-pixel_size = 0.0021
-modulate = Color(0.12, 0.07, 0.03, 1)
-outline_size = 0
-text = "Aquí me pongo á cantar
-Al compás de la vigüela,
-Que el hombre que lo desvela
-Una pena estrordinaria,
-Como la ave solitaria
-Con el cantar se consuela.
-
-José Hernández
-El Gaucho Martín Fierro (1872)"
-font = SubResource("fuente_serif")
-font_size = 38
-line_spacing = 4.0
-
-[node name="Creditos" type="Label3D" parent="Versos"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.25, -0.03)
-pixel_size = 0.0021
-modulate = Color(0.12, 0.07, 0.03, 1)
-outline_size = 0
-text = "Versos de José Hernández (1834–1886):
-El Gaucho Martín Fierro (1872)
-y La Vuelta de Martín Fierro (1879).
-Dominio público. Texto según
-las primeras ediciones.
-
-Modelos 3D generados en local con
-Z-Image-Turbo y Hunyuan3D-2."
-font = SubResource("fuente_serif")
-font_size = 28
-line_spacing = 4.0
-
-[node name="VersoLibre" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
-position = Vector3(4.3, 0, -0.7)
-rotation_degrees = Vector3(0, -52, 0)
-
-[node name="Poste" type="MeshInstance3D" parent="VersoLibre"]
-position = Vector3(0, 0.85, -0.05)
-mesh = SubResource("m_poste_cartel")
-
-[node name="Tabla" type="MeshInstance3D" parent="VersoLibre"]
-position = Vector3(0, 1.25, 0)
-mesh = SubResource("m_tabla_chica")
-
-[node name="Texto" type="Label3D" parent="VersoLibre"]
-position = Vector3(0, 1.25, 0.03)
-pixel_size = 0.0019
-modulate = Color(0.12, 0.07, 0.03, 1)
-outline_size = 0
-text = "Mi gloria es vivir tan libre
-Como el pájaro del Cielo,
-No hago nido en este suelo
-Ande hay tanto que sufrir;
-Y naides me ha de seguir
-Cuando yo remuento el vuelo."
-font = SubResource("fuente_serif")
-font_size = 36
-line_spacing = 4.0
-
-[node name="VersoHermanos" type="Node3D" parent="." groups=["apoyar_en_suelo"]]
-position = Vector3(3.7, 0, -7.0)
-rotation_degrees = Vector3(0, -17, 0)
-
-[node name="Poste" type="MeshInstance3D" parent="VersoHermanos"]
-position = Vector3(0, 0.85, -0.05)
-mesh = SubResource("m_poste_cartel")
-
-[node name="Tabla" type="MeshInstance3D" parent="VersoHermanos"]
-position = Vector3(0, 1.25, 0)
-mesh = SubResource("m_tabla_chica")
-
-[node name="Texto" type="Label3D" parent="VersoHermanos"]
-position = Vector3(0, 1.25, 0.03)
-pixel_size = 0.0019
-modulate = Color(0.12, 0.07, 0.03, 1)
-outline_size = 0
-text = "Los hermanos sean unidos,
-Porque esa es la ley primera—
-Tengan union verdadera
-En cualquier tiempo que sea—
-Porque si entre ellos pelean
-Los devoran los de ajuera.
-(La Vuelta, 1879)"
-font = SubResource("fuente_serif")
-font_size = 34
-line_spacing = 3.0
-
-[node name="PistaGuitarra" type="Label3D" parent="."]
-position = Vector3(-1.5, 1.3, 2.05)
-rotation_degrees = Vector3(0, 30, 0)
-pixel_size = 0.0025
-modulate = Color(1, 0.88, 0.7, 0.85)
-outline_modulate = Color(0.1, 0.05, 0.02, 0.85)
-outline_size = 6
-text = "Pasá la mano por las cuerdas"
-font = SubResource("fuente_serif")
-font_size = 26
-
 [node name="Titulo" type="Label3D" parent="."]
 position = Vector3(0, 1.8, 0.9)
 pixel_size = 0.004
@@ -840,8 +703,7 @@ pixel_size = 0.004
 modulate = Color(1, 0.9, 0.75, 1)
 outline_modulate = Color(0.12, 0.06, 0.02, 1)
 outline_size = 8
-text = "Pampa bonaerense, hacia 1872
-Acercate al fogón y escuchá."
+text = "Pampa bonaerense, hacia 1872"
 font = SubResource("fuente_serif")
 font_size = 30
 

@@ -62,8 +62,8 @@ archivos de audio.
   barro**, **palenque** con dos caballos criollos (moro y gateado) y la **carreta**.
 - **Fondo**: el **ombú**, un corral de palo a pique con un chimango, vacas criollas, ñandúes,
   teros, cardos y cortaderas.
-- Cielo de atardecer con nubes, luciérnagas, y tres carteles con estrofas verificadas contra las
-  primeras ediciones (1872 y 1879).
+- Cielo de atardecer con nubes y luciérnagas. Sin carteles: los versos los dice el narrador, con
+  subtítulos (texto según las primeras ediciones, 1872 y 1879).
 - Los animales "respiran" (animación sutil hecha en Rust).
 
 Cada objeto es un nodo `ModeloIA` que carga `godot/modelos/<nombre>.glb`: si regenerás un modelo,
@@ -72,35 +72,66 @@ teros) las siembra `DispersorModelos` sobre el terreno.
 
 ## Relato: del atardecer a la noche, y el fortín
 
+La experiencia es **lineal y por tiempo**: nada espera al jugador. Se puede mirar alrededor (y
+caminar), pero las escenas avanzan solas y al final vuelve a empezar.
+
+| Momento | Pampa (~2 min) | Fortín (~1 min 15 s) |
+|---|---|---|
+| Fundido desde negro + título | 0–11 s | 0–8 s |
+| El gaucho recita | desde 12 s | desde 9 s |
+| Anochecer (70 s) | ~40 s → noche cerrada a ~110 s | ya es de noche |
+| El fuego se lleva al jugador | ~115 s → fortín | ~71 s → pampa |
+
 1. **Rancho, al atardecer.** Un gaucho (Martín Fierro) recita junto al fogón versos del poema
    (edición de 1894, ortografía original), con voz y subtítulos sobre su cabeza.
 2. Con "Y verlos al cair la tarde…" empieza a **anochecer** (`CicloDia`, ~70 s): el sol se pone,
    el cielo pasa por el crepúsculo a una **noche estrellada** con luna, Vía Láctea y las Tres
    Marías; el fogón y el farol cobran fuerza, aparecen las luciérnagas, calma el viento y suben
    los grillos.
-3. "…Me echaron á la frontera": el gaucho invita a **mirar el fuego**. Al acercarse a las llamas
-   (o con **E** en la PC) el fuego crece y la vista se funde en naranja y negro…
+3. "…Me echaron á la frontera": el gaucho invita a **mirar el fuego**. Cuando termina de hablar,
+   el fuego crece solo y la vista se funde en naranja y negro…
 4. **El fortín de frontera** (Canto III): empalizada, mangrullo, cuadras de soldados y el cañón,
    de noche. El gaucho cuenta la leva y el trabajo sin paga; su fuego lleva de vuelta al pago.
 
-En la PC: **N** salta a la siguiente línea del narrador, **E** activa el portal cuando aparece la
-pista. Para probar la noche: `-- --ciclo=1.0` (por ejemplo con `tools\captura.ps1 -Extra`).
+Atajos de prueba en la PC: **N** salta a la siguiente línea del narrador; `-- --ciclo=1.0` arranca
+de noche y `-- --portal` pasa de escena enseguida (por ejemplo con `tools\captura.ps1 -Extra`).
 
-El guion está en `godot/guion/rancho.json` y `fortin.json` (texto, audio, pausa y evento por
-línea: `anochecer`, `noche`, `portal`).
+El guion está en `godot/guion/rancho.json` y `fortin.json` (texto, audio, pausa antes de la línea
+y evento: `anochecer`, `noche`, `portal`). Los tiempos se ajustan ahí: `espera` es la pausa antes
+de cada línea; el evento `portal` programa el fundido 1,2 s después de que termina esa línea. Cada
+`PortalFogon` tiene además `tiempo_maximo` (150 s y 110 s) como red de seguridad.
 
 ### Voz del narrador (Qwen3-TTS, local)
 
+**Voz masculina con acento argentino (rioplatense).** Qwen3-TTS no trae ninguna voz argentina
+(ni el modelo local ni la API en la nube), así que el acento se toma de grabaciones reales: el
+modelo **Base** de Qwen3-TTS clona a un hablante del *Crowdsourced high-quality Argentinian
+Spanish speech data set* de Google (voluntarios de Buenos Aires, grabado para TTS, CC BY-SA 4.0).
+Se eligió el hablante **2484** (de los más graves, ~100 Hz, y el que mejor se entiende).
+
 ```powershell
 $py = "E:\ComfyUI\ComfyUIStudio\App\python_embeded\python.exe"
-& $py -B tools\voz\generar_voz.py              # genera lo que falte en godot/voz/
-& $py -B tools\voz\generar_voz.py --rehacer    # todas las líneas de nuevo
-& $py -B tools\voz\generar_voz.py --nueva-voz  # diseñar otra voz de gaucho
+# 1) Probar candidatos: deja muestras en tools\voz\trabajo\muestra_ar_<hablante>.wav
+& $py -I -B tools\voz\referencia_argentina.py --probar
+& $py -I -B tools\voz\referencia_argentina.py --hablantes 8784,1523 --probar
+# 2) Elegir uno y regenerar todas las líneas
+& $py -I -B tools\voz\referencia_argentina.py --usar 2484
+& $py -I -B tools\voz\generar_voz.py --rehacer
 ```
 
-VoiceDesign crea una voz original a partir de una descripción (no clona a nadie), Whisper elige
-la candidata que mejor se entiende y el modelo Base la clona para todas las líneas. Cada línea se
-verifica con Whisper y se regenera si no se entiende.
+`generar_voz.py` clona la voz de referencia (`tools/voz/voz_gaucho_referencia.wav`) para cada
+línea de los guiones, la verifica con Whisper (si no se entiende, la regenera) y la exporta a
+`godot/voz/*.ogg`. La voz anterior, diseñada con VoiceDesign (sin acento argentino), quedó en
+`voz_gaucho_disenada.wav`; `generar_voz.py --nueva-voz` diseña otra desde una descripción.
+
+Alternativa probada: **Tomás** (`es-AR-TomasNeural`), voz neural masculina argentina de Microsoft
+(servicio online; para uso comercial, Azure Speech de pago):
+
+```powershell
+& $py -I -m pip install --target tools\voz\.deps edge-tts    # una sola vez, queda en el proyecto
+& $py -I -B tools\voz\voz_microsoft.py --muestras             # normal / pausado / gaucho
+& $py -I -B tools\voz\voz_microsoft.py --estilo pausado       # reemplaza todas las líneas
+```
 
 ### Animaciones (Mesh2Motion)
 
@@ -160,6 +191,10 @@ texturizado. Para cambiar un objeto, editá su `prompt` o `semilla` en `assets.j
 
 - Versos: José Hernández (1834–1886), *El Gaucho Martín Fierro* (1872) y *La Vuelta de Martín
   Fierro* (1879). Dominio público; texto según las primeras ediciones.
+- Voz del narrador: Qwen3-TTS (Alibaba/Qwen, Apache-2.0), clonando al hablante 2484 del
+  *Crowdsourced high-quality Argentinian Spanish speech data set* (Google, OpenSLR SLR61,
+  CC BY-SA 4.0; Guevara-Rukoz et al., LREC 2020). Las líneas generadas (`godot/voz/`) se
+  comparten bajo la misma licencia CC BY-SA 4.0.
 - Godot Engine (MIT), godot-rust/gdext (MPL-2.0), Godot OpenXR Vendors (MIT).
 - Z-Image-Turbo (Tongyi-MAI, Alibaba) y Hunyuan3D-2 (Tencent, *Tencent Hunyuan Community
   License*: revisá sus condiciones antes de un uso comercial; excluye la UE, el Reino Unido y

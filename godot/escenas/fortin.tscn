@@ -324,7 +324,7 @@ draw_pass_1 = SubResource("quad_brasa")
 escena_destino = "res://escenas/pampa.tscn"
 fogon = NodePath("..")
 brasas = NodePath("../Brasas")
-texto_pista = "Acercate al fuego para volver al pago"
+tiempo_maximo = 110.0
 
 [node name="Humo" type="GPUParticles3D" parent="Fuerte/Fogon"]
 position = Vector3(0, 0.9, 0)

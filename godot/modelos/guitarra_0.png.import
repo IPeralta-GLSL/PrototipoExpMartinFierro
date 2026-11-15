@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgst87thdsn27"
-path="res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.ctex"
+path.s3tc="res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.s3tc.ctex"
+path.etc2="res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "cc9eeca1e8cb891219450110854b7a6c"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://modelos/guitarra_0.png"
-dest_files=["res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.ctex"]
+dest_files=["res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.s3tc.ctex", "res://.godot/imported/guitarra_0.png-caca05dcab77768d213e7d1117e313c4.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

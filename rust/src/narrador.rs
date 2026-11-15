@@ -1,6 +1,7 @@
 //! El gaucho narrador: recita el guion (versos de Martín Fierro) con voz
 //! generada por Qwen3-TTS, muestra subtítulos y dispara los eventos de la
-//! escena (anochecer, abrir el portal del fogón...).
+//! escena (anochecer, pasar de escena por el fuego...). Todo corre por tiempo:
+//! no espera ninguna acción del jugador.
 //!
 //! Guion (JSON): lista de líneas
 //! `{ "texto": "...", "audio": "res://voz/x.ogg", "espera": 2.0, "evento": "anochecer" }`.
@@ -224,10 +225,11 @@ impl Narrador {
         self.t_linea = 0.0;
         self.hablando = true;
         self.animar("talk|hablar|gesture|speak|idle");
-        self.disparar(&evento);
+        self.disparar(&evento, duracion);
     }
 
-    fn disparar(&mut self, evento: &str) {
+    /// `duracion`: lo que dura la línea que dispara el evento.
+    fn disparar(&mut self, evento: &str, duracion: f32) {
         for e in evento.split(',').map(str::trim).filter(|e| !e.is_empty()) {
             match e {
                 "anochecer" => {
@@ -241,8 +243,9 @@ impl Narrador {
                     }
                 }
                 "portal" => {
+                    // El fuego se lleva al jugador apenas el gaucho termina de hablar.
                     if let Some(p) = self.portal.as_mut() {
-                        p.bind_mut().activar();
+                        p.bind_mut().activar_en(duracion + 1.2);
                     }
                 }
                 otro => {

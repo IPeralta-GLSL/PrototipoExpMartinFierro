@@ -34,6 +34,13 @@ tools/assetgen/comfy_runtime/
 # Pesos descargados (u2net para quitar el fondo, ~170 MB).
 tools/assetgen/models/
 
+# --- Voz del narrador (tools/voz) -------------------------------------------
+# WAV intermedios, muestras de prueba y clips descargados del dataset argentino.
+# Lo que usa el juego está en godot/voz/*.ogg.
+tools/voz/trabajo/
+# edge-tts instalado localmente (pip --target), no se versiona.
+tools/voz/.deps/
+
 # --- Python ----------------------------------------------------------------
 __pycache__/
 *.py[cod]

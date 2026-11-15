@@ -31,14 +31,14 @@
     "texto": "Tuve en mi pago en un tiempo\nHijos, hacienda y mujer,\nPero empecé á padecer,\nMe echaron á la frontera,\n¡Y qué iba á hallar al volver!\nTan solo hallé la tapera.",
     "fuente": "Canto III, 1",
     "audio": "res://voz/rancho_05.ogg",
-    "espera": 8.0,
+    "espera": 12.0,
     "evento": ""
   },
   {
     "texto": "Mirá el fuego, paisano...\nque en las llamas se ve todo.",
     "fuente": "narración",
     "audio": "res://voz/rancho_06.ogg",
-    "espera": 3.0,
+    "espera": 6.0,
     "evento": "portal"
   }
 ]

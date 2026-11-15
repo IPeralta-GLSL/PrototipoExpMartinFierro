@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dc5g02wdf7qnj"
-path="res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.ctex"
+path.s3tc="res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.s3tc.ctex"
+path.etc2="res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "660a70636f95c847cf51d5b433c78796"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://modelos/vaca_0.png"
-dest_files=["res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.ctex"]
+dest_files=["res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.s3tc.ctex", "res://.godot/imported/vaca_0.png-c9ec4bfb00f3afe73914875858e1e56f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

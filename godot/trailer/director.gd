@@ -37,8 +37,7 @@ const PLANOS := [
 		"desde": Vector3(-2.5, 1.6, 5.5), "mirar_desde": Vector3(0, 1.0, -5),
 		"hasta": Vector3(-16, 10, 22), "mirar_hasta": Vector3(0, 2.5, -10) },
 ]
-# Opciones (desde la línea de comandos: -- --sin-carteles --sin-creditos)
-@export var mostrar_carteles := true
+# Opciones (desde la línea de comandos: -- --sin-creditos)
 @export var mostrar_creditos := true
 var negro_final := 3.2
 
@@ -65,13 +64,9 @@ var _proximo := 0
 func _ready() -> void:
 	camara.make_current()
 	var args := OS.get_cmdline_user_args()
-	if "--sin-carteles" in args:
-		mostrar_carteles = false
 	if "--sin-creditos" in args:
 		mostrar_creditos = false
-	var ocultar := ["../Pampa/Titulo", "../Pampa/PistaGuitarra"]
-	if not mostrar_carteles:
-		ocultar += ["../Pampa/Versos", "../Pampa/VersoLibre", "../Pampa/VersoHermanos"]
+	var ocultar := ["../Pampa/Titulo"]
 	if not mostrar_creditos:
 		negro_final = 0.8
 	# En el render no habla el narrador ni se abre el portal.

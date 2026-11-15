@@ -1,11 +1,9 @@
-//! Portal del fogón: "mirá el fuego, paisano". Al acercarse a las llamas,
-//! el fuego crece, las brasas se arremolinan y la vista se funde en naranja y
-//! negro hasta pasar al otro escenario (el recuerdo del narrador).
+//! Portal del fogón: "mirá el fuego, paisano". La experiencia es lineal y por
+//! tiempo: cuando el narrador termina su última línea, el fuego crece, las
+//! brasas se arremolinan y la vista se funde en naranja y negro hasta pasar
+//! al otro escenario. No espera ninguna acción del jugador.
 
-use godot::classes::{
-    base_material_3d::BillboardMode, Engine, GpuParticles3D, Input, Label3D, SystemFont,
-};
-use godot::global::Key;
+use godot::classes::{Engine, GpuParticles3D};
 use godot::prelude::*;
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -32,24 +30,20 @@ pub struct PortalFogon {
     fogon: Option<Gd<Node3D>>,
     #[export]
     brasas: Option<Gd<GpuParticles3D>>,
-    /// Distancia horizontal (m) desde la que el fuego "te lleva".
-    #[export]
-    radio: f32,
+    /// Segundos que dura el fundido del fuego.
     #[export]
     duracion: f32,
-    /// Texto de la pista que aparece sobre el fuego.
+    /// Red de seguridad: si el narrador no lo dispara, el portal se abre solo
+    /// a los N segundos de empezar la escena (0 = desactivado).
     #[export]
-    texto_pista: GString,
-    #[export]
-    activo_al_inicio: bool,
+    tiempo_maximo: f32,
 
-    activo: bool,
+    /// Cuenta regresiva hasta empezar el fundido (< 0 = sin programar).
+    cuenta: f32,
     transicion: f32,
-    t: f32,
-    tecla_previa: bool,
+    tiempo: f32,
     energia0: f32,
     llamas0: f32,
-    pista: Option<Gd<Label3D>>,
     base: Base<Node3D>,
 }
 
@@ -60,75 +54,51 @@ impl INode3D for PortalFogon {
             escena_destino: GString::new(),
             fogon: None,
             brasas: None,
-            radio: 1.7,
             duracion: 4.0,
-            texto_pista: GString::from("Acercate al fuego y mirá las llamas"),
-            activo_al_inicio: false,
-            activo: false,
+            tiempo_maximo: 0.0,
+            cuenta: -1.0,
             transicion: -1.0,
-            t: 0.0,
-            tecla_previa: false,
+            tiempo: 0.0,
             energia0: 2.4,
             llamas0: 2.2,
-            pista: None,
             base,
         }
     }
 
     fn ready(&mut self) {
         if Engine::singleton().is_editor_hint() {
+            self.base_mut().set_process(false);
             return;
         }
-        let mut fuente = SystemFont::new_gd();
-        fuente.set_font_names(&PackedStringArray::from(&[
-            GString::from("Georgia"),
-            GString::from("Times New Roman"),
-            GString::from("serif"),
-        ]));
-        let mut pista = Label3D::new_alloc();
-        pista.set_name("Pista");
-        pista.set_text(&self.texto_pista);
-        pista.set_font(&fuente);
-        pista.set_font_size(34);
-        pista.set_pixel_size(0.0022);
-        pista.set_outline_size(10);
-        pista.set_billboard_mode(BillboardMode::FIXED_Y);
-        pista.set_modulate(Color::from_rgba(1.0, 0.82, 0.55, 0.0));
-        pista.set_outline_modulate(Color::from_rgba(0.1, 0.04, 0.0, 0.0));
-        pista.set_position(Vector3::new(0.0, 1.45, 0.0));
-        self.base_mut().add_child(&pista);
-        self.pista = Some(pista);
-        // Para probar: -- --portal lo habilita desde el comienzo.
-        let prueba = argumento_usuario("portal").is_some()
-            && !PORTAL_DE_PRUEBA_USADO.swap(true, Ordering::Relaxed);
-        if self.activo_al_inicio || prueba {
-            self.activar();
+        // Para probar: -- --portal pasa de escena enseguida.
+        if argumento_usuario("portal").is_some()
+            && !PORTAL_DE_PRUEBA_USADO.swap(true, Ordering::Relaxed)
+        {
+            self.activar_en(1.0);
         }
     }
 
     fn process(&mut self, delta: f64) {
-        if !self.activo {
-            return;
-        }
         let dt = delta as f32;
-        self.t += dt;
+        self.tiempo += dt;
 
         if self.transicion < 0.0 {
-            // Pista que late suavemente sobre el fuego.
-            let alfa = (self.t / 1.5).min(1.0) * (0.75 + 0.25 * (self.t * 2.4).sin());
-            self.fijar_alfa_pista(alfa);
-            let tecla = Input::singleton().is_key_pressed(Key::E);
-            let tecla_nueva = tecla && !self.tecla_previa;
-            self.tecla_previa = tecla;
-            if tecla_nueva || self.jugador_cerca() {
-                self.iniciar_transicion();
+            if self.cuenta < 0.0 && self.tiempo_maximo > 0.0 && self.tiempo >= self.tiempo_maximo
+            {
+                godot_print!("Portal del fogón: tiempo máximo de la escena cumplido");
+                self.cuenta = 0.0;
+            }
+            if self.cuenta >= 0.0 {
+                self.cuenta -= dt;
+                if self.cuenta <= 0.0 {
+                    self.iniciar_transicion();
+                }
             }
             return;
         }
 
         self.transicion += dt;
         let u = (self.transicion / self.duracion.max(0.5)).min(1.0);
-        self.fijar_alfa_pista((1.0 - u * 3.0).max(0.0));
         let (e0, l0) = (self.energia0, self.llamas0);
         if let Some(f) = self.fogon.as_mut() {
             f.set("energia_base", &(e0 * (1.0 + 4.0 * u)).to_variant());
@@ -147,7 +117,7 @@ impl INode3D for PortalFogon {
         self.fijar_velo(c);
 
         if u >= 1.0 {
-            self.activo = false;
+            self.base_mut().set_process(false);
             let destino = self.escena_destino.clone();
             if !destino.is_empty() {
                 let r = self.base().get_tree().change_scene_to_file(&destino);
@@ -159,50 +129,36 @@ impl INode3D for PortalFogon {
 
 #[godot_api]
 impl PortalFogon {
-    /// Habilita el portal (lo llama el narrador al final del relato).
+    /// Programa el fundido del fuego para dentro de `segundos`
+    /// (lo llama el narrador al decir su última línea).
     #[func]
-    pub fn activar(&mut self) {
-        if self.activo {
+    pub fn activar_en(&mut self, segundos: f32) {
+        if self.transicion >= 0.0 {
             return;
         }
-        self.activo = true;
-        self.t = 0.0;
+        let s = segundos.max(0.0);
+        // Si ya estaba programado, gana el que llegue antes.
+        self.cuenta = if self.cuenta >= 0.0 { self.cuenta.min(s) } else { s };
+    }
+
+    /// Empieza el fundido ya mismo.
+    #[func]
+    pub fn iniciar_transicion(&mut self) {
+        if self.transicion >= 0.0 {
+            return;
+        }
         if let Some(f) = &self.fogon {
+            // Parte de la intensidad actual (el ciclo de la noche ya la subió).
             self.energia0 = f.get("energia_base").try_to::<f32>().unwrap_or(2.4);
             self.llamas0 = f.get("intensidad_llamas").try_to::<f32>().unwrap_or(2.2);
         }
-    }
-
-    #[func]
-    pub fn iniciar_transicion(&mut self) {
-        if self.transicion < 0.0 {
-            self.activo = true;
-            self.transicion = 0.0;
-        }
+        self.cuenta = -1.0;
+        self.transicion = 0.0;
+        godot_print!("Portal del fogón: comienza el fundido");
     }
 }
 
 impl PortalFogon {
-    fn jugador_cerca(&self) -> bool {
-        let Some(cam) = self.base().get_viewport().and_then(|v| v.get_camera_3d()) else {
-            return false;
-        };
-        let p = cam.get_global_position();
-        let c = self.base().get_global_position();
-        Vector2::new(p.x - c.x, p.z - c.z).length() < self.radio
-    }
-
-    fn fijar_alfa_pista(&mut self, alfa: f32) {
-        if let Some(p) = self.pista.as_mut() {
-            let mut c = p.get_modulate();
-            c.a = alfa;
-            p.set_modulate(c);
-            let mut o = p.get_outline_modulate();
-            o.a = alfa * 0.9;
-            p.set_outline_modulate(o);
-        }
-    }
-
     /// Pide al jugador (grupo "jugador") que tiña su velo de cámara.
     fn fijar_velo(&mut self, color: Color) {
         let arbol = self.base().get_tree();

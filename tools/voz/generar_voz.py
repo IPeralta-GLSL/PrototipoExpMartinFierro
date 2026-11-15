@@ -1,9 +1,11 @@
 """
 Voz del gaucho narrador con Qwen3-TTS (Alibaba), 100 % local.
 
-1) VoiceDesign crea una voz original a partir de una descripción (no se clona
-   a ninguna persona real). Se generan varias candidatas y Whisper elige la
-   que mejor se entiende.
+1) La voz de referencia (voz_gaucho_referencia.wav/.txt) sale de:
+   - referencia_argentina.py: hablante real con acento rioplatense (dataset de
+     Google, CC BY-SA 4.0). Es la voz actual del gaucho.
+   - --nueva-voz: VoiceDesign crea una voz original a partir de una
+     descripción (sin acento argentino real).
 2) El modelo Base clona esa voz para todas las líneas de los guiones, así el
    narrador suena siempre igual.
 3) Cada línea se verifica con Whisper (si no se entiende, se regenera con otra
