@@ -275,10 +275,6 @@ size = Vector3(0.06, 0.55, 0.04)
 [sub_resource type="SystemFont" id="fuente_serif"]
 font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "serif")
 
-[sub_resource type="BoxMesh" id="m_guante"]
-material = SubResource("mat_cuero")
-size = Vector3(0.08, 0.035, 0.13)
-
 [sub_resource type="StandardMaterial3D" id="mat_molino"]
 albedo_color = Color(0.37, 0.35, 0.32, 1)
 metallic = 0.35
@@ -1095,16 +1091,10 @@ position = Vector3(-0.25, 1.1, -0.3)
 tracker = &"left_hand"
 pose = &"grip"
 
-[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoIzquierda"]
-mesh = SubResource("m_guante")
-
 [node name="ManoDerecha" type="XRController3D" parent="Jugador" groups=["manos"]]
 position = Vector3(0.25, 1.1, -0.3)
 tracker = &"right_hand"
 pose = &"grip"
-
-[node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
-mesh = SubResource("m_guante")
 
 [node name="Lena1" type="Agarrable" parent="Campamento"]
 position = Vector3(0.75, 0.0, 1.65)
@@ -1155,7 +1145,7 @@ punto_caricia = Vector3(0, 0.6, 0.4)
 radio_caricia = 0.45
 
 [node name="Modelo" type="ModeloIA" parent="Campamento/PerroPaseo/Perro"]
-rotation_degrees = Vector3(0, -90, 0)
+rotation_degrees = Vector3(0, 90, 0)
 modelo = "perro_parado"
 
 [node name="Pozo" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]

@@ -9,7 +9,8 @@ use godot::classes::{
     geometry_instance_3d::ShadowCastingSetting,
     viewport::VrsMode,
     xr_server::RotationMode,
-    DisplayServer, Engine, IXrOrigin3D, ProjectSettings, Input, InputEvent, InputEventMouseMotion, Label3D,
+    file_access::ModeFlags,
+    DisplayServer, Engine, FileAccess, IXrOrigin3D, ProjectSettings, Input, InputEvent, InputEventMouseMotion, Label3D,
     MeshInstance3D, OpenXrInterface, RenderingServer, SphereMesh, StandardMaterial3D, XrCamera3D,
     XrController3D, XrInterface, XrOrigin3D, XrPositionalTracker, XrServer,
 };
@@ -64,6 +65,7 @@ pub struct JugadorXR {
     /// Diagnóstico de los controles (se escribe en el log al cambiar).
     diag_t: f32,
     diag_previo: String,
+    diag_lineas: Vec<String>,
     yaw: f32,
     pitch: f32,
     tiempo: f32,
@@ -104,6 +106,7 @@ impl IXrOrigin3D for JugadorXR {
             reinicio: None,
             diag_t: 0.0,
             diag_previo: String::new(),
+            diag_lineas: Vec::new(),
             yaw: 0.0,
             pitch: 0.0,
             tiempo: 0.0,
@@ -125,6 +128,8 @@ impl IXrOrigin3D for JugadorXR {
         }
         self.base_mut().add_to_group("jugador");
         self.crear_velo();
+        // Cel shading pictórico de toda la escena, cuando ya cargó todo.
+        self.base_mut().call_deferred("pintar_escena", &[]);
 
         self.captura = argumento_usuario("captura").filter(|s| !s.is_empty());
         if let Some(n) = argumento_usuario("esperar").and_then(|s| s.parse::<u32>().ok()) {
@@ -135,9 +140,9 @@ impl IXrOrigin3D for JugadorXR {
         if !self.modo_xr {
             self.iniciar_escritorio();
         }
-        // Las manos del jugador (malla de hand tracking), los brazos y la interacción.
-        // En la PC solo para probar los brazos (-- --brazos).
-        if self.modo_xr || argumento_usuario("brazos").is_some() {
+        // Las manos del jugador (mano de paisano con manga) y la interacción.
+        // En la PC, para probarlas con manos falsas: -- --manos
+        if self.modo_xr || argumento_usuario("manos").is_some() {
             let mut manos = crate::interaccion::ManosXR::new_alloc();
             manos.set_name("Manos");
             self.base_mut().add_child(&manos);
@@ -190,6 +195,14 @@ impl IXrOrigin3D for JugadorXR {
 
 #[godot_api]
 impl JugadorXR {
+    /// Convierte los materiales de toda la escena al shader de pintura.
+    #[func]
+    fn pintar_escena(&mut self) {
+        if let Some(escena) = self.base().get_tree().get_current_scene() {
+            crate::pintura::pintar(&escena);
+        }
+    }
+
     /// true si el jugador está usando el casco.
     #[func]
     pub fn en_modo_xr(&self) -> bool {
@@ -367,20 +380,33 @@ impl JugadorXR {
                 .map(|t| t.get_tracker_profile().to_string())
                 .unwrap_or_else(|| "-".to_string())
         };
-        let (si, sd) = (izq.get_vector2("primary"), der.get_vector2("primary"));
-        let estado = format!(
-            "izq: seguimiento={} perfil={} stick=({:.1},{:.1}) | der: seguimiento={} perfil={} stick=({:.1},{:.1})",
-            izq.get_has_tracking_data(),
-            perfil("left_hand"),
-            si.x,
-            si.y,
-            der.get_has_tracking_data(),
-            perfil("right_hand"),
-            sd.x,
-            sd.y
-        );
+        let control = |c: &Gd<XrController3D>, nombre: &str| {
+            let s = c.get_vector2("primary");
+            format!(
+                "seguimiento={} perfil={} stick=({:.1},{:.1}) grip={:.1} gatillo={:.1} AX={} BY={}",
+                c.get_has_tracking_data(),
+                perfil(nombre),
+                s.x,
+                s.y,
+                c.get_float("grip"),
+                c.get_float("trigger"),
+                c.is_button_pressed("ax_button"),
+                c.is_button_pressed("by_button")
+            )
+        };
+        let estado = format!("izq: {} | der: {}", control(izq, "left_hand"), control(der, "right_hand"));
         if estado != self.diag_previo {
             godot_print!("Controles: {estado}");
+            // También a un archivo de la app (el log del Quest se llena enseguida):
+            // adb shell run-as com.prototipojuego.martinfierro cat files/diagnostico.txt
+            self.diag_lineas.push(format!("{:7.1} s  {estado}", self.tiempo));
+            if self.diag_lineas.len() > 400 {
+                self.diag_lineas.remove(0);
+            }
+            if let Some(mut f) = FileAccess::open("user://diagnostico.txt", ModeFlags::WRITE) {
+                f.store_string(&self.diag_lineas.join("
+"));
+            }
             self.diag_previo = estado;
         }
     }

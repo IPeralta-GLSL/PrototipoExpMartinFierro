@@ -8,6 +8,7 @@ uniform float fuerza_detalle = 0.45;
 uniform vec3 tinte : source_color = vec3(1.0);
 
 varying vec3 pos_mundo;
+varying float trazo;
 
 // sRGB -> lineal (aproximación barata). Los colores de vértice se
 // definieron "a ojo" en sRGB.
@@ -23,6 +24,15 @@ void fragment() {
 	float d1 = texture(detalle, pos_mundo.xz * escala_detalle).r;
 	float d2 = texture(detalle, pos_mundo.xz * escala_detalle * 0.11 + vec2(0.37, 0.71)).r;
 	float d = mix(1.0, (d1 * 0.55 + d2 * 0.45) * 1.7, fuerza_detalle);
-	ALBEDO = a_lineal(COLOR.rgb) * tinte * d;
+	// Pinceladas alargadas (cel shading pictórico, como pintura.gdshaderinc).
+	trazo = texture(detalle, pos_mundo.xz * vec2(0.35, 1.1)).r;
+	ALBEDO = a_lineal(COLOR.rgb) * tinte * d * (1.0 + (trazo - 0.5) * 0.24);
 	ROUGHNESS = 1.0;
+}
+
+void light() {
+	float ndl = dot(NORMAL, LIGHT);
+	float umbral = (trazo - 0.5) * 0.35;
+	float luz = smoothstep(umbral - 0.15, umbral + 0.15, ndl);
+	DIFFUSE_LIGHT += luz * ATTENUATION * LIGHT_COLOR / PI;
 }

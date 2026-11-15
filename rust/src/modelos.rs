@@ -9,13 +9,11 @@
 //! hijos internos que no se guardan en la escena.
 
 use std::f32::consts::TAU;
-use std::sync::OnceLock;
 
 use godot::classes::{
     animation::LoopMode,
-    base_material_3d::{DiffuseMode, SpecularMode},
     geometry_instance_3d::ShadowCastingSetting,
-    AnimationPlayer, BaseMaterial3D, Engine, GeometryInstance3D, MeshInstance3D, Node, PackedScene,
+    AnimationPlayer, Engine, GeometryInstance3D, MeshInstance3D, Node, PackedScene,
     ResourceLoader, ShaderMaterial, Skeleton3D,
 };
 use godot::prelude::*;
@@ -81,40 +79,13 @@ fn reproducir_en(animador: &mut Gd<AnimationPlayer>, candidatos: &str) -> bool {
     true
 }
 
-/// Cel shading (luz en bandas + tinta) en los modelos de IA; se apaga con -- --sin-cel
-fn cel_activo() -> bool {
-    static CEL: OnceLock<bool> = OnceLock::new();
-    *CEL.get_or_init(|| {
-        !Engine::singleton().is_editor_hint() && crate::conversion::argumento_usuario("sin-cel").is_none()
-    })
-}
-
-/// Rugosidad de los materiales con cel: en modo toon define el ancho del corte
-/// entre luz y sombra (0,25 = banda nítida pero sin manchas en las mallas de IA).
-const CEL_CORTE: f32 = 0.25;
-
-/// Pasa los materiales de la malla a difuso "toon" (luz en dos bandas) y les quita
-/// el brillo y los reflejos del cielo. Los materiales se comparten entre copias.
-fn aplicar_cel(n: &Gd<Node>) {
-    let Ok(mi) = n.clone().try_cast::<MeshInstance3D>() else { return };
-    let Some(malla) = mi.get_mesh() else { return };
-    for i in 0..malla.get_surface_count() {
-        let Some(mat) = mi.get_active_material(i) else { continue };
-        let Ok(mut m) = mat.try_cast::<BaseMaterial3D>() else { continue };
-        if m.get_diffuse_mode() == DiffuseMode::TOON {
-            continue;
-        }
-        m.set_diffuse_mode(DiffuseMode::TOON);
-        m.set_specular_mode(SpecularMode::DISABLED);
-        m.set_specular(0.0);
-        m.set_metallic(0.0);
-        m.set_roughness(CEL_CORTE);
-    }
-}
-
 /// Línea de tinta (casco invertido) como segunda pasada de los materiales. El
 /// material es un recurso (Godot lo cachea: una sola instancia para todos).
-fn aplicar_tinta(n: &Gd<Node>) {
+/// Va antes de `pintura::pintar`, que la conserva al convertir el material.
+pub fn aplicar_tinta(n: &Gd<Node>) {
+    if !crate::pintura::activa() {
+        return;
+    }
     let Ok(tinta) = try_load::<ShaderMaterial>("res://materiales/tinta.tres") else { return };
     fn recorrer(n: &Gd<Node>, tinta: &Gd<ShaderMaterial>) {
         if let Ok(mi) = n.clone().try_cast::<MeshInstance3D>() {
@@ -136,9 +107,6 @@ fn aplicar_tinta(n: &Gd<Node>) {
 }
 
 fn configurar_geometria(n: &Gd<Node>, sombras: bool, distancia: f32) {
-    if cel_activo() {
-        aplicar_cel(n);
-    }
     if let Ok(mut g) = n.clone().try_cast::<GeometryInstance3D>() {
         g.set_cast_shadows_setting(if sombras {
             ShadowCastingSetting::ON
@@ -253,9 +221,10 @@ impl ModeloIA {
         };
         configurar_geometria(&n.clone().upcast::<Node>(), self.sombras, self.distancia_visible);
         // Personas y animales (los modelos animados) llevan la línea de tinta del cel.
-        if cel_activo() && ruta_modelo(&nombre).is_some_and(|r| r.contains("/animados/")) {
+        if ruta_modelo(&nombre).is_some_and(|r| r.contains("/animados/")) {
             aplicar_tinta(&n.clone().upcast::<Node>());
         }
+        crate::pintura::pintar(&n.clone().upcast::<Node>());
         n.set_name("ModeloGenerado");
         if let Some(m) = self.base().get_node_or_null("Marcador") {
             if let Ok(mut m3) = m.try_cast::<Node3D>() {
@@ -515,6 +484,7 @@ impl DispersorModelos {
                 break;
             };
             configurar_geometria(&n.clone().upcast::<Node>(), self.sombras, self.distancia_visible);
+            crate::pintura::pintar(&n.clone().upcast::<Node>());
             // Node3D guarda rotación y escala por separado: la respiración puede
             // animar la escala sin perder el giro.
             n.set_position(pos);

@@ -41,12 +41,16 @@ $env:GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD = 'android'
 $ipGuardada = Join-Path $salida 'quest_wifi.txt'
 
 function Dispositivos {
+    # adb escribe avisos en stderr (p. ej. al iniciar el daemon): no son errores.
+    $ErrorActionPreference = 'Continue'
     & $adb devices 2>$null | Select-Object -Skip 1 | Where-Object { $_ -match '\sdevice$' } |
         ForEach-Object { ($_ -split '\s+')[0] }
 }
 
 # ADB por Wi-Fi: modo TCP desde el USB, conectar y guardar la IP.
 function Configurar-Wifi {
+    # adb escribe avisos en stderr (p. ej. al iniciar el daemon): no son errores.
+    $ErrorActionPreference = 'Continue'
     $usb = @(Dispositivos | Where-Object { $_ -notmatch ':' })
     if ($usb.Count -eq 0) { throw "Enchufá el casco por USB (y aceptá la depuración) para activar ADB por Wi-Fi." }
     $serie = $usb[0]
@@ -63,6 +67,8 @@ function Configurar-Wifi {
 # Elige el casco: por USB si está enchufado (más rápido), si no por Wi-Fi; si no
 # aparece ninguno, intenta reconectar a la IP guardada.
 function Elegir-Casco {
+    # adb escribe avisos en stderr (p. ej. al iniciar el daemon): no son errores.
+    $ErrorActionPreference = 'Continue'
     $lista = @(Dispositivos)
     if ($lista.Count -eq 0 -and (Test-Path $ipGuardada)) {
         $destino = (Get-Content $ipGuardada -Raw).Trim()
