@@ -5,6 +5,8 @@
 [ext_resource type="Shader" path="res://shaders/fuego.gdshader" id="sh_fuego"]
 [ext_resource type="Shader" path="res://shaders/cielo.gdshader" id="sh_cielo"]
 
+[ext_resource type="Shader" path="res://shaders/bandera.gdshader" id="sh_bandera"]
+
 [sub_resource type="FastNoiseLite" id="ruido_nubes"]
 frequency = 0.006
 fractal_octaves = 5
@@ -214,6 +216,28 @@ roughness = 0.8
 material = SubResource("mat_cuero")
 size = Vector3(0.08, 0.035, 0.13)
 
+[sub_resource type="ShaderMaterial" id="mat_bandera"]
+shader = ExtResource("sh_bandera")
+
+[sub_resource type="PlaneMesh" id="m_bandera"]
+material = SubResource("mat_bandera")
+size = Vector2(1.5, 1.0)
+subdivide_width = 16
+subdivide_depth = 4
+orientation = 2
+
+[sub_resource type="StandardMaterial3D" id="mat_mastil"]
+albedo_color = Color(0.32, 0.22, 0.14, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="m_mastil"]
+material = SubResource("mat_mastil")
+top_radius = 0.035
+bottom_radius = 0.06
+height = 6.5
+radial_segments = 10
+rings = 1
+
 [node name="Fortin" type="Node3D"]
 
 [node name="Entorno" type="WorldEnvironment" parent="."]
@@ -371,12 +395,19 @@ position = Vector3(1.6, 0, -6.0)
 rotation_degrees = Vector3(0, 160, 0)
 modelo = "canon"
 
-[node name="Moro" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+[node name="Moro" type="Animal" parent="Fuerte" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(4.9, 0, 2.2)
 rotation_degrees = Vector3(0, 150, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+duracion_reaccion = 3.0
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Moro"]
 modelo = "caballo_moro"
-respirar = 0.006
-periodo = 3.8
 
 [node name="Barril" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
 position = Vector3(2.9, 0, -4.6)
@@ -387,13 +418,19 @@ position = Vector3(-6.3, 0, -1.0)
 rotation_degrees = Vector3(0, 80, 0)
 modelo = "cuero"
 
-[node name="Perro" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+[node name="Perro" type="Animal" parent="Fuerte" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(-1.2, 0, -1.4)
 rotation_degrees = Vector3(0, 40, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:8-14,dormir:10-20"
+reaccion = "contento"
+duracion_reaccion = 2.5
+sonido = "gemido"
+punto_caricia = Vector3(0.25, 0.35, 0)
+radio_caricia = 0.45
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Perro"]
 modelo = "perro"
-animacion = "lie|sleep|sit|rest|idle"
-respirar = 0.014
-periodo = 2.2
 
 [node name="Empalizada1" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
 position = Vector3(4.272, 0, -6.393)
@@ -608,3 +645,141 @@ light_color = Color(1, 0.72, 0.42, 1)
 light_energy = 1.4
 omni_range = 3.6
 omni_attenuation = 1.4
+
+[node name="Lena1" type="Agarrable" parent="Fuerte"]
+position = Vector3(0.7, 0.0, 1.5)
+rotation_degrees = Vector3(0, 30, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Lena1"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="Lena2" type="Agarrable" parent="Fuerte"]
+position = Vector3(0.9, 0.0, 1.65)
+rotation_degrees = Vector3(0, -25, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Lena2"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="Lena3" type="Agarrable" parent="Fuerte"]
+position = Vector3(-0.75, 0.0, 1.55)
+rotation_degrees = Vector3(0, 70, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Lena3"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="MateFogon" type="Agarrable" parent="Fuerte"]
+position = Vector3(-0.95, 0, 1.15)
+tipo = "mate"
+radio_agarre = 0.18
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/MateFogon"]
+modelo = "mate"
+
+[node name="Mastil" type="Node3D" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(0.3, 0, -4.7)
+
+[node name="Palo" type="MeshInstance3D" parent="Fuerte/Mastil"]
+position = Vector3(0, 3.25, 0)
+mesh = SubResource("m_mastil")
+
+[node name="Bandera" type="MeshInstance3D" parent="Fuerte/Mastil"]
+position = Vector3(0.78, 5.85, 0)
+mesh = SubResource("m_bandera")
+cast_shadow = 0
+
+[node name="Pozo" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.2, 0, 6.0)
+rotation_degrees = Vector3(0, 10, 0)
+modelo = "pozo"
+
+[node name="PilaLena" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(1.9, 0, 6.3)
+rotation_degrees = Vector3(0, -60, 0)
+modelo = "pila_lena"
+
+[node name="Armero" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-2.6, 0, 6.2)
+rotation_degrees = Vector3(0, 180, 0)
+modelo = "armero"
+
+[node name="Bolsas" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(4.0, 0, 5.3)
+rotation_degrees = Vector3(0, -40, 0)
+modelo = "bolsas"
+
+[node name="Barril2" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(4.7, 0, 4.6)
+rotation_degrees = Vector3(0, 20, 0)
+modelo = "barril"
+
+[node name="Cajones" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(5.4, 0, 3.4)
+rotation_degrees = Vector3(0, -70, 0)
+modelo = "cajones"
+
+[node name="Damajuana" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(3.4, 0, 5.8)
+rotation_degrees = Vector3(0, 0, 0)
+modelo = "damajuana"
+sombras = false
+
+[node name="Palenque" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.3, 0, 4.4)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "palenque"
+
+[node name="Gateado" type="Animal" parent="Fuerte" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
+position = Vector3(-5.0, 0, 3.7)
+rotation_degrees = Vector3(0, 120, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
+
+[node name="Modelo" type="ModeloIA" parent="Fuerte/Gateado"]
+modelo = "caballo_gateado"
+
+[node name="Banco" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.5, 0, 1.3)
+rotation_degrees = Vector3(0, 96, 0)
+modelo = "banco"
+
+[node name="SoldadoSentado" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.5, 0, 1.15)
+rotation_degrees = Vector3(0, 90, 0)
+modelo = "soldado"
+animacion = "sentado"
+
+[node name="Carreta" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.0, 0, -6.4)
+rotation_degrees = Vector3(0, 85, 0)
+modelo = "carreta"
+
+[node name="Tala1" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(6.0, 0, 13.0)
+rotation_degrees = Vector3(0, 40, 0)
+modelo = "tala"
+distancia_visible = 120.0
+
+[node name="Tala2" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-9.0, 0, 11.5)
+rotation_degrees = Vector3(0, 200, 0)
+modelo = "tala"
+distancia_visible = 120.0
+
+[node name="Tala3" type="ModeloIA" parent="Fuerte" groups=["apoyar_en_suelo"]]
+position = Vector3(-13.0, 0, -4.0)
+rotation_degrees = Vector3(0, 110, 0)
+modelo = "tala"
+distancia_visible = 120.0

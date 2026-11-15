@@ -19,20 +19,20 @@ le arma el esqueleto, lo pesa y le crea las animaciones:
  godot/modelos/sargento_rig.glb   sargento.glb     la ronda del fortín
  godot/modelos/levado_rig.glb     levado.glb       el gaucho levado que cava
 
-ANIMALES (a mano, con Mesh2Motion: https://mesh2motion.org):
- 1. Load model -> elegí el GLB de la tabla.
- 2. Elegí el esqueleto indicado y acomodá las articulaciones sobre el modelo.
- 3. Bind / Skin -> elegí las animaciones -> Export GLB (todas juntas).
- 4. Guardalo en esta carpeta con el nombre de "Guardar como".
+ANIMALES (también automático): riggear.py con --cuadrupedo
+  & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\caballo_moro.glb godot\modelos\animados\caballo_moro.glb --cuadrupedo caballo
 
- Cargar en Mesh2Motion             Esqueleto   Animaciones sugeridas     Guardar como
- -------------------------------   ---------   -----------------------   -------------------
- godot/modelos/caballo_moro.glb    Horse       idle, graze/eat, walk     caballo_moro.glb
- godot/modelos/caballo_gateado.glb Horse       idle, graze/eat           caballo_gateado.glb
- godot/modelos/vaca_parada.glb     Horse       idle, graze/eat           vaca.glb
- godot/modelos/perro_parado.glb    Fox         sit / lie / sleep, idle   perro.glb
+ Modelo                            --cuadrupedo   Animaciones                         Guardar como
+ -------------------------------   ------------   ---------------------------------   -------------------
+ godot/modelos/caballo_moro.glb    caballo        idle, pastar, cabecear              caballo_moro.glb
+ godot/modelos/caballo_gateado.glb caballo        idle, pastar, cabecear              caballo_gateado.glb
+ godot/modelos/perro.glb           perro_echado   idle, dormir, contento              perro.glb
+ godot/modelos/perro_parado.glb    perro          idle, caminar, olfatear, contento   perro_parado.glb
+
+(Mesh2Motion, https://mesh2motion.org, sigue sirviendo para animar a mano otros modelos.)
 
 Qué animación usa cada uno (por nombre, sin importar mayúsculas):
  - El narrador: la "accion" de cada línea del guion (godot/guion/*.json), "hablar" por defecto.
- - El perro: "lie|sleep|sit|rest|idle".  Caballos y vacas: "idle|graze|eat|breath".
+ - Los animales: la "rutina" del nodo Animal (p. ej. "idle:6-12,pastar:8-15") y su "reaccion"
+   cuando los acarician.
  - Los demás: la propiedad "animacion" del nodo ModeloIA en la escena.

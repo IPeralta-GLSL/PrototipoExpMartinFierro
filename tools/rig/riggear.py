@@ -21,6 +21,8 @@ import math
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import bpy
 import numpy as np
 from mathutils import Quaternion, Vector
@@ -42,7 +44,8 @@ def unit(*c):
 def leer_argumentos():
     a = sys.argv[sys.argv.index("--") + 1:]
     previas = a[a.index("--previas") + 1] if "--previas" in a else None
-    return a[0], a[1], previas
+    cuadrupedo = a[a.index("--cuadrupedo") + 1] if "--cuadrupedo" in a else None
+    return a[0], a[1], previas, cuadrupedo
 
 
 # ---------------------------------------------------------------- carga
@@ -724,6 +727,36 @@ def animaciones(J, poser):
         (150, banco(-20, 2, -1.5)), (200, banco(-12, 4)), (240, banco(0, 2)),
     ])
 
+    # HABLAR SENTADO: en el banco, explica con la derecha (y a veces la izquierda).
+    def charla(r=None, l=None, cx=2.0, cz=0.0):
+        p = banco(cz, cx)
+        if r:
+            p.update(brazo("R", r + v(0, 0, -bajar), palma=palma_arriba("R"), curl=12))
+        if l:
+            p.update(brazo("L", l + v(0, 0, -bajar), palma=palma_arriba("L"), curl=14))
+        return p
+
+    A["hablar_sentado"] = (180, [
+        (0, charla()),
+        (22, charla(gesto("R", 0.05, 0.34, 0.20), None, 5)),
+        (50, charla(gesto("R", 0.12, 0.38, 0.26), None, 2, -5)),
+        (80, charla(gesto("R", 0.02, 0.32, 0.16), gesto("L", 0.0, 0.30, 0.20), 4)),
+        (110, charla(gesto("R", 0.10, 0.40, 0.30), gesto("L", 0.05, 0.32, 0.22), 1, 6)),
+        (140, charla(gesto("R", 0.0, 0.30, 0.14), None, 3)),
+        (180, charla()),
+    ])
+
+    # MATE SENTADO: en el banco, lleva el mate a la boca y lo baja.
+    def mate_banco(pos, cx=2.0):
+        p = banco(0, cx)
+        p.update(con_mate(pos + v(0, 0, -bajar)))
+        return p
+
+    A["mate_sentado"] = (180, [
+        (0, mate_banco(pecho_mate)), (40, mate_banco(boca)), (55, mate_banco(boca, -6)),
+        (95, mate_banco(boca, -4)), (125, mate_banco(pecho_mate)), (180, mate_banco(pecho_mate)),
+    ])
+
     # ESCUCHAR: de pie, brazos cruzados, asiente despacio.
     def cruzado(nod, peso):
         return con(base(),
@@ -748,8 +781,10 @@ def renderizar_previas(arm, acciones, carpeta):
     cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
     sc.collection.objects.link(cam)
     sc.camera = cam
-    H = max(vv.co.z for vv in bpy.data.objects["Cuerpo"].data.vertices)
-    cam.location = (1.6, -2.4, 0.62 * H + 0.1)
+    vs = bpy.data.objects["Cuerpo"].data.vertices
+    H = max(vv.co.z for vv in vs)
+    T = max(H, max(abs(vv.co.x) for vv in vs) * 2, max(abs(vv.co.y) for vv in vs) * 2)
+    cam.location = (1.6 * T / 1.76, -2.4 * T / 1.76, 0.62 * H + 0.1 * T / 1.76)
     direccion = Vector((0, 0, 0.55 * H)) - cam.location
     cam.rotation_euler = direccion.to_track_quat("-Z", "Y").to_euler()
     cam.data.lens = 50
@@ -767,6 +802,8 @@ def renderizar_previas(arm, acciones, carpeta):
             sc.render.filepath = os.path.join(carpeta, f"{nombre}_{f:03d}.png")
             bpy.ops.render.render(write_still=True)
     # Primer plano de la cara: mandíbula cerrada y abierta (la abre Godot con la voz).
+    if "mandibula" not in arm.pose.bones:
+        return
     arm.animation_data.action = bpy.data.actions["idle"]
     sc.frame_set(0)
     yh = arm.data.bones["cabeza"].tail_local.y
@@ -784,16 +821,30 @@ def renderizar_previas(arm, acciones, carpeta):
 
 # ---------------------------------------------------------------- principal
 def main():
-    entrada, salida, previas = leer_argumentos()
+    entrada, salida, previas, cuadrupedo = leer_argumentos()
     malla = cargar(entrada)
-    J = estimar_articulaciones(malla)
-    print("[rig] alto %.2f m, torso %.3f, hombros %s / %s" % (
-        J["H"], J["wt"], tuple(round(c, 3) for c in J["hombroL"]), tuple(round(c, 3) for c in J["hombroR"])))
-    arm = crear_esqueleto(J)
+    if cuadrupedo:
+        import cuadrupedos
+        J = cuadrupedos.estimar(malla, cuadrupedo)
+        print(f"[rig] cuadrúpedo {cuadrupedo}: alto {J['H']:.2f} m, largo {J['L']:.2f} m, patas {sorted(J['patas'])}")
+        arm = cuadrupedos.crear_esqueleto(J)
+    else:
+        J = estimar_articulaciones(malla)
+        print("[rig] alto %.2f m, torso %.3f, hombros %s / %s" % (
+            J["H"], J["wt"], tuple(round(c, 3) for c in J["hombroL"]), tuple(round(c, 3) for c in J["hombroR"])))
+        arm = crear_esqueleto(J)
     sin = pesar(malla, arm, J)
     print(f"[rig] pesos automáticos listos ({sin} vértices sin peso corregidos)")
+    if cuadrupedo:
+        movidos = cuadrupedos.corregir_pesos(malla, J)
+        if movidos:
+            bpy.context.view_layer.objects.active = malla
+            bpy.ops.object.mode_set(mode="WEIGHT_PAINT")
+            bpy.ops.object.vertex_group_normalize_all(lock_active=False)
+            bpy.ops.object.mode_set(mode="OBJECT")
+            print(f"[rig] {movidos} vértices junto al piso pasan al pecho")
     poser = Poser(arm)
-    defs = animaciones(J, poser)
+    defs = cuadrupedos.animaciones(J, poser) if cuadrupedo else animaciones(J, poser)
     for nombre, (cuadros, claves) in defs.items():
         crear_accion(arm, poser, nombre, claves, cuadros)
     arm.animation_data.action = bpy.data.actions["idle"]

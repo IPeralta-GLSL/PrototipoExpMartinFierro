@@ -5,6 +5,8 @@
 [ext_resource type="Shader" path="res://shaders/fuego.gdshader" id="sh_fuego"]
 [ext_resource type="Shader" path="res://shaders/cielo.gdshader" id="sh_cielo"]
 
+[ext_resource type="Shader" path="res://shaders/bandera.gdshader" id="sh_bandera"]
+
 [sub_resource type="FastNoiseLite" id="ruido_nubes"]
 frequency = 0.006
 fractal_octaves = 5
@@ -213,6 +215,28 @@ roughness = 0.8
 [sub_resource type="BoxMesh" id="m_guante"]
 material = SubResource("mat_cuero")
 size = Vector3(0.08, 0.035, 0.13)
+
+[sub_resource type="ShaderMaterial" id="mat_bandera"]
+shader = ExtResource("sh_bandera")
+
+[sub_resource type="PlaneMesh" id="m_bandera"]
+material = SubResource("mat_bandera")
+size = Vector2(1.5, 1.0)
+subdivide_width = 16
+subdivide_depth = 4
+orientation = 2
+
+[sub_resource type="StandardMaterial3D" id="mat_mastil"]
+albedo_color = Color(0.32, 0.22, 0.14, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="m_mastil"]
+material = SubResource("mat_mastil")
+top_radius = 0.035
+bottom_radius = 0.06
+height = 6.5
+radial_segments = 10
+rings = 1
 
 [sub_resource type="FastNoiseLite" id="ruido_cal"]
 noise_type = 1
@@ -802,6 +826,175 @@ size = Vector3(0.012, 0.160, 0.012)
 [sub_resource type="BoxMesh" id="m_salon_110"]
 material = SubResource("mat_cuerda")
 size = Vector3(0.012, 0.160, 0.012)
+
+[sub_resource type="BoxShape3D" id="col_1"]
+size = Vector3(0.9, 0.06, 1.7)
+
+[sub_resource type="BoxShape3D" id="col_2"]
+size = Vector3(0.9, 0.06, 1.7)
+
+[sub_resource type="BoxShape3D" id="col_3"]
+size = Vector3(3.4, 0.1, 1.2)
+
+[sub_resource type="BoxShape3D" id="col_4"]
+size = Vector3(0.9, 0.06, 1.7)
+
+[sub_resource type="StandardMaterial3D" id="mat_molino"]
+albedo_color = Color(0.37, 0.35, 0.32, 1)
+metallic = 0.35
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="mat_molino_madera"]
+albedo_color = Color(0.3, 0.21, 0.13, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="m_molino_1"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_2"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_3"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_4"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_5"]
+material = SubResource("mat_molino")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_6"]
+material = SubResource("mat_molino")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_7"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino_8"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino_9"]
+material = SubResource("mat_molino")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_10"]
+material = SubResource("mat_molino")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_11"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino_12"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino_13"]
+material = SubResource("mat_molino")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_14"]
+material = SubResource("mat_molino")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_15"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino_16"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino_17"]
+material = SubResource("mat_molino_madera")
+size = Vector3(0.850, 0.050, 0.850)
+
+[sub_resource type="BoxMesh" id="m_molino_18"]
+material = SubResource("mat_molino")
+size = Vector3(0.030, 8.600, 0.030)
+
+[sub_resource type="BoxMesh" id="m_molino_19"]
+material = SubResource("mat_molino")
+size = Vector3(0.020, 0.700, 1.800)
+
+[sub_resource type="BoxMesh" id="m_molino_20"]
+material = SubResource("mat_molino_madera")
+size = Vector3(2.200, 0.450, 0.600)
+
+[sub_resource type="BoxMesh" id="m_molino_21"]
+material = SubResource("mat_molino")
+size = Vector3(0.240, 0.240, 0.240)
+
+[sub_resource type="BoxMesh" id="m_molino_22"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_23"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_24"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_25"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_26"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_27"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_28"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_29"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_30"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_31"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_32"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_33"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_34"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_35"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_36"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_37"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
 
 [node name="Pulperia" type="Node3D"]
 
@@ -1569,11 +1762,25 @@ rotation_degrees = Vector3(0, 60, 0)
 modelo = "botellas"
 sombras = false
 
-[node name="Sombrero" type="ModeloIA" parent="Salon"]
+[node name="Sombrero" type="Agarrable" parent="Salon"]
 position = Vector3(4.5, 0.84, 2.0)
 rotation_degrees = Vector3(0, 40, 0)
+tipo = "sombrero"
+radio_agarre = 0.25
+
+[node name="Modelo" type="ModeloIA" parent="Salon/Sombrero"]
+position = Vector3(0, 0, 0)
 modelo = "sombrero"
-sombras = false
+
+[node name="MateMostrador" type="Agarrable" parent="Salon"]
+position = Vector3(-0.4, 0.97, -2.4)
+rotation_degrees = Vector3(0, 15, 0)
+tipo = "mate"
+radio_agarre = 0.18
+
+[node name="Modelo" type="ModeloIA" parent="Salon/MateMostrador"]
+position = Vector3(0, 0, 0)
+modelo = "mate"
 
 [node name="FarolMesa2" type="ModeloIA" parent="Salon"]
 position = Vector3(4.7, 0.84, 0.75)
@@ -1603,6 +1810,57 @@ position = Vector3(6.55, 0, 1.9)
 rotation_degrees = Vector3(0, -90, 0)
 modelo = "banco"
 
+[node name="BarrilPuerta1" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.35, 0, 4.05)
+rotation_degrees = Vector3(0, 15, 0)
+modelo = "barril"
+
+[node name="BarrilPuerta2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(1.45, 0, 4.1)
+rotation_degrees = Vector3(0, -30, 0)
+modelo = "barril"
+
+[node name="PilaLena" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-2.75, 0, 4.12)
+modelo = "pila_lena"
+
+[node name="Mesa3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-3.0, 0, 2.6)
+modelo = "mesa_truco"
+
+[node name="BotellasMesa3" type="ModeloIA" parent="Salon"]
+position = Vector3(-3.0, 0.84, 2.3)
+rotation_degrees = Vector3(0, 45, 0)
+modelo = "botellas"
+sombras = false
+
+[node name="SombreroMesa3" type="ModeloIA" parent="Salon"]
+position = Vector3(-3.1, 0.84, 2.9)
+rotation_degrees = Vector3(0, -20, 0)
+modelo = "sombrero"
+sombras = false
+
+[node name="Bolsas3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(5.6, 0, 3.9)
+rotation_degrees = Vector3(0, 160, 0)
+modelo = "bolsas"
+
+[node name="Cajones3" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(2.6, 0, 4.0)
+rotation_degrees = Vector3(0, 10, 0)
+modelo = "cajones"
+
+[node name="Recado2" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.9, 0, 3.6)
+rotation_degrees = Vector3(0, 120, 0)
+modelo = "recado"
+
+[node name="GuitarraPared" type="ModeloIA" parent="Salon"]
+position = Vector3(4.5, 1.25, 4.38)
+rotation_degrees = Vector3(0, 180, 0)
+modelo = "guitarra"
+sombras = false
+
 [node name="Oyente" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
 position = Vector3(-1.5, 0, -1.25)
 rotation_degrees = Vector3(0, 70, 0)
@@ -1626,11 +1884,37 @@ rotation_degrees = Vector3(0, 165, 0)
 modelo = "soldado"
 animacion = "escuchar"
 
-[node name="Perro" type="ModeloIA" parent="Salon" groups=["apoyar_en_suelo"]]
+[node name="Perro" type="Animal" parent="Salon" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(2.4, 0, 0.6)
 rotation_degrees = Vector3(0, -60, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:8-14,dormir:10-20"
+reaccion = "contento"
+sonido = "gemido"
+punto_caricia = Vector3(0.25, 0.35, 0)
+radio_caricia = 0.45
+
+[node name="Modelo" type="ModeloIA" parent="Salon/Perro"]
+position = Vector3(0, 0, 0)
 modelo = "perro"
-animacion = "lie|sleep|sit|rest|idle"
+
+[node name="Superficies" type="StaticBody3D" parent="Salon"]
+
+[node name="Caja1" type="CollisionShape3D" parent="Salon/Superficies"]
+position = Vector3(-4.4, 0.81, -0.6)
+shape = SubResource("col_1")
+
+[node name="Caja2" type="CollisionShape3D" parent="Salon/Superficies"]
+position = Vector3(4.6, 0.81, 1.3)
+shape = SubResource("col_2")
+
+[node name="Caja3" type="CollisionShape3D" parent="Salon/Superficies"]
+position = Vector3(0.0, 0.92, -2.6)
+shape = SubResource("col_3")
+
+[node name="Caja4" type="CollisionShape3D" parent="Salon/Superficies"]
+position = Vector3(-3.0, 0.81, 2.6)
+shape = SubResource("col_4")
 
 [node name="Mandadero" type="Caminante" parent="Salon" node_paths=PackedStringArray("modelo", "terreno") groups=["apoyar_en_suelo"]]
 position = Vector3(-2.2, 0, -1.6)
@@ -1721,19 +2005,33 @@ tiempo_maximo = 150.0
 position = Vector3(-5.3, 0, -7.4)
 modelo = "palenque"
 
-[node name="CaballoMoro" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+[node name="CaballoMoro" type="Animal" parent="Afuera" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(-6.1, 0, -8.3)
 rotation_degrees = Vector3(0, 95, 0)
-modelo = "caballo_moro"
-respirar = 0.008
-periodo = 3.6
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
 
-[node name="CaballoGateado" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
+[node name="Modelo" type="ModeloIA" parent="Afuera/CaballoMoro"]
+position = Vector3(0, 0, 0)
+modelo = "caballo_moro"
+
+[node name="CaballoGateado" type="Animal" parent="Afuera" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(-4.5, 0, -8.6)
 rotation_degrees = Vector3(0, 75, 0)
+modelo = NodePath("Modelo")
+rutina = "pastar:8-15,idle:6-12"
+reaccion = "cabecear"
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
+
+[node name="Modelo" type="ModeloIA" parent="Afuera/CaballoGateado"]
+position = Vector3(0, 0, 0)
 modelo = "caballo_gateado"
-respirar = 0.008
-periodo = 4.1
 
 [node name="Carreta" type="ModeloIA" parent="Afuera" groups=["apoyar_en_suelo"]]
 position = Vector3(11.0, 0, -1.2)
@@ -1758,3 +2056,178 @@ light_color = Color(1, 0.7, 0.42, 1)
 light_energy = 0.6
 omni_range = 5.0
 omni_attenuation = 1.15
+
+[node name="Molino" type="Node3D" parent="Afuera" groups=["apoyar_en_suelo"]]
+position = Vector3(34, 0, -46)
+rotation_degrees = Vector3(0, -34.8, 0)
+
+[node name="Pata1" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, 5.21)
+mesh = SubResource("m_molino_1")
+
+[node name="Pata2" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(-0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, -5.21)
+mesh = SubResource("m_molino_2")
+
+[node name="Pata3" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(-0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, -5.21)
+mesh = SubResource("m_molino_3")
+
+[node name="Pata4" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, 5.21)
+mesh = SubResource("m_molino_4")
+
+[node name="Travesano1_1" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 2.400, 0.881)
+mesh = SubResource("m_molino_5")
+
+[node name="Travesano1_2" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 2.400, -0.881)
+mesh = SubResource("m_molino_6")
+
+[node name="Travesano1_3" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.881, 2.400, 0.000)
+mesh = SubResource("m_molino_7")
+
+[node name="Travesano1_4" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(-0.881, 2.400, 0.000)
+mesh = SubResource("m_molino_8")
+
+[node name="Travesano2_1" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 4.900, 0.654)
+mesh = SubResource("m_molino_9")
+
+[node name="Travesano2_2" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 4.900, -0.654)
+mesh = SubResource("m_molino_10")
+
+[node name="Travesano2_3" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.654, 4.900, 0.000)
+mesh = SubResource("m_molino_11")
+
+[node name="Travesano2_4" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(-0.654, 4.900, 0.000)
+mesh = SubResource("m_molino_12")
+
+[node name="Travesano3_1" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 7.200, 0.444)
+mesh = SubResource("m_molino_13")
+
+[node name="Travesano3_2" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 7.200, -0.444)
+mesh = SubResource("m_molino_14")
+
+[node name="Travesano3_3" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.444, 7.200, 0.000)
+mesh = SubResource("m_molino_15")
+
+[node name="Travesano3_4" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(-0.444, 7.200, 0.000)
+mesh = SubResource("m_molino_16")
+
+[node name="Plataforma" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 9.000, 0.000)
+mesh = SubResource("m_molino_17")
+
+[node name="Varilla" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 4.700, 0.000)
+mesh = SubResource("m_molino_18")
+
+[node name="Cola" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(0.000, 9.350, -1.150)
+mesh = SubResource("m_molino_19")
+
+[node name="Bebedero" type="MeshInstance3D" parent="Afuera/Molino"]
+position = Vector3(1.900, 0.220, 1.000)
+mesh = SubResource("m_molino_20")
+
+[node name="Rueda" type="Giratorio" parent="Afuera/Molino"]
+position = Vector3(0, 9.35, 0.3)
+velocidad = 0.32
+
+[node name="Cubo" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.000, 0.000, 0.000)
+mesh = SubResource("m_molino_21")
+
+[node name="Aspa1" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.000, 0.850, 0.000)
+mesh = SubResource("m_molino_22")
+
+[node name="Aspa2" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 22.50)
+mesh = SubResource("m_molino_23")
+
+[node name="Aspa3" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 45.00)
+mesh = SubResource("m_molino_24")
+
+[node name="Aspa4" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 67.50)
+mesh = SubResource("m_molino_25")
+
+[node name="Aspa5" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.850, 0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 90.00)
+mesh = SubResource("m_molino_26")
+
+[node name="Aspa6" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 112.50)
+mesh = SubResource("m_molino_27")
+
+[node name="Aspa7" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 135.00)
+mesh = SubResource("m_molino_28")
+
+[node name="Aspa8" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 157.50)
+mesh = SubResource("m_molino_29")
+
+[node name="Aspa9" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(-0.000, -0.850, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 180.00)
+mesh = SubResource("m_molino_30")
+
+[node name="Aspa10" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 202.50)
+mesh = SubResource("m_molino_31")
+
+[node name="Aspa11" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 225.00)
+mesh = SubResource("m_molino_32")
+
+[node name="Aspa12" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 247.50)
+mesh = SubResource("m_molino_33")
+
+[node name="Aspa13" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.850, -0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 270.00)
+mesh = SubResource("m_molino_34")
+
+[node name="Aspa14" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 292.50)
+mesh = SubResource("m_molino_35")
+
+[node name="Aspa15" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 315.00)
+mesh = SubResource("m_molino_36")
+
+[node name="Aspa16" type="MeshInstance3D" parent="Afuera/Molino/Rueda"]
+position = Vector3(0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 337.50)
+mesh = SubResource("m_molino_37")

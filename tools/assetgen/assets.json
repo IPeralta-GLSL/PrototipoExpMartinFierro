@@ -803,6 +803,76 @@
         "eje": "alto",
         "metros": 1.5
       }
+    },
+    {
+      "nombre": "pozo",
+      "lote": "F",
+      "grupo": "mediano",
+      "prompt": "an old rural water well of the Argentine pampa, 19th century: a round brick and lime wall about one meter high, two wooden posts holding a horizontal wooden roller with a rope and a wooden bucket hanging, three-quarter view",
+      "semilla": 1873,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 14000,
+      "escala": {
+        "eje": "alto",
+        "metros": 2.2
+      }
+    },
+    {
+      "nombre": "pila_lena",
+      "lote": "F",
+      "grupo": "mediano",
+      "prompt": "a neat stacked pile of split firewood logs on the ground, rustic, about two meters long, three-quarter view",
+      "semilla": 1874,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 14000,
+      "escala": {
+        "eje": "largo",
+        "metros": 2.0
+      }
+    },
+    {
+      "nombre": "tala",
+      "lote": "F",
+      "grupo": "grande",
+      "prompt": "a single native tala tree of the Argentine pampa (Celtis tala), twisted thorny trunk, wide irregular dark green crown, isolated, full view",
+      "semilla": 1875,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 30000,
+      "escala": {
+        "eje": "alto",
+        "metros": 6.5
+      }
+    },
+    {
+      "nombre": "oveja",
+      "lote": "F",
+      "grupo": "chico",
+      "prompt": "a single criolla sheep standing on all four legs, thick dirty white wool, side view, head looking forward",
+      "semilla": 1876,
+      "ancho": 1216,
+      "alto": 832,
+      "caras": 8000,
+      "escala": {
+        "eje": "largo",
+        "metros": 1.2
+      }
+    },
+    {
+      "nombre": "armero",
+      "lote": "F",
+      "grupo": "mediano",
+      "prompt": "a simple 19th-century wooden rifle rack standing on the ground with four old single-shot rifles leaning upright in it, front view",
+      "semilla": 1877,
+      "ancho": 1024,
+      "alto": 1024,
+      "caras": 14000,
+      "escala": {
+        "eje": "alto",
+        "metros": 1.6
+      }
     }
   ]
 }

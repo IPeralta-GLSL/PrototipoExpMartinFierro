@@ -484,3 +484,199 @@ mod pruebas {
         assert!(energia_final < energia_inicio * 0.5, "no decae");
     }
 }
+
+// ---------------------------------------------------------------------------
+// Efectos de interacción: resoplido del caballo, gemido contento del perro,
+// sorbo de mate y chispas del fogón avivado. Voces de un disparo, sin
+// asignar memoria en el camino de audio.
+// ---------------------------------------------------------------------------
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum TipoEfecto {
+    Resoplido,
+    Gemido,
+    Sorbo,
+    Chispas,
+}
+
+impl TipoEfecto {
+    pub fn desde_nombre(n: &str) -> Option<Self> {
+        match n {
+            "resoplido" | "caballo" => Some(Self::Resoplido),
+            "gemido" | "perro" => Some(Self::Gemido),
+            "sorbo" | "mate" => Some(Self::Sorbo),
+            "chispas" | "fuego" => Some(Self::Chispas),
+            _ => None,
+        }
+    }
+
+    fn duracion(self) -> f32 {
+        match self {
+            Self::Resoplido => 0.85,
+            Self::Gemido => 0.9,
+            Self::Sorbo => 1.0,
+            Self::Chispas => 1.4,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+struct VozEfecto {
+    tipo: TipoEfecto,
+    t: f32,
+    fuerza: f32,
+    activa: bool,
+    svf: Svf,
+    svf2: Svf,
+    lp: PasaBajos,
+    fase: f32,
+    ping: f32,
+    ping_f: f32,
+    ping_fase: f32,
+}
+
+impl VozEfecto {
+    fn nueva(tipo: TipoEfecto, fuerza: f32) -> Self {
+        Self {
+            tipo,
+            t: 0.0,
+            fuerza,
+            activa: true,
+            svf: Svf::default(),
+            svf2: Svf::default(),
+            lp: PasaBajos::default(),
+            fase: 0.0,
+            ping: 0.0,
+            ping_f: 500.0,
+            ping_fase: 0.0,
+        }
+    }
+}
+
+pub struct Efectos {
+    sr: f32,
+    azar: Azar,
+    voces: [VozEfecto; 4],
+}
+
+impl Efectos {
+    pub fn new(sr: f32, semilla: u64) -> Self {
+        let mut voz = VozEfecto::nueva(TipoEfecto::Sorbo, 0.0);
+        voz.activa = false;
+        Self { sr, azar: Azar::new(semilla), voces: [voz; 4] }
+    }
+
+    /// Dispara un efecto (reemplaza la voz más vieja si están todas ocupadas).
+    pub fn disparar(&mut self, tipo: TipoEfecto, fuerza: f32) {
+        let i = self
+            .voces
+            .iter()
+            .position(|v| !v.activa)
+            .unwrap_or_else(|| {
+                (0..self.voces.len())
+                    .max_by(|&a, &b| self.voces[a].t.total_cmp(&self.voces[b].t))
+                    .unwrap_or(0)
+            });
+        self.voces[i] = VozEfecto::nueva(tipo, fuerza.clamp(0.0, 1.5));
+    }
+
+    pub fn activo(&self) -> bool {
+        self.voces.iter().any(|v| v.activa)
+    }
+
+    pub fn muestra(&mut self) -> f32 {
+        let mut s = 0.0;
+        for i in 0..self.voces.len() {
+            if self.voces[i].activa {
+                s += self.voz(i);
+            }
+        }
+        saturar(s * 0.9)
+    }
+
+    fn voz(&mut self, i: usize) -> f32 {
+        let sr = self.sr;
+        let dt = 1.0 / sr;
+        let r = self.azar.bipolar();
+        let u1 = self.azar.f32();
+        let u2 = self.azar.f32();
+        let v = &mut self.voces[i];
+        v.t += dt;
+        let t = v.t;
+        let d = v.tipo.duracion();
+        if t >= d {
+            v.activa = false;
+            return 0.0;
+        }
+        match v.tipo {
+            TipoEfecto::Resoplido => {
+                // Soplido por los ollares y el "brrr" de los labios al final.
+                let ataque = (t / 0.025).min(1.0);
+                let cuerpo = (-t / 0.3).exp();
+                let aleteo = 1.0 + 0.9 * ((t - 0.15).max(0.0) * 3.0).min(1.0) * (TAU * 26.0 * t).sin();
+                let fc = 900.0 - 500.0 * (t / d);
+                let f = 2.0 * (PI * fc / sr).sin();
+                let x = v.svf.pasabanda(r, f, 0.7) * 1.6 + v.lp.procesar(r, coef_pasabajos(250.0, sr)) * 0.8;
+                x * ataque * cuerpo * aleteo * 0.55 * v.fuerza
+            }
+            TipoEfecto::Gemido => {
+                // Gemido contento: sube y baja con vibrato.
+                let u = t / d;
+                let base = if u < 0.35 { 640.0 + 410.0 * (u / 0.35) } else { 1050.0 - 250.0 * ((u - 0.35) / 0.65) };
+                let fr = base + 22.0 * (TAU * 6.5 * t).sin();
+                v.fase = (v.fase + fr / sr).fract();
+                let tono = (TAU * v.fase).sin() + 0.3 * (2.0 * TAU * v.fase).sin() + 0.12 * (3.0 * TAU * v.fase).sin();
+                let env = (t / 0.06).min(1.0) * ((d - t) / 0.2).min(1.0);
+                let aire = v.svf.pasabanda(r, 2.0 * (PI * 1800.0 / sr).sin(), 1.2) * 0.15;
+                (tono * 0.28 + aire) * env * v.fuerza
+            }
+            TipoEfecto::Sorbo => {
+                // Aire por la bombilla que sube de tono, con burbujas.
+                let u = t / d;
+                let fc = 700.0 + 1900.0 * u * u.sqrt();
+                let aire = v.svf.pasabanda(r, 2.0 * (PI * fc / sr).sin(), 0.35);
+                if u1 < 28.0 / sr {
+                    v.ping = 1.0;
+                    v.ping_f = 380.0 + 620.0 * u2;
+                }
+                v.ping *= 1.0 - dt / 0.018;
+                v.ping_fase = (v.ping_fase + v.ping_f / sr).fract();
+                let burbuja = (TAU * v.ping_fase).sin() * v.ping;
+                let env = (t / 0.08).min(1.0) * ((d - t) / 0.12).min(1.0) * (0.6 + 0.4 * u);
+                (aire * 0.9 + burbuja * 0.35) * env * v.fuerza
+            }
+            TipoEfecto::Chispas => {
+                // Soplo de la llama que crece y chasquidos de chispas.
+                let env = (t / 0.05).min(1.0) * (-t / 0.6).exp();
+                let soplo = v.lp.procesar(r, coef_pasabajos(400.0, sr)) * 1.2;
+                if u1 < 180.0 * env / sr {
+                    v.ping = 1.0;
+                }
+                v.ping *= 0.82;
+                let chasquido = v.svf2.pasabanda(r * v.ping * 4.0, 2.0 * (PI * 3000.0 / sr).sin(), 0.5);
+                (soplo * 0.6 + chasquido * 0.9) * env * v.fuerza
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod pruebas_efectos {
+    use super::*;
+
+    #[test]
+    fn efectos_suenan_y_terminan() {
+        let mut e = Efectos::new(44100.0, 7);
+        for tipo in [TipoEfecto::Resoplido, TipoEfecto::Gemido, TipoEfecto::Sorbo, TipoEfecto::Chispas] {
+            e.disparar(tipo, 1.0);
+            let mut pico = 0.0f32;
+            for _ in 0..(44100.0 * 1.5) as usize {
+                let x = e.muestra();
+                assert!(x.is_finite() && x.abs() <= 1.0);
+                pico = pico.max(x.abs());
+            }
+            assert!(pico > 0.01, "{tipo:?} no sonó");
+            assert!(!e.activo(), "{tipo:?} no terminó");
+        }
+    }
+}

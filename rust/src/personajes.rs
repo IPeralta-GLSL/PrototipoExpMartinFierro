@@ -10,7 +10,7 @@
 
 use std::f32::consts::{PI, TAU};
 
-use godot::classes::{Engine, ISkeletonModifier3D, Skeleton3D, SkeletonModifier3D};
+use godot::classes::{Engine, ISkeletonModifier3D, Skeleton3D, SkeletonModifier3D, VisualInstance3D};
 use godot::prelude::*;
 
 use crate::modelos::ModeloIA;
@@ -48,6 +48,210 @@ pub fn girar_hacia(nodo: &mut Gd<Node3D>, objetivo: Vector3, velocidad: f32, dt:
     r.z = 0.0;
     nodo.set_global_rotation(r);
     dif.abs()
+}
+
+// ---------------------------------------------------------------------------
+// Esquivar obstáculos al caminar (NPCs): cada modelo es una cápsula en planta
+// (un segmento con radio, a partir de su caja); también se esquivan los
+// objetos sueltos, los otros personajes y el jugador.
+// ---------------------------------------------------------------------------
+
+#[derive(Clone, Copy, Debug)]
+pub struct Capsula {
+    a: Vector2,
+    b: Vector2,
+    r: f32,
+}
+
+fn punto_segmento(p: Vector2, a: Vector2, b: Vector2) -> Vector2 {
+    let ab = b - a;
+    let t = ((p - a).dot(ab) / ab.length_squared().max(1e-6)).clamp(0.0, 1.0);
+    a + ab * t
+}
+
+/// Huella en planta de un modelo (cápsula a lo largo de su lado más largo).
+fn huella(n: &Gd<Node>) -> Option<Capsula> {
+    fn juntar(n: &Gd<Node>, caja: &mut Option<Aabb>) {
+        if let Ok(v) = n.clone().try_cast::<VisualInstance3D>() {
+            if v.is_visible_in_tree() {
+                let g = v.get_global_transform() * v.get_aabb();
+                *caja = Some(match caja {
+                    Some(c) => c.merge(g),
+                    None => g,
+                });
+            }
+        }
+        for h in n.get_children().iter_shared() {
+            juntar(&h, caja);
+        }
+    }
+    let mut caja = None;
+    juntar(n, &mut caja);
+    let c = caja?;
+    let (sx, sz) = (c.size.x, c.size.z);
+    if c.size.y < 0.04 || sx.max(sz) < 0.08 || sx.max(sz) > 14.0 {
+        return None;
+    }
+    let centro = c.center();
+    let (cx, cz) = (centro.x, centro.z);
+    Some(if sx >= sz {
+        let medio = (sx - sz) * 0.5;
+        Capsula { a: Vector2::new(cx - medio, cz), b: Vector2::new(cx + medio, cz), r: sz * 0.45 }
+    } else {
+        let medio = (sz - sx) * 0.5;
+        Capsula { a: Vector2::new(cx, cz - medio), b: Vector2::new(cx, cz + medio), r: sx * 0.45 }
+    })
+}
+
+/// Obstáculos fijos de la escena: todos los modelos, salvo los personajes que
+/// caminan, los objetos que se agarran, los accesorios y uno mismo.
+fn obstaculos_estaticos(yo: &Gd<Node3D>) -> Vec<Capsula> {
+    fn recorrer(n: &Gd<Node>, yo: &Gd<Node>, out: &mut Vec<Capsula>) {
+        if n == yo
+            || n.clone().try_cast::<Caminante>().is_ok()
+            || n.clone().try_cast::<crate::narrador::Narrador>().is_ok()
+            || n.clone().try_cast::<crate::interaccion::Agarrable>().is_ok()
+            || n.clone().try_cast::<Accesorio>().is_ok()
+            || n.clone().try_cast::<crate::jugador::JugadorXR>().is_ok()
+        {
+            return;
+        }
+        if n.clone().try_cast::<ModeloIA>().is_ok() {
+            if let Some(c) = huella(n) {
+                out.push(c);
+            }
+            return;
+        }
+        for h in n.get_children().iter_shared() {
+            recorrer(&h, yo, out);
+        }
+    }
+    let mut out = Vec::new();
+    if let Some(escena) = yo.get_tree().get_current_scene() {
+        recorrer(&escena, &yo.clone().upcast::<Node>(), &mut out);
+    }
+    out
+}
+
+/// Lo que se mueve: otros caminantes, el narrador, objetos sueltos y el jugador.
+fn obstaculos_dinamicos(yo: &Gd<Node3D>) -> Vec<Capsula> {
+    let arbol = yo.get_tree();
+    let propio = yo.clone().upcast::<Node>();
+    let mut out = Vec::new();
+    let mut agregar = |p: Vector3, r: f32| {
+        let q = Vector2::new(p.x, p.z);
+        out.push(Capsula { a: q, b: q, r });
+    };
+    for grupo in ["caminante", "narrador"] {
+        for n in arbol.get_nodes_in_group(grupo).iter_shared() {
+            if n == propio || propio.is_ancestor_of(&n) || n.is_ancestor_of(&propio) {
+                continue;
+            }
+            if let Ok(n3) = n.try_cast::<Node3D>() {
+                agregar(n3.get_global_position(), 0.3);
+            }
+        }
+    }
+    for n in arbol.get_nodes_in_group("agarrable").iter_shared() {
+        if let Ok(n3) = n.try_cast::<Node3D>() {
+            if n3.is_visible_in_tree() {
+                agregar(n3.get_global_position(), 0.15);
+            }
+        }
+    }
+    for n in arbol.get_nodes_in_group("jugador").iter_shared() {
+        if let Some(cab) = n.get_node_or_null("Cabeza").and_then(|c| c.try_cast::<Node3D>().ok()) {
+            agregar(cab.get_global_position(), 0.3);
+        }
+    }
+    out
+}
+
+/// Dirección (en planta) hacia el objetivo, apartándose de lo cercano y
+/// rodeando por el costado lo que está adelante.
+fn dirigir(pos: Vector2, objetivo: Vector2, radio: f32, grupos: &[&[Capsula]]) -> Vector2 {
+    let to = objetivo - pos;
+    let dist = to.length();
+    if dist < 1e-4 {
+        return Vector2::ZERO;
+    }
+    let d = to / dist;
+    let mut dir = d;
+    for obs in grupos {
+        for c in obs.iter() {
+            let q = punto_segmento(pos, c.a, c.b);
+            let off = pos - q;
+            let dd = off.length();
+            let limite = c.r + radio + 0.15;
+            let zona = limite + 0.9;
+            if dd >= zona || dd < 1e-4 {
+                continue;
+            }
+            // Si el objetivo está pegado a este obstáculo, se lo deja acercar.
+            let oq = punto_segmento(objetivo, c.a, c.b);
+            if (objetivo - oq).length() < c.r + radio {
+                continue;
+            }
+            let n = off / dd;
+            if dd < limite {
+                dir += n * (1.0 - dd / limite) * 2.5;
+            }
+            let frente = (-n).dot(d).max(0.0);
+            if frente > 0.0 {
+                let tang = Vector2::new(-n.y, n.x);
+                let s = if tang.dot(d) >= 0.0 { 1.0 } else { -1.0 };
+                let f = 1.0 - (dd - limite).max(0.0) / 0.9;
+                dir += tang * (s * f * frente * 1.8);
+            }
+        }
+    }
+    let l = dir.length();
+    if l < 1e-4 {
+        d
+    } else {
+        dir / l
+    }
+}
+
+/// Lo usan Caminante y Narrador: obstáculos fijos (una vez) + móviles, y
+/// detecta si se trabó (no se acerca al objetivo en 4 s).
+pub struct Evitador {
+    estaticos: Vec<Capsula>,
+    listo: bool,
+    mejor: f32,
+    sin_avance: f32,
+}
+
+impl Evitador {
+    pub fn nuevo() -> Self {
+        Self { estaticos: Vec::new(), listo: false, mejor: f32::MAX, sin_avance: 0.0 }
+    }
+
+    pub fn reiniciar(&mut self) {
+        self.mejor = f32::MAX;
+        self.sin_avance = 0.0;
+    }
+
+    /// (dirección en planta, trabado)
+    pub fn paso(&mut self, yo: &Gd<Node3D>, objetivo: Vector3, radio: f32, dt: f32) -> (Vector2, bool) {
+        if !self.listo {
+            self.estaticos = obstaculos_estaticos(yo);
+            self.listo = true;
+        }
+        let pos = yo.get_global_position();
+        let p = Vector2::new(pos.x, pos.z);
+        let o = Vector2::new(objetivo.x, objetivo.z);
+        let dinamicos = obstaculos_dinamicos(yo);
+        let dir = dirigir(p, o, radio, &[&self.estaticos, &dinamicos]);
+        let dist = (o - p).length();
+        if dist < self.mejor - 0.1 {
+            self.mejor = dist;
+            self.sin_avance = 0.0;
+        } else {
+            self.sin_avance += dt;
+        }
+        (dir, self.sin_avance > 4.0)
+    }
 }
 
 fn coincide(actual: &str, candidatos: &str) -> bool {
@@ -240,10 +444,14 @@ pub struct Caminante {
     animacion_pausa: GString,
     #[export]
     terreno: Option<Gd<TerrenoPampa>>,
+    /// Radio del personaje para esquivar (m).
+    #[export]
+    radio: f32,
 
     indice: usize,
     esperando: f32,
     caminando: bool,
+    evitador: Evitador,
     base: Base<Node3D>,
 }
 
@@ -258,9 +466,11 @@ impl INode3D for Caminante {
             animacion_caminar: GString::from("caminar|walk"),
             animacion_pausa: GString::from("idle"),
             terreno: None,
+            radio: 0.3,
             indice: 0,
             esperando: 0.5,
             caminando: false,
+            evitador: Evitador::nuevo(),
             base,
         }
     }
@@ -270,6 +480,7 @@ impl INode3D for Caminante {
             self.base_mut().set_process(false);
             return;
         }
+        self.base_mut().add_to_group("caminante");
         let a = self.animacion_pausa.clone();
         self.animar(a);
     }
@@ -295,27 +506,39 @@ impl INode3D for Caminante {
             None => local,
         };
         let mut nodo = self.base().clone().upcast::<Node3D>();
-        let falta = girar_hacia(&mut nodo, objetivo, 3.0, dt);
+        let radio = self.radio;
+        let (dir, trabado) = self.evitador.paso(&nodo, objetivo, radio, dt);
         let mut pos = nodo.get_global_position();
-        let d = Vector2::new(objetivo.x - pos.x, objetivo.z - pos.z);
-        let dist = d.length();
-        if dist < 0.06 {
+        let dist = Vector2::new(objetivo.x - pos.x, objetivo.z - pos.z).length();
+        if dist < 0.08 || trabado {
             self.indice = (self.indice + 1) % n;
             self.esperando = self.pausa;
             self.caminando = false;
+            self.evitador.reiniciar();
             let a = self.animacion_pausa.clone();
             self.animar(a);
             return;
         }
-        // Si todavía está girando mucho, avanza más despacio.
+        // Mira hacia donde camina (esquivando), no al punto de destino.
+        let falta = girar_hacia(&mut nodo, pos + Vector3::new(dir.x, 0.0, dir.y), 3.0, dt);
         let v = self.velocidad * if falta > 0.8 { 0.3 } else { 1.0 };
         let paso = (v * dt).min(dist);
-        pos.x += d.x / dist * paso;
-        pos.z += d.y / dist * paso;
+        pos.x += dir.x * paso;
+        pos.z += dir.y * paso;
         if let Some(h) = altura_global(&self.terreno, pos) {
             pos.y = h;
         }
         nodo.set_global_position(pos);
+    }
+}
+
+#[godot_api]
+impl Caminante {
+    /// Se queda quieto unos segundos (sin cambiar la animación: la pone quien lo pausa).
+    #[func]
+    pub fn pausar(&mut self, segundos: f32) {
+        self.esperando = self.esperando.max(segundos);
+        self.caminando = false;
     }
 }
 

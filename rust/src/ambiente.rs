@@ -10,7 +10,7 @@ use godot::classes::{
 use godot::prelude::*;
 
 use crate::ruido::Perlin2;
-use crate::sintesis::{FuegoSonido, Grillos, Viento};
+use crate::sintesis::{Efectos, FuegoSonido, Grillos, TipoEfecto, Viento};
 
 /// Envoltura de un AudioStreamGeneratorPlayback con un búfer reutilizable.
 pub struct GeneradorAudio {
@@ -170,6 +170,9 @@ pub struct Fogon {
     pos_luz: Vector3,
     sonido: Option<FuegoSonido>,
     generador: Option<GeneradorAudio>,
+    /// 1 = recién avivado (leña nueva); baja solo.
+    avivado: f32,
+    efectos: Option<Efectos>,
     base: Base<Node3D>,
 }
 
@@ -188,6 +191,8 @@ impl INode3D for Fogon {
             pos_luz: Vector3::ZERO,
             sonido: None,
             generador: None,
+            avivado: 0.0,
+            efectos: None,
             base,
         }
     }
@@ -199,8 +204,10 @@ impl INode3D for Fogon {
         if Engine::singleton().is_editor_hint() {
             return;
         }
+        self.base_mut().add_to_group("fogon");
         let (stream, mix) = GeneradorAudio::nuevo_stream(0.2);
         self.sonido = Some(FuegoSonido::new(mix, 1834));
+        self.efectos = Some(Efectos::new(mix, 77));
         let mut rep = AudioStreamPlayer3D::new_alloc();
         rep.set_name("Crepitar");
         rep.set_stream(&stream);
@@ -216,6 +223,8 @@ impl INode3D for Fogon {
 
     fn process(&mut self, delta: f64) {
         self.t += delta;
+        self.avivado = (self.avivado - delta as f32 * 0.3).max(0.0);
+        let mas = 1.0 + 1.6 * self.avivado;
         let t = self.t as f32;
         let n = &self.ruido;
         // Parpadeo: mezcla de un vaivén lento y titileo rápido.
@@ -226,18 +235,30 @@ impl INode3D for Fogon {
             n.ruido(t * 3.3, 30.5),
         ) * 0.05;
         if let Some(luz) = self.luz.as_mut() {
-            luz.set_param(Param::ENERGY, (self.energia_base * (1.0 + self.parpadeo * f)).max(0.0));
+            luz.set_param(Param::ENERGY, (self.energia_base * mas * (1.0 + self.parpadeo * f)).max(0.0));
             luz.set_position(self.pos_luz + vaiven);
         }
         if let Some(m) = self.material_llamas.as_mut() {
-            let i = self.intensidad_llamas * (1.0 + 0.3 * f);
+            let i = self.intensidad_llamas * (1.0 + 0.8 * self.avivado) * (1.0 + 0.3 * f);
             m.set_shader_parameter("intensidad", &i.to_variant());
         }
-        if let (Some(s), Some(gen)) = (self.sonido.as_mut(), self.generador.as_mut()) {
+        if let (Some(s), Some(e), Some(gen)) = (self.sonido.as_mut(), self.efectos.as_mut(), self.generador.as_mut()) {
             gen.rellenar(|| {
-                let x = s.muestra();
+                let x = s.muestra() + e.muestra();
                 (x, x)
             });
+        }
+    }
+}
+
+#[godot_api]
+impl Fogon {
+    /// Leña nueva: el fuego crece unos segundos y chisporrotea.
+    #[func]
+    pub fn avivar(&mut self) {
+        self.avivado = 1.0;
+        if let Some(e) = self.efectos.as_mut() {
+            e.disparar(TipoEfecto::Chispas, 1.0);
         }
     }
 }

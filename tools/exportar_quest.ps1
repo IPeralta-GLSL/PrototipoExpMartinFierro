@@ -53,9 +53,24 @@ if (-not ($Logcat -and -not $Instalar -and -not $Ejecutar)) {
         $argumentos += '--install-android-build-template'
     }
     if (Test-Path $apk) { Remove-Item $apk -Force }
-    $argumentos += @('--export-debug', 'Meta Quest 3', $apk)
-    Ejecutar $godot $argumentos -PermitirFallo
-    if (-not (Test-Path $apk)) { throw "No se generó el APK (revisá los errores de Gradle arriba)." }
+    $argumentos += @('--export-debug', "`"Meta Quest 3`"", "`"$apk`"")
+    Write-Host ">> godot $($argumentos -join ' ')" -ForegroundColor Cyan
+    # Godot a veces queda colgado al cerrarse después de exportar: si el APK ya
+    # está completo (sin cambios hace 20 s) y el proceso sigue, se lo cierra.
+    $registro = Join-Path $salida 'exportar_godot.txt'
+    $p = Start-Process -FilePath $godot -ArgumentList $argumentos -PassThru -NoNewWindow `
+        -RedirectStandardOutput $registro -RedirectStandardError "$registro.err"
+    $estable = 0; $previo = -1
+    while (-not $p.HasExited) {
+        Start-Sleep 5
+        if (Test-Path $apk) {
+            $tam = (Get-Item $apk).Length
+            if ($tam -eq $previo) { $estable += 5 } else { $estable = 0; $previo = $tam }
+            if ($estable -ge 20) { Write-Host "Godot no terminó solo: se cierra (el APK ya está)." -ForegroundColor Yellow; Stop-Process -Id $p.Id -Force; break }
+        }
+    }
+    Get-Content $registro, "$registro.err" -ErrorAction SilentlyContinue | Select-String -Pattern 'ERROR|FAILURE|What went wrong|BUILD' | ForEach-Object { "$_" }
+    if (-not (Test-Path $apk)) { throw "No se generó el APK (revisá $registro)." }
     $mb = [math]::Round((Get-Item $apk).Length / 1MB, 1)
     Write-Host "APK: $apk ($mb MB)" -ForegroundColor Green
 }

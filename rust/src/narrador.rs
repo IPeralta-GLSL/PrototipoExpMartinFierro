@@ -9,6 +9,7 @@
 //! - `accion`: animación mientras habla (por defecto "hablar").
 //! - `mirar`: "jugador" (por defecto) o el nombre de un nodo hermano del narrador.
 //! - `ir_a`: nodo hermano hasta el que camina antes de decir la línea.
+//! - `postura`: "sentado" (se sienta; usa las variantes "<accion>_sentado") o "parado".
 //!
 //! Si falta el audio, la línea dura según el largo del texto (solo subtítulo).
 
@@ -22,7 +23,7 @@ use godot::prelude::*;
 use crate::ciclo::CicloDia;
 use crate::guitarra::GuitarraCriolla;
 use crate::modelos::ModeloIA;
-use crate::personajes::{altura_global, girar_hacia, Mandibula};
+use crate::personajes::{altura_global, girar_hacia, Evitador, Mandibula};
 use crate::portal::PortalFogon;
 use crate::terreno::TerrenoPampa;
 
@@ -34,6 +35,7 @@ struct Linea {
     accion: String,
     mirar: String,
     ir_a: String,
+    postura: String,
 }
 
 #[derive(GodotClass)]
@@ -82,6 +84,8 @@ pub struct Narrador {
     tecla_previa: bool,
     mirada: String,
     destino: Option<Vector3>,
+    evitador: Evitador,
+    sentado: bool,
     subtitulo: Option<Gd<Label3D>>,
     /// Mandíbula del gaucho (se abre con el volumen de la voz).
     boca: Option<Gd<Mandibula>>,
@@ -122,6 +126,8 @@ impl INode3D for Narrador {
             tecla_previa: false,
             mirada: String::new(),
             destino: None,
+            evitador: Evitador::nuevo(),
+            sentado: false,
             subtitulo: None,
             boca: None,
             envolvente: Vec::new(),
@@ -139,6 +145,7 @@ impl INode3D for Narrador {
         if Engine::singleton().is_editor_hint() {
             return;
         }
+        self.base_mut().add_to_group("narrador");
         self.lineas = cargar_guion(&self.guion.to_string());
         if self.lineas.is_empty() {
             godot_warn!("Narrador: guion vacío o no encontrado: {}", self.guion);
@@ -253,7 +260,8 @@ impl INode3D for Narrador {
             }
             self.hablando = false;
             self.fijar_boca(0.0);
-            self.animar("idle|breath|stand");
+            let reposo = if self.sentado { "sentado|idle" } else { "idle|breath|stand" };
+            self.animar(reposo);
             self.indice += 1;
             match self.lineas.get(self.indice) {
                 Some(l) => self.esperando = l.espera,
@@ -282,6 +290,11 @@ impl Narrador {
         let audio = l.audio.clone();
         let evento = l.evento.clone();
         let accion = if l.accion.is_empty() { "hablar".to_string() } else { l.accion.clone() };
+        match l.postura.as_str() {
+            "sentado" => self.sentado = true,
+            "parado" => self.sentado = false,
+            _ => {}
+        }
         self.mirada = if l.mirar.is_empty() { "jugador".to_string() } else { l.mirar.clone() };
 
         if let Some(s) = self.subtitulo.as_mut() {
@@ -312,7 +325,11 @@ impl Narrador {
         );
         self.t_linea = 0.0;
         self.hablando = true;
-        self.animar(&format!("{accion}|hablar|talk|idle"));
+        if self.sentado {
+            self.animar(&format!("{accion}_sentado|hablar_sentado|sentado"));
+        } else {
+            self.animar(&format!("{accion}|hablar|talk|idle"));
+        }
         self.disparar(&evento, duracion);
     }
 
@@ -352,17 +369,19 @@ impl Narrador {
     /// Camina hacia `destino`; devuelve true al llegar.
     fn caminar_hacia(&mut self, destino: Vector3, dt: f32) -> bool {
         let mut nodo = self.base().clone().upcast::<Node3D>();
-        let falta = girar_hacia(&mut nodo, destino, 3.5, dt);
+        let (dir, trabado) = self.evitador.paso(&nodo, destino, 0.3, dt);
         let mut pos = nodo.get_global_position();
-        let d = Vector2::new(destino.x - pos.x, destino.z - pos.z);
-        let dist = d.length();
-        if dist < 0.05 {
+        let dist = Vector2::new(destino.x - pos.x, destino.z - pos.z).length();
+        if dist < 0.05 || trabado {
+            self.evitador.reiniciar();
             return true;
         }
+        // Rodea lo que tenga adelante (el asado, el fuego...).
+        let falta = girar_hacia(&mut nodo, pos + Vector3::new(dir.x, 0.0, dir.y), 3.5, dt);
         let v = self.velocidad * if falta > 0.8 { 0.25 } else { 1.0 };
         let paso = (v * dt).min(dist);
-        pos.x += d.x / dist * paso;
-        pos.z += d.y / dist * paso;
+        pos.x += dir.x * paso;
+        pos.z += dir.y * paso;
         if let Some(h) = altura_global(&self.terreno, pos) {
             pos.y = h;
         }
@@ -511,6 +530,7 @@ fn cargar_guion(ruta: &str) -> Vec<Linea> {
             accion: cadena("accion"),
             mirar: cadena("mirar"),
             ir_a: cadena("ir_a"),
+            postura: cadena("postura"),
         });
     }
     lineas

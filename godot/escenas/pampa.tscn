@@ -278,6 +278,320 @@ font_names = PackedStringArray("Georgia", "Times New Roman", "Noto Serif", "seri
 material = SubResource("mat_cuero")
 size = Vector3(0.08, 0.035, 0.13)
 
+[sub_resource type="StandardMaterial3D" id="mat_molino"]
+albedo_color = Color(0.37, 0.35, 0.32, 1)
+metallic = 0.35
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="mat_molino_madera"]
+albedo_color = Color(0.3, 0.21, 0.13, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="m_molino_1"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_2"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_3"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_4"]
+material = SubResource("mat_molino")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino_5"]
+material = SubResource("mat_molino")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_6"]
+material = SubResource("mat_molino")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_7"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino_8"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino_9"]
+material = SubResource("mat_molino")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_10"]
+material = SubResource("mat_molino")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_11"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino_12"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino_13"]
+material = SubResource("mat_molino")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_14"]
+material = SubResource("mat_molino")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino_15"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino_16"]
+material = SubResource("mat_molino")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino_17"]
+material = SubResource("mat_molino_madera")
+size = Vector3(0.850, 0.050, 0.850)
+
+[sub_resource type="BoxMesh" id="m_molino_18"]
+material = SubResource("mat_molino")
+size = Vector3(0.030, 8.600, 0.030)
+
+[sub_resource type="BoxMesh" id="m_molino_19"]
+material = SubResource("mat_molino")
+size = Vector3(0.020, 0.700, 1.800)
+
+[sub_resource type="BoxMesh" id="m_molino_20"]
+material = SubResource("mat_molino_madera")
+size = Vector3(2.200, 0.450, 0.600)
+
+[sub_resource type="BoxMesh" id="m_molino_21"]
+material = SubResource("mat_molino")
+size = Vector3(0.240, 0.240, 0.240)
+
+[sub_resource type="BoxMesh" id="m_molino_22"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_23"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_24"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_25"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_26"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_27"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_28"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_29"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_30"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_31"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_32"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_33"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_34"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_35"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_36"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino_37"]
+material = SubResource("mat_molino")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="mat_molino2"]
+albedo_color = Color(0.37, 0.35, 0.32, 1)
+metallic = 0.35
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="mat_molino2_madera"]
+albedo_color = Color(0.3, 0.21, 0.13, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="m_molino2_1"]
+material = SubResource("mat_molino2")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino2_2"]
+material = SubResource("mat_molino2")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino2_3"]
+material = SubResource("mat_molino2")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino2_4"]
+material = SubResource("mat_molino2")
+size = Vector3(0.090, 9.074, 0.090)
+
+[sub_resource type="BoxMesh" id="m_molino2_5"]
+material = SubResource("mat_molino2")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_6"]
+material = SubResource("mat_molino2")
+size = Vector3(1.763, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_7"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino2_8"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 1.763)
+
+[sub_resource type="BoxMesh" id="m_molino2_9"]
+material = SubResource("mat_molino2")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_10"]
+material = SubResource("mat_molino2")
+size = Vector3(1.307, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_11"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino2_12"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 1.307)
+
+[sub_resource type="BoxMesh" id="m_molino2_13"]
+material = SubResource("mat_molino2")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_14"]
+material = SubResource("mat_molino2")
+size = Vector3(0.888, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="m_molino2_15"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino2_16"]
+material = SubResource("mat_molino2")
+size = Vector3(0.060, 0.060, 0.888)
+
+[sub_resource type="BoxMesh" id="m_molino2_17"]
+material = SubResource("mat_molino2_madera")
+size = Vector3(0.850, 0.050, 0.850)
+
+[sub_resource type="BoxMesh" id="m_molino2_18"]
+material = SubResource("mat_molino2")
+size = Vector3(0.030, 8.600, 0.030)
+
+[sub_resource type="BoxMesh" id="m_molino2_19"]
+material = SubResource("mat_molino2")
+size = Vector3(0.020, 0.700, 1.800)
+
+[sub_resource type="BoxMesh" id="m_molino2_20"]
+material = SubResource("mat_molino2_madera")
+size = Vector3(2.200, 0.450, 0.600)
+
+[sub_resource type="BoxMesh" id="m_molino2_21"]
+material = SubResource("mat_molino2")
+size = Vector3(0.240, 0.240, 0.240)
+
+[sub_resource type="BoxMesh" id="m_molino2_22"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_23"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_24"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_25"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_26"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_27"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_28"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_29"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_30"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_31"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_32"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_33"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_34"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_35"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_36"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
+[sub_resource type="BoxMesh" id="m_molino2_37"]
+material = SubResource("mat_molino2")
+size = Vector3(0.220, 1.250, 0.015)
+
 [node name="Pampa" type="Node3D"]
 
 [node name="Entorno" type="WorldEnvironment" parent="."]
@@ -333,7 +647,7 @@ luciernagas = NodePath("../Luciernagas")
 ambiente = NodePath("../Ambiente")
 fogon = NodePath("../Campamento/Fogon")
 farol = NodePath("../Campamento/Farol")
-duracion = 70.0
+duracion = 40.0
 
 [node name="Campamento" type="Node3D" parent="."]
 
@@ -406,14 +720,22 @@ position = Vector3(1.05, 0, -0.55)
 rotation_degrees = Vector3(0, -13, 20)
 modelo = "asador"
 
-[node name="Caldera" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+[node name="Caldera" type="Agarrable" parent="Campamento"]
 position = Vector3(-0.62, 0, 0.4)
 rotation_degrees = Vector3(0, 30, 0)
+tipo = ""
+radio_agarre = 0.22
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Caldera"]
 modelo = "caldera"
 
-[node name="Mate" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+[node name="Mate" type="Agarrable" parent="Campamento"]
 position = Vector3(-1.3, 0, 0.95)
 rotation_degrees = Vector3(0, 20, 0)
+tipo = "mate"
+radio_agarre = 0.18
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Mate"]
 modelo = "mate"
 
 [node name="Calavera1" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
@@ -435,9 +757,13 @@ modelo = "tronco"
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0.22, 0)
 mesh = SubResource("m_tronco_banco")
 
-[node name="Sombrero" type="ModeloIA" parent="Campamento"]
+[node name="Sombrero" type="Agarrable" parent="Campamento"]
 position = Vector3(-2.36, 0.43, 1.79)
 rotation_degrees = Vector3(0, 70, 0)
+tipo = "sombrero"
+radio_agarre = 0.25
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Sombrero"]
 modelo = "sombrero"
 
 [node name="Guitarra" type="GuitarraCriolla" parent="Campamento" groups=["apoyar_en_suelo"]]
@@ -458,13 +784,19 @@ mesh = SubResource("m_cuerpo_guitarra")
 position = Vector3(0, 0.76, 0)
 mesh = SubResource("m_mango_guitarra")
 
-[node name="Perro" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+[node name="Perro" type="Animal" parent="Campamento" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(-1.05, 0, -1.65)
 rotation_degrees = Vector3(0, 32, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:8-14,dormir:10-20"
+reaccion = "contento"
+duracion_reaccion = 2.5
+sonido = "gemido"
+punto_caricia = Vector3(0.25, 0.35, 0)
+radio_caricia = 0.45
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Perro"]
 modelo = "perro"
-animacion = "lie|sleep|sit|rest|idle"
-respirar = 0.014
-periodo = 2.2
 
 [node name="Recado" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
 position = Vector3(2.4, 0, 0.05)
@@ -524,19 +856,33 @@ position = Vector3(6.8, 0, -4.6)
 rotation_degrees = Vector3(0, 50, 0)
 modelo = "palenque"
 
-[node name="CaballoMoro" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+[node name="CaballoMoro" type="Animal" parent="Campamento" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(5.45, 0, -4.95)
 rotation_degrees = Vector3(0, -40, 0)
-modelo = "caballo_moro"
-respirar = 0.006
-periodo = 3.8
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+duracion_reaccion = 3.0
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
 
-[node name="CaballoGateado" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+[node name="Modelo" type="ModeloIA" parent="Campamento/CaballoMoro"]
+modelo = "caballo_moro"
+
+[node name="CaballoGateado" type="Animal" parent="Campamento" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
 position = Vector3(6.3, 0, -5.95)
 rotation_degrees = Vector3(0, -40, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+duracion_reaccion = 3.0
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/CaballoGateado"]
 modelo = "caballo_gateado"
-respirar = 0.006
-periodo = 4.3
 
 [node name="Carreta" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
 position = Vector3(-8.6, 0, -3.4)
@@ -610,10 +956,17 @@ modelo = "chimango"
 [node name="PuntoCharla" type="Marker3D" parent="Campamento"]
 position = Vector3(0.6, 0, -2.05)
 
+[node name="Asiento" type="Marker3D" parent="Campamento"]
+position = Vector3(0.6, 0, -2.35)
+
+[node name="BancoCharla" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(0.6, 0, -2.35)
+modelo = "banco"
+
 [node name="Narrador" type="Narrador" parent="Campamento" node_paths=PackedStringArray("modelo", "ciclo", "portal", "terreno") groups=["apoyar_en_suelo"]]
 position = Vector3(1.75, 0, -0.95)
 rotation_degrees = Vector3(0, -60, 0)
-demora_inicial = 11.8
+demora_inicial = 8.6
 guion = "res://guion/rancho.json"
 modelo = NodePath("Gaucho")
 ciclo = NodePath("../../CicloDia")
@@ -727,6 +1080,7 @@ font_size = 30
 position = Vector3(0, 0, 3.6)
 terreno = NodePath("../Terreno")
 titulo = NodePath("../Titulo")
+duracion_titulo = 6.0
 fundido_inicial = 2.5
 
 [node name="Cabeza" type="XRCamera3D" parent="Jugador"]
@@ -750,3 +1104,532 @@ pose = &"grip"
 
 [node name="Guante" type="MeshInstance3D" parent="Jugador/ManoDerecha"]
 mesh = SubResource("m_guante")
+
+[node name="Lena1" type="Agarrable" parent="Campamento"]
+position = Vector3(0.75, 0.0, 1.65)
+rotation_degrees = Vector3(0, 35, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Lena1"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="Lena2" type="Agarrable" parent="Campamento"]
+position = Vector3(0.95, 0.0, 1.8)
+rotation_degrees = Vector3(0, -20, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Lena2"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="Lena3" type="Agarrable" parent="Campamento"]
+position = Vector3(0.6, 0.0, 1.9)
+rotation_degrees = Vector3(0, 80, 0)
+tipo = "lena"
+radio_agarre = 0.26
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/Lena3"]
+transform = Transform3D(0.28, 0, 0, 0, 0.28, 0, 0, 0, 0.28, 0, 0, 0)
+modelo = "tronco"
+
+[node name="PerroPaseo" type="Caminante" parent="Campamento" node_paths=PackedStringArray("modelo", "terreno") groups=["apoyar_en_suelo"]]
+position = Vector3(2.6, 0, 1.4)
+modelo = NodePath("Perro/Modelo")
+puntos = PackedVector3Array(2.6, 0, 1.4, 3.2, 0, -1.8, 0.5, 0, -3.6, -2.6, 0, -3.0, -3.0, 0, -0.2, -0.5, 0, 2.6)
+velocidad = 0.85
+pausa = 4.0
+animacion_caminar = "caminar"
+animacion_pausa = "olfatear|idle"
+terreno = NodePath("../../Terreno")
+
+[node name="Perro" type="Animal" parent="Campamento/PerroPaseo" node_paths=PackedStringArray("modelo")]
+modelo = NodePath("Modelo")
+reaccion = "contento"
+duracion_reaccion = 2.5
+sonido = "gemido"
+punto_caricia = Vector3(0, 0.6, 0.4)
+radio_caricia = 0.45
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/PerroPaseo/Perro"]
+rotation_degrees = Vector3(0, -90, 0)
+modelo = "perro_parado"
+
+[node name="Pozo" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(5.8, 0, 2.1)
+rotation_degrees = Vector3(0, -20, 0)
+modelo = "pozo"
+
+[node name="PilaLena" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(4.8, 0, 5.0)
+rotation_degrees = Vector3(0, 75, 0)
+modelo = "pila_lena"
+
+[node name="Carreta2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(6.6, 0, 10.2)
+rotation_degrees = Vector3(0, 60, 0)
+modelo = "carreta"
+
+[node name="Tala1" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(4.4, 0, 15.5)
+rotation_degrees = Vector3(0, 20, 0)
+scale = Vector3(0.45, 0.45, 0.45)
+modelo = "ombu"
+
+[node name="Tala2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-7.4, 0, 11.2)
+rotation_degrees = Vector3(0, 140, 0)
+scale = Vector3(0.45, 0.45, 0.45)
+modelo = "ombu"
+
+[node name="Tala3" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(13.0, 0, 3.0)
+rotation_degrees = Vector3(0, 80, 0)
+scale = Vector3(0.45, 0.45, 0.45)
+modelo = "ombu"
+
+[node name="RanchoVecino" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-5.0, 0, 21.5)
+rotation_degrees = Vector3(0, 160, 0)
+modelo = "rancho"
+distancia_visible = 120.0
+
+[node name="Corral2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-10.6, 0, 7.4)
+rotation_degrees = Vector3(0, 70, 0)
+modelo = "corral"
+
+[node name="Cuero2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.9, 0, 2.4)
+rotation_degrees = Vector3(0, 100, 0)
+modelo = "cuero"
+
+[node name="Bolsas" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-4.0, 0, 3.6)
+rotation_degrees = Vector3(0, 30, 0)
+modelo = "bolsas"
+
+[node name="BancoAtras" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(0.6, 0, 6.2)
+rotation_degrees = Vector3(0, 10, 0)
+modelo = "banco"
+
+[node name="BarrilAtras" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-1.6, 0, 6.0)
+rotation_degrees = Vector3(0, 0, 0)
+modelo = "barril"
+
+[node name="Palenque2" type="ModeloIA" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-6.2, 0, 4.9)
+rotation_degrees = Vector3(0, 95, 0)
+modelo = "palenque"
+
+[node name="CaballoAtras" type="Animal" parent="Campamento" node_paths=PackedStringArray("modelo") groups=["apoyar_en_suelo"]]
+position = Vector3(-6.9, 0, 5.8)
+rotation_degrees = Vector3(0, 185, 0)
+modelo = NodePath("Modelo")
+rutina = "idle:6-12,pastar:8-15"
+reaccion = "cabecear"
+sonido = "resoplido"
+punto_caricia = Vector3(0.9, 1.6, 0.1)
+radio_caricia = 0.65
+
+[node name="Modelo" type="ModeloIA" parent="Campamento/CaballoAtras"]
+modelo = "caballo_gateado"
+
+[node name="Ovejas" type="DispersorModelos" parent="Fauna" node_paths=PackedStringArray("terreno")]
+terreno = NodePath("../../Terreno")
+modelo = "oveja"
+cantidad = 14
+radio_min = 9.0
+radio_max = 24.0
+angulo_min = 115.0
+angulo_max = 250.0
+separacion = 2.5
+semilla = 1876
+distancia_visible = 90.0
+respirar = 0.006
+periodo = 3.2
+
+[node name="Molino" type="Node3D" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(40, 0, 62)
+rotation_degrees = Vector3(0, -145.6, 0)
+
+[node name="Pata1" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, 5.21)
+mesh = SubResource("m_molino_1")
+
+[node name="Pata2" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(-0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, -5.21)
+mesh = SubResource("m_molino_2")
+
+[node name="Pata3" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(-0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, -5.21)
+mesh = SubResource("m_molino_3")
+
+[node name="Pata4" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, 5.21)
+mesh = SubResource("m_molino_4")
+
+[node name="Travesano1_1" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 2.400, 0.881)
+mesh = SubResource("m_molino_5")
+
+[node name="Travesano1_2" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 2.400, -0.881)
+mesh = SubResource("m_molino_6")
+
+[node name="Travesano1_3" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.881, 2.400, 0.000)
+mesh = SubResource("m_molino_7")
+
+[node name="Travesano1_4" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(-0.881, 2.400, 0.000)
+mesh = SubResource("m_molino_8")
+
+[node name="Travesano2_1" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 4.900, 0.654)
+mesh = SubResource("m_molino_9")
+
+[node name="Travesano2_2" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 4.900, -0.654)
+mesh = SubResource("m_molino_10")
+
+[node name="Travesano2_3" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.654, 4.900, 0.000)
+mesh = SubResource("m_molino_11")
+
+[node name="Travesano2_4" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(-0.654, 4.900, 0.000)
+mesh = SubResource("m_molino_12")
+
+[node name="Travesano3_1" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 7.200, 0.444)
+mesh = SubResource("m_molino_13")
+
+[node name="Travesano3_2" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 7.200, -0.444)
+mesh = SubResource("m_molino_14")
+
+[node name="Travesano3_3" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.444, 7.200, 0.000)
+mesh = SubResource("m_molino_15")
+
+[node name="Travesano3_4" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(-0.444, 7.200, 0.000)
+mesh = SubResource("m_molino_16")
+
+[node name="Plataforma" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 9.000, 0.000)
+mesh = SubResource("m_molino_17")
+
+[node name="Varilla" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 4.700, 0.000)
+mesh = SubResource("m_molino_18")
+
+[node name="Cola" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(0.000, 9.350, -1.150)
+mesh = SubResource("m_molino_19")
+
+[node name="Bebedero" type="MeshInstance3D" parent="Campamento/Molino"]
+position = Vector3(1.900, 0.220, 1.000)
+mesh = SubResource("m_molino_20")
+
+[node name="Rueda" type="Giratorio" parent="Campamento/Molino"]
+position = Vector3(0, 9.35, 0.3)
+velocidad = 0.32
+
+[node name="Cubo" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.000, 0.000, 0.000)
+mesh = SubResource("m_molino_21")
+
+[node name="Aspa1" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.000, 0.850, 0.000)
+mesh = SubResource("m_molino_22")
+
+[node name="Aspa2" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 22.50)
+mesh = SubResource("m_molino_23")
+
+[node name="Aspa3" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 45.00)
+mesh = SubResource("m_molino_24")
+
+[node name="Aspa4" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 67.50)
+mesh = SubResource("m_molino_25")
+
+[node name="Aspa5" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.850, 0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 90.00)
+mesh = SubResource("m_molino_26")
+
+[node name="Aspa6" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 112.50)
+mesh = SubResource("m_molino_27")
+
+[node name="Aspa7" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 135.00)
+mesh = SubResource("m_molino_28")
+
+[node name="Aspa8" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 157.50)
+mesh = SubResource("m_molino_29")
+
+[node name="Aspa9" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(-0.000, -0.850, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 180.00)
+mesh = SubResource("m_molino_30")
+
+[node name="Aspa10" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 202.50)
+mesh = SubResource("m_molino_31")
+
+[node name="Aspa11" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 225.00)
+mesh = SubResource("m_molino_32")
+
+[node name="Aspa12" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 247.50)
+mesh = SubResource("m_molino_33")
+
+[node name="Aspa13" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.850, -0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 270.00)
+mesh = SubResource("m_molino_34")
+
+[node name="Aspa14" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 292.50)
+mesh = SubResource("m_molino_35")
+
+[node name="Aspa15" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 315.00)
+mesh = SubResource("m_molino_36")
+
+[node name="Aspa16" type="MeshInstance3D" parent="Campamento/Molino/Rueda"]
+position = Vector3(0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 337.50)
+mesh = SubResource("m_molino_37")
+
+[node name="Molino2" type="Node3D" parent="Campamento" groups=["apoyar_en_suelo"]]
+position = Vector3(-55, 0, -45)
+rotation_degrees = Vector3(0, 48.5, 0)
+
+[node name="Pata1" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, 5.21)
+mesh = SubResource("m_molino2_1")
+
+[node name="Pata2" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(-0.690, 4.500, 0.690)
+rotation_degrees = Vector3(-5.21, 0.00, -5.21)
+mesh = SubResource("m_molino2_2")
+
+[node name="Pata3" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(-0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, -5.21)
+mesh = SubResource("m_molino2_3")
+
+[node name="Pata4" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.690, 4.500, -0.690)
+rotation_degrees = Vector3(5.21, 0.00, 5.21)
+mesh = SubResource("m_molino2_4")
+
+[node name="Travesano1_1" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 2.400, 0.881)
+mesh = SubResource("m_molino2_5")
+
+[node name="Travesano1_2" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 2.400, -0.881)
+mesh = SubResource("m_molino2_6")
+
+[node name="Travesano1_3" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.881, 2.400, 0.000)
+mesh = SubResource("m_molino2_7")
+
+[node name="Travesano1_4" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(-0.881, 2.400, 0.000)
+mesh = SubResource("m_molino2_8")
+
+[node name="Travesano2_1" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 4.900, 0.654)
+mesh = SubResource("m_molino2_9")
+
+[node name="Travesano2_2" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 4.900, -0.654)
+mesh = SubResource("m_molino2_10")
+
+[node name="Travesano2_3" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.654, 4.900, 0.000)
+mesh = SubResource("m_molino2_11")
+
+[node name="Travesano2_4" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(-0.654, 4.900, 0.000)
+mesh = SubResource("m_molino2_12")
+
+[node name="Travesano3_1" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 7.200, 0.444)
+mesh = SubResource("m_molino2_13")
+
+[node name="Travesano3_2" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 7.200, -0.444)
+mesh = SubResource("m_molino2_14")
+
+[node name="Travesano3_3" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.444, 7.200, 0.000)
+mesh = SubResource("m_molino2_15")
+
+[node name="Travesano3_4" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(-0.444, 7.200, 0.000)
+mesh = SubResource("m_molino2_16")
+
+[node name="Plataforma" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 9.000, 0.000)
+mesh = SubResource("m_molino2_17")
+
+[node name="Varilla" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 4.700, 0.000)
+mesh = SubResource("m_molino2_18")
+
+[node name="Cola" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(0.000, 9.350, -1.150)
+mesh = SubResource("m_molino2_19")
+
+[node name="Bebedero" type="MeshInstance3D" parent="Campamento/Molino2"]
+position = Vector3(1.900, 0.220, 1.000)
+mesh = SubResource("m_molino2_20")
+
+[node name="Rueda" type="Giratorio" parent="Campamento/Molino2"]
+position = Vector3(0, 9.35, 0.3)
+velocidad = 0.32
+
+[node name="Cubo" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.000, 0.000, 0.000)
+mesh = SubResource("m_molino2_21")
+
+[node name="Aspa1" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.000, 0.850, 0.000)
+mesh = SubResource("m_molino2_22")
+
+[node name="Aspa2" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 22.50)
+mesh = SubResource("m_molino2_23")
+
+[node name="Aspa3" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 45.00)
+mesh = SubResource("m_molino2_24")
+
+[node name="Aspa4" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 67.50)
+mesh = SubResource("m_molino2_25")
+
+[node name="Aspa5" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.850, 0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 90.00)
+mesh = SubResource("m_molino2_26")
+
+[node name="Aspa6" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 112.50)
+mesh = SubResource("m_molino2_27")
+
+[node name="Aspa7" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 135.00)
+mesh = SubResource("m_molino2_28")
+
+[node name="Aspa8" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 157.50)
+mesh = SubResource("m_molino2_29")
+
+[node name="Aspa9" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(-0.000, -0.850, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 180.00)
+mesh = SubResource("m_molino2_30")
+
+[node name="Aspa10" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.325, -0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 202.50)
+mesh = SubResource("m_molino2_31")
+
+[node name="Aspa11" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.601, -0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 225.00)
+mesh = SubResource("m_molino2_32")
+
+[node name="Aspa12" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.785, -0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 247.50)
+mesh = SubResource("m_molino2_33")
+
+[node name="Aspa13" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.850, -0.000, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 270.00)
+mesh = SubResource("m_molino2_34")
+
+[node name="Aspa14" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.785, 0.325, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 292.50)
+mesh = SubResource("m_molino2_35")
+
+[node name="Aspa15" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.601, 0.601, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 315.00)
+mesh = SubResource("m_molino2_36")
+
+[node name="Aspa16" type="MeshInstance3D" parent="Campamento/Molino2/Rueda"]
+position = Vector3(0.325, 0.785, 0.000)
+rotation_degrees = Vector3(0.00, 0.00, 337.50)
+mesh = SubResource("m_molino2_37")
+
+[node name="Pajaritos" type="Bandada" parent="Campamento"]
+position = Vector3(6, 0, -2)
+cantidad = 9
+envergadura = 0.3
+radio = 16.0
+altura = 12.0
+velocidad = 7.0
+irse_tras = 75.0
+semilla = 11
+
+[node name="Chimangos" type="Bandada" parent="Campamento"]
+position = Vector3(-4, 0, 4)
+cantidad = 2
+envergadura = 1.1
+radio = 22.0
+altura = 24.0
+velocidad = 6.0
+planeadores = true
+irse_tras = 85.0
+semilla = 23
+
+[node name="Pajaritos2" type="Bandada" parent="Campamento"]
+position = Vector3(-10, 0, 14)
+cantidad = 6
+envergadura = 0.28
+radio = 12.0
+altura = 9.0
+velocidad = 6.5
+irse_tras = 70.0
+semilla = 37

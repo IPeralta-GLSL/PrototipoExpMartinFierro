@@ -22,6 +22,10 @@ Uso:  python tools/escenas/crear_pulperia.py
 
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from molino import molino  # noqa: E402
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 ORIGEN = os.path.join(RAIZ, "godot", "escenas", "fortin.tscn")
@@ -189,6 +193,42 @@ def luz(padre, pos, energia, alcance, sombra=False, nombre="Luz"):
             f"light_energy = {energia}\n{s}omni_range = {alcance}\nomni_attenuation = 1.15\n")
 
 
+def animal(nombre, padre, pos, modelo_, rot, rutina, reaccion, sonido, punto, radio):
+    """Animal que alterna animaciones y reacciona a las caricias (con su ModeloIA hijo)."""
+    return (f'\n[node name="{nombre}" type="Animal" parent="{padre}" node_paths=PackedStringArray("modelo") '
+            f'groups=["apoyar_en_suelo"]]\nposition = Vector3({pos[0]}, {pos[1]}, {pos[2]})\n'
+            f'rotation_degrees = Vector3(0, {rot}, 0)\nmodelo = NodePath("Modelo")\nrutina = "{rutina}"\n'
+            f'reaccion = "{reaccion}"\nsonido = "{sonido}"\n'
+            f"punto_caricia = Vector3({punto[0]}, {punto[1]}, {punto[2]})\nradio_caricia = {radio}\n"
+            + modelo("Modelo", f"{padre}/{nombre}", (0, 0, 0), modelo_, suelo=False))
+
+
+def agarrable(nombre, padre, pos, modelo_, tipo, rot=0, radio=0.18):
+    """Objeto que el jugador puede agarrar y tirar."""
+    return (f'\n[node name="{nombre}" type="Agarrable" parent="{padre}"]\n'
+            f"position = Vector3({pos[0]}, {pos[1]}, {pos[2]})\nrotation_degrees = Vector3(0, {rot}, 0)\n"
+            f'tipo = "{tipo}"\nradio_agarre = {radio}\n'
+            + modelo("Modelo", f"{padre}/{nombre}", (0, 0, 0), modelo_, suelo=False))
+
+
+# Superficies físicas (tablero de las mesas y del mostrador): (centro, tamaño).
+SUPERFICIES = [((-4.4, 0.81, -0.6), (0.9, 0.06, 1.7)), ((4.6, 0.81, 1.3), (0.9, 0.06, 1.7)),
+               ((0.0, 0.92, -2.6), (3.4, 0.1, 1.2)), ((-3.0, 0.81, 2.6), (0.9, 0.06, 1.7))]
+
+
+def colisores():
+    t = '\n[node name="Superficies" type="StaticBody3D" parent="Salon"]\n'
+    for i, (pos, _) in enumerate(SUPERFICIES, 1):
+        t += (f'\n[node name="Caja{i}" type="CollisionShape3D" parent="Salon/Superficies"]\n'
+              f'position = Vector3({pos[0]}, {pos[1]}, {pos[2]})\nshape = SubResource("col_{i}")\n')
+    return t
+
+
+def formas_superficies():
+    return "".join(f'[sub_resource type="BoxShape3D" id="col_{i}"]\nsize = Vector3({t[0]}, {t[1]}, {t[2]})\n\n'
+                   for i, (_, t) in enumerate(SUPERFICIES, 1))
+
+
 def accesorio(nombre, padre, portador, pos=(0, -0.07, 0), rot=None, extra=""):
     r = f"rotation_degrees = Vector3({rot[0]}, {rot[1]}, {rot[2]})\n" if rot else ""
     return (f'\n[node name="{nombre}" type="Accesorio" parent="{padre}" node_paths=PackedStringArray("portador")]\n'
@@ -232,19 +272,33 @@ def contenido(p):
     c += modelo("Sargento", "Salon", (3.98, 0, 1.05), "sargento", 90, 'animacion = "truco"\n')
     c += modelo("Soldado", "Salon", (5.22, 0, 1.05), "soldado", -90, 'animacion = "truco"\n')
     c += modelo("BotellasMesa2", "Salon", (4.6, TABLERO, 1.7), "botellas", 60, "sombras = false\n", suelo=False)
-    c += modelo("Sombrero", "Salon", (4.5, TABLERO, 2.0), "sombrero", 40, "sombras = false\n", suelo=False)
+    c += agarrable("Sombrero", "Salon", (4.5, TABLERO, 2.0), "sombrero", "sombrero", 40, 0.25)
+    c += agarrable("MateMostrador", "Salon", (-0.4, MOSTRADOR, -2.4), "mate", "mate", 15)
     c += modelo("FarolMesa2", "Salon", (4.7, TABLERO, 0.75), "farol", extra="sombras = false\n", suelo=False)
     c += luz("Salon/FarolMesa2", (0, 0.22, 0), 0.9, 4.5)
     # --- Banco bajo la ventana izquierda: el tropero sentado. Otro banco a la derecha.
     c += modelo("Banco", "Salon", (-6.55, 0, 1.9), "banco", 90)
     c += modelo("Tropero", "Salon", (-6.55, 0, 1.7), "tropero", 90, 'animacion = "sentado"\n')
     c += modelo("Banco2", "Salon", (6.55, 0, 1.9), "banco", -90)
+    # --- Detrás del jugador (pared de la puerta): que no quede nada vacío.
+    c += modelo("BarrilPuerta1", "Salon", (-1.35, 0, 4.05), "barril", 15)
+    c += modelo("BarrilPuerta2", "Salon", (1.45, 0, 4.1), "barril", -30)
+    c += modelo("PilaLena", "Salon", (-2.75, 0, 4.12), "pila_lena", 0)
+    c += modelo("Mesa3", "Salon", (-3.0, 0, 2.6), "mesa_truco")
+    c += modelo("BotellasMesa3", "Salon", (-3.0, TABLERO, 2.3), "botellas", 45, "sombras = false\n", suelo=False)
+    c += modelo("SombreroMesa3", "Salon", (-3.1, TABLERO, 2.9), "sombrero", -20, "sombras = false\n", suelo=False)
+    c += modelo("Bolsas3", "Salon", (5.6, 0, 3.9), "bolsas", 160)
+    c += modelo("Cajones3", "Salon", (2.6, 0, 4.0), "cajones", 10)
+    c += modelo("Recado2", "Salon", (-5.9, 0, 3.6), "recado", 120)
+    c += modelo("GuitarraPared", "Salon", (4.5, 1.25, 4.38), "guitarra", 180, "sombras = false\n", suelo=False)
     # --- De pie: el oyente con mate y un soldado acodado al mostrador.
     c += modelo("Oyente", "Salon", (-1.5, 0, -1.25), "levado", 70, 'animacion = "mate"\n')
     c += accesorio("Mate", "Salon/Oyente", "..", extra='vertical = true\nsolo_durante = "mate"\n')
     c += modelo("Modelo", "Salon/Oyente/Mate", (0, 0, 0), "mate", extra="sombras = false\n", suelo=False)
     c += modelo("Acodado", "Salon", (-0.75, 0, -1.72), "soldado", 165, 'animacion = "escuchar"\n')
-    c += modelo("Perro", "Salon", (2.4, 0, 0.6), "perro", -60, 'animacion = "lie|sleep|sit|rest|idle"\n')
+    c += animal("Perro", "Salon", (2.4, 0, 0.6), "perro", -60, "idle:8-14,dormir:10-20", "contento", "gemido",
+                (0.25, 0.35, 0), 0.45)
+    c += colisores()
     # --- El muchacho mandadero va y viene entre el mostrador y las mesas.
     c += ('\n[node name="Mandadero" type="Caminante" parent="Salon" node_paths=PackedStringArray("modelo", "terreno") '
           'groups=["apoyar_en_suelo"]]\nposition = Vector3(-2.2, 0, -1.6)\nmodelo = NodePath("Muchacho")\n'
@@ -272,8 +326,10 @@ def contenido(p):
     # --- Afuera, a la vista por las ventanas.
     c += '\n[node name="Afuera" type="Node3D" parent="."]\n'
     c += modelo("Palenque", "Afuera", (-5.3, 0, -7.4), "palenque")
-    c += modelo("CaballoMoro", "Afuera", (-6.1, 0, -8.3), "caballo_moro", 95, "respirar = 0.008\nperiodo = 3.6\n")
-    c += modelo("CaballoGateado", "Afuera", (-4.5, 0, -8.6), "caballo_gateado", 75, "respirar = 0.008\nperiodo = 4.1\n")
+    c += animal("CaballoMoro", "Afuera", (-6.1, 0, -8.3), "caballo_moro", 95, "idle:6-12,pastar:8-15", "cabecear",
+                "resoplido", (0.9, 1.6, 0.1), 0.65)
+    c += animal("CaballoGateado", "Afuera", (-4.5, 0, -8.6), "caballo_gateado", 75, "pastar:8-15,idle:6-12", "cabecear",
+                "resoplido", (0.9, 1.6, 0.1), 0.65)
     c += modelo("Carreta", "Afuera", (11.0, 0, -1.2), "carreta", 25)
     c += modelo("Ombu", "Afuera", (17.0, 0, -19.0), "ombu", 30)
     c += luz("Afuera", (-5.3, 1.7, -5.4), 0.7, 6.0, nombre="LuzVentana")
@@ -312,7 +368,10 @@ def main():
     p = construir_salon()
     c = contenido(p)
     primera = s.index("[node ")
-    s = s[:primera] + materiales() + p.sub + s[primera:]
+    # Un molino lejos, a la vista por la ventana del fondo a la derecha.
+    sub_molino, nodos_molino = molino("Molino", "Afuera", (34, 0, -46), -34.8)
+    c += nodos_molino
+    s = s[:primera] + materiales() + p.sub + formas_superficies() + sub_molino + s[primera:]
     s = s.rstrip("\n") + "\n\n[node name=\"Habitacion\" type=\"Node3D\" parent=\"Salon\"]\n" + p.nodos + c
     open(DESTINO, "w", encoding="utf-8", newline="\n").write(s)
     print(f"[pulpería] {DESTINO}: {p.n} piezas del salón")

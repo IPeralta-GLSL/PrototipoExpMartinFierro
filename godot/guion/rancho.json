@@ -12,7 +12,7 @@
     "texto": "Estamos en la pampa de Buenos Aires,\nallá por el año setenta y dos.\nCampo abierto, hasta donde da la vista.",
     "fuente": "narración",
     "audio": "res://voz/rancho_intro_02.ogg",
-    "espera": 1.2,
+    "espera": 0.6,
     "evento": "",
     "accion": "mostrar",
     "mirar": "jugador"
@@ -21,7 +21,7 @@
     "texto": "Acá me ven, haciendo un asadito al fogón...\nya va tomando color la carne.",
     "fuente": "narración",
     "audio": "res://voz/rancho_intro_03.ogg",
-    "espera": 1.0,
+    "espera": 0.6,
     "evento": "",
     "accion": "senalar",
     "mirar": "Asador"
@@ -30,38 +30,39 @@
     "texto": "Arrímense nomás, que mientras tomamos unos mates\nles voy a contar algo.",
     "fuente": "narración",
     "audio": "res://voz/rancho_intro_04.ogg",
-    "espera": 0.6,
+    "espera": 0.3,
     "evento": "",
-    "ir_a": "PuntoCharla",
+    "ir_a": "Asiento",
     "accion": "mate",
-    "mirar": "jugador"
+    "mirar": "jugador",
+    "postura": "sentado"
   },
   {
     "texto": "Aquí me pongo á cantar\nAl compás de la vigüela,\nQue el hombre que lo desvela\nUna pena estraordinaria,\nComo la ave solitaria\nCon el cantar se consuela.",
     "fuente": "Canto I, 1",
     "audio": "res://voz/rancho_01.ogg",
-    "espera": 2.5,
+    "espera": 1.0,
     "evento": ""
   },
   {
     "texto": "El gaucho mas infeliz\nTenía tropilla de un pelo,\nNo le faltaba un consuelo\nY andaba la gente lista...\nTeniendo al campo la vista,\nSolo vía hacienda y cielo.",
     "fuente": "Canto II, 17",
     "audio": "res://voz/rancho_02.ogg",
-    "espera": 3.0,
+    "espera": 1.0,
     "evento": ""
   },
   {
     "texto": "Y verlos al cair la tarde\nEn la cocina riunidos,\nCon el juego bien prendido\nY mil cosas que contar,\nPlaticar muy divertidos\nHasta despues de cenar.",
     "fuente": "Canto II, 14",
     "audio": "res://voz/rancho_03.ogg",
-    "espera": 3.0,
+    "espera": 1.0,
     "evento": "anochecer"
   },
   {
     "texto": "Yo no tengo en el amor\nQuien me venga con querellas;\nComo esas aves tan bellas\nQue saltan de rama en rama—\nYo hago en el trébol mi cama,\nY me cubren las estrellas.",
     "fuente": "Canto I, 17",
     "audio": "res://voz/rancho_04.ogg",
-    "espera": 16.0,
+    "espera": 2.5,
     "evento": "",
     "accion": "mostrar"
   },
@@ -69,16 +70,17 @@
     "texto": "Tuve en mi pago en un tiempo\nHijos, hacienda y mujer,\nPero empecé á padecer,\nMe echaron á la frontera,\n¡Y qué iba á hallar al volver!\nTan solo hallé la tapera.",
     "fuente": "Canto III, 1",
     "audio": "res://voz/rancho_05.ogg",
-    "espera": 10.0,
+    "espera": 1.5,
     "evento": ""
   },
   {
     "texto": "Mirá el fuego, paisano...\nque en las llamas se ve todo.",
     "fuente": "narración",
     "audio": "res://voz/rancho_06.ogg",
-    "espera": 8.0,
+    "espera": 1.5,
     "evento": "portal",
     "accion": "senalar",
-    "mirar": "Fogon"
+    "mirar": "Fogon",
+    "postura": "parado"
   }
 ]

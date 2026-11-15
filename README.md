@@ -17,6 +17,17 @@ texturizada.
 
 ## En el casco
 
+- **Tus manos**: se ven las manos reales (hand tracking de Meta, dedo por dedo), con los controles
+  en la mano o sin ellos.
+- **Lo interactivo tiene un contorno amarillo suave** cuando estás cerca, y más marcado cuando tu
+  mano lo alcanza.
+- **Agarrar**: cerrá la mano (o apretá el grip) cerca de un objeto; al abrirla lo soltás o lo
+  tirás. Se pueden agarrar el mate, la pava, el sombrero y la leña.
+  - **Mate**: llevátelo a la boca y suena el sorbo.
+  - **Sombrero**: soltalo sobre tu cabeza y te lo ponés.
+  - **Leña**: tirala al fogón y el fuego se aviva y chisporrotea.
+- **Acariciar**: pasá la mano por la cabeza de los caballos (cabecean y resoplan) o del perro
+  (se pone contento y gime). Hay un perro que pasea por el campamento.
 - **Stick izquierdo**: caminar hacia donde mirás.
 - **Stick derecho**: girar de a 30°.
 - **Guitarra**: pasá la mano rápido por las cuerdas (o apretá el gatillo cerca) para rasguear una
@@ -80,19 +91,23 @@ teros) las siembra `DispersorModelos` sobre el terreno.
 La experiencia es **lineal y por tiempo**: nada espera al jugador. Se puede mirar alrededor (y
 caminar), pero las escenas avanzan solas y al final vuelve a empezar.
 
-| Momento | Pampa (~2 min 25 s) | Fortín (~1 min 15 s) | Pulpería (~1 min 30 s) |
+| Momento | Pampa (~1 min 50 s) | Fortín (~1 min 10 s) | Pulpería (~1 min 20 s) |
 |---|---|---|---|
-| Fundido desde negro + título | 0–11 s (asa la carne) | 0–8 s | 0–8 s |
-| El gaucho se presenta | 12–38 s | — | 9–20 s |
-| El gaucho recita / canta | desde ~41 s | desde 9 s | desde ~22 s, con guitarra |
-| Anochecer (70 s) | ~71 s → noche cerrada a ~141 s | de noche | de noche |
-| Pasa a la escena siguiente | ~142 s: el fuego → fortín | ~71 s: el fuego → pulpería | ~85 s: la luz del farol → pampa |
+| Fundido desde negro + título | 0–8 s (asa la carne) | 0–8 s | 0–8 s |
+| El gaucho se presenta | 9–31 s | — | 9–18 s |
+| Se sienta en el banco, toma mate y recita | desde ~31 s | (de pie) desde 9 s | canta con guitarra desde ~20 s |
+| Anochecer (40 s) | ~61 s → noche cerrada a ~101 s | de noche | de noche |
+| Pasa a la escena siguiente | ~104 s: el fuego → fortín | ~66 s: el fuego → pulpería | ~75 s: la luz del farol → pampa |
 
 1. **Rancho, al atardecer.** Mientras aparece el título, el gaucho está asando la carne. Después
    se da vuelta, saluda tocándose el sombrero ("¡Buenas tardes, paisanos!"), cuenta dónde
-   estamos mostrando el campo, señala el asado, camina hasta su lugar y, mate en mano, invita:
-   "mientras tomamos unos mates les voy a contar algo". Ahí recita versos del poema (edición de
-   1894, ortografía original), con voz y subtítulos sobre su cabeza, mirando al jugador.
+   estamos mostrando el campo, señala el asado, camina hasta el banco, se sienta y, mate en
+   mano, invita: "mientras tomamos unos mates les voy a contar algo". Ahí recita sentado versos
+   del poema (edición de 1894, ortografía original), con voz y subtítulos sobre su cabeza; para el
+   final se para y señala el fuego. Alrededor, en 360°: el rancho, el ombú, los caballos, un perro
+   que pasea, el pozo, la pila de leña, carretas, corrales, ovejas pastando, el rancho de un
+   vecino, dos molinos en el horizonte y pájaros (una bandada y dos chimangos) que se van al
+   caer la noche.
 2. Con "Y verlos al cair la tarde…" empieza a **anochecer** (`CicloDia`, ~70 s): el sol se pone,
    el cielo pasa por el crepúsculo a una **noche estrellada** con luna, Vía Láctea y las Tres
    Marías; el fogón y el farol cobran fuerza, aparecen las luciérnagas, calma el viento y suben
@@ -104,6 +119,8 @@ caminar), pero las escenas avanzan solas y al final vuelve a empezar.
    (alumbrado por un farol), el **sargento** hace la ronda, un **gaucho levado** cava con la pala
    y un **soldado** toma mate junto al fuego. El gaucho cuenta la leva y el trabajo sin paga
    hasta que se larga del fortín: "esta noche hay guitarreada en la pulpería".
+   En el fortín también: la bandera argentina flameando en su mástil, el pozo, la leña, el
+   armero con los fusiles, otro caballo atado, un soldado sentado en un banco y una carreta.
 5. **La pulpería**, por dentro y de noche: un salón grande de adobe encalado con vigas, horcones
    y ventanas enrejadas por las que se ve la pampa (los caballos en el palenque, la carreta, el
    ombú). El pulpero detrás de la reja del mostrador, estantes con botellas, ristras colgando,
@@ -120,8 +137,10 @@ de noche y `-- --portal` pasa de escena enseguida (por ejemplo con `tools\captur
 El guion está en `godot/guion/rancho.json`, `fortin.json` y `pulperia.json`. Cada línea tiene texto, audio,
 `espera` (pausa antes de la línea), `evento` (`anochecer`, `noche`, `portal`; `guitarra` rasguea una milonga mientras canta) y la puesta en
 escena del gaucho: `accion` (animación mientras habla: `saludar`, `mostrar`, `senalar`, `mate`,
-`hablar`…), `mirar` (`jugador` o un nodo, p. ej. `Asador`) e `ir_a` (camina hasta un nodo antes
-de hablar, p. ej. `PuntoCharla`). El evento `portal` programa el fundido 1,2 s después de que
+`hablar`…), `mirar` (`jugador` o un nodo, p. ej. `Asador`), `ir_a` (camina hasta un nodo antes
+de hablar, p. ej. `Asiento`) y `postura` (`sentado`: se sienta y usa `hablar_sentado` /
+`mate_sentado`; `parado`). Los que caminan (el narrador, el perro, el sargento, el muchacho)
+esquivan los muebles, los objetos sueltos, a los demás y al jugador. El evento `portal` programa el fundido 1,2 s después de que
 termina esa línea. Cada `PortalFogon` tiene además `tiempo_maximo` (200 s, 110 s y 150 s) como red
 de seguridad; sin fogón (la pulpería) hace crecer una luz (`luz`).
 
@@ -185,10 +204,20 @@ $B = "$env:LOCALAPPDATA\Programs\Blender\blender-4.5.16-windows-x64\blender.exe"
 & $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\soldado_rig.glb godot\modelos\animados\soldado.glb --previas build\previas_soldado
 ```
 
+**Animales** (`--cuadrupedo caballo|perro|perro_echado`): el mismo script estima lomo, cuello
+(dos huesos), cabeza, cola y patas, y crea `idle`, `pastar`, `cabecear` (caballo); `idle`,
+`caminar`, `olfatear`, `contento` (perro parado); `idle`, `dormir`, `contento` (perro echado).
+
+```powershell
+& $B -b --factory-startup -P tools\rig\riggear.py -- godot\modelos\caballo_moro.glb godot\modelos\animados\caballo_moro.glb --cuadrupedo caballo
+```
+
 En Godot: `Accesorio` cuelga un objeto de un hueso, en el punto de agarre dentro de la mano
 cerrada (el mate y el fusil derechos; la pala de una mano a la otra, con la hoja hacia el suelo) y `Caminante` lleva a un personaje por puntos (la ronda del
-sargento). Los **animales** todavía se animan a mano con [Mesh2Motion](https://mesh2motion.org):
-la tabla está en `godot/modelos/animados/LEEME.txt`.
+sargento). `Animal` alterna la rutina de cada animal (p. ej. `idle:6-12,pastar:8-15`) y reacciona a
+las caricias; `Agarrable` (cuerpo rígido) y `ManosXR` (manos del jugador) resuelven la interacción
+en `rust/src/interaccion.rs`; los sonidos (resoplido, gemido, sorbo, chispas) se sintetizan en
+`sintesis.rs`.
 
 ## Teaser en video
 

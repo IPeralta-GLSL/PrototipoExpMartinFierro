@@ -116,6 +116,11 @@ impl IXrOrigin3D for JugadorXR {
         self.modo_xr = !escritorio && self.iniciar_xr();
         if !self.modo_xr {
             self.iniciar_escritorio();
+        } else {
+            // Las manos del jugador (malla de hand tracking) y la interacción.
+            let mut manos = crate::interaccion::ManosXR::new_alloc();
+            manos.set_name("Manos");
+            self.base_mut().add_child(&manos);
         }
         godot_print!(
             "Martín Fierro VR: modo {}",
@@ -358,6 +363,10 @@ impl JugadorXR {
         // VRS en modo XR sin casco deja la imagen en negro: se apaga en la PC.
         if let Some(mut vp) = self.base().get_viewport() {
             vp.set_vrs_mode(VrsMode::DISABLED);
+        }
+        // Sin casco no hay controles: los guantes quedarían flotando.
+        for mano in [self.mano_izq.as_mut(), self.mano_der.as_mut()].into_iter().flatten() {
+            mano.hide();
         }
         let p = self.base().get_global_position();
         let mut pos = p;
